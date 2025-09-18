@@ -7,7 +7,7 @@ export async function Request(content: string, ctx: Context): Promise<any> {
     let requestPayload: ChatRequest = {
         model: "",
         messages: [
-            { role: 'user', content: content  }
+            { role: 'user', content: content }
         ],
         tools: ctx.container.tools,
         stream: false,
