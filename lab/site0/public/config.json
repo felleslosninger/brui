@@ -1,0 +1,65 @@
+{
+    "actions": {
+        "addAPIClient": {
+            "tool": {
+                "type": "function",
+                "function": {
+                    "name": "addAPIClient",
+                    "description": "Adds a new API client with specified details",
+                    "parameters": {
+                        "type": "object",
+                        "required": [
+                            "name"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the client"
+                            }
+                        }
+                    }
+                }
+            },
+            "triggers": [
+                {
+                    "type": "function",
+                    "name": "addAPIClient"
+                }
+            ],
+            "metadata": {
+                "view": "system"
+            }
+        },
+        "genPrivKey": {
+            "tool": {
+                "type": "function",
+                "function": {
+                    "name": "genPrivKey",
+                    "description": "Generates a new private key for a client",
+                    "parameters": {
+                        "type": "object",
+                        "required": ["clientName"],
+                        "properties": {
+                            "clientName": {
+                                "type": "string",
+                                "description": "The name of the client"
+                            }
+                        }
+                    }
+                }
+            },
+            "triggers": [
+                {
+                    "type": "event",
+                    "name": "site0:genPrivKey"
+                }
+            ],
+            "metadata": {
+                "view": "clients"
+            }
+        }
+    },
+    "inference": {
+        "target": "local-nano"
+    }
+}
