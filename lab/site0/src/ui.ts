@@ -13,7 +13,7 @@ export function setupUI(context: Context) {
                 const params = tool.function.parameters;
                 const properties = params?.properties || {};
                 const required = params?.required || [];
-                
+
                 const propertiesHtml = Object.entries(properties).map(([key, prop]: [string, any]) => {
                     const isRequired = required.includes(key);
                     return `
@@ -24,7 +24,7 @@ export function setupUI(context: Context) {
                         </div>
                     `;
                 }).join('');
-                
+
                 return `
                     <div class="tool-item">
                         <div class="tool-item-name">${tool.function.name}</div>
@@ -44,8 +44,8 @@ export function setupUI(context: Context) {
     // Toggle tools visibility
     toggleButton?.addEventListener('click', () => {
         availableTools?.classList.toggle('hidden');
-        toggleButton.textContent = availableTools?.classList.contains('hidden') 
-            ? 'Available Tools' 
+        toggleButton.textContent = availableTools?.classList.contains('hidden')
+            ? 'Available Tools'
             : 'Hide Tools';
     });
 
@@ -55,7 +55,7 @@ export function setupUI(context: Context) {
     context.eventTarget.addEventListener('event:triggered', (e: any) => {
         const { type, name, args } = e.detail;
         const eventLog = document.getElementById('eventLog');
-        
+
         if (eventLog) {
             eventLog.innerHTML = `
                 <div class="tool-call">

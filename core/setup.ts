@@ -11,14 +11,14 @@ export async function Setup(configPath: string, functions: Record<string, Functi
     const config: Configuration = await Load(configPath);
 
     const eventTarget = new EventTarget();
-    
-    const triggerMap= new Map([
+
+    const triggerMap = new Map([
         ['function', (triggerName: string) => (...args: any[]) => functions[triggerName]?.(...args)],
         ['event', (triggerName: string) => (...args: any[]) => eventTarget.dispatchEvent(new CustomEvent(triggerName, { detail: args }))]
     ]);
-    
+
     const tools = Object.values(config.actions).map(action => action.tool);
-    
+
     Object.values(config.actions).forEach(action => {
         action.triggers.forEach(trigger => {
             const triggerType = triggerMap.get(trigger.type);

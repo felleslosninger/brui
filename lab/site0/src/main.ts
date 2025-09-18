@@ -14,39 +14,39 @@ async function start() {
     setupListeners(context);
 }
 
-function setupListeners(context : Context) {
-            const { showReasoning, showEmptyState } = setupUI(context);
+function setupListeners(context: Context) {
+    const { showReasoning, showEmptyState } = setupUI(context);
 
-        context.eventTarget.addEventListener('core:userInput', async (e: any) => {
+    context.eventTarget.addEventListener('core:userInput', async (e: any) => {
 
-            showReasoning();
-            
-            const inferenceData = await Request(e.detail.message, context);
+        showReasoning();
 
-            for (const toolCall of inferenceData || []) {
-                const toolName = toolCall.function.name;
-                const args = toolCall.function.arguments;
-                const action = context.config.actions[toolName];
-                
-                if (action) {
-                    for (const trigger of action.triggers) {
-                        context.container.triggerMap.get(trigger.name)?.(args);
-                        context.eventTarget.dispatchEvent(new CustomEvent('event:triggered', { 
-                            detail: {
-                                type: trigger.type,
-                                name: trigger.name,
-                                args: args
-                            }
-                        }));
-                    }
-                } else {
-                    console.warn(`No action found for tool: ${toolName}`);
+        const inferenceData = await Request(e.detail.message, context);
+
+        for (const toolCall of inferenceData || []) {
+            const toolName = toolCall.function.name;
+            const args = toolCall.function.arguments;
+            const action = context.config.actions[toolName];
+
+            if (action) {
+                for (const trigger of action.triggers) {
+                    context.container.triggerMap.get(trigger.name)?.(args);
+                    context.eventTarget.dispatchEvent(new CustomEvent('event:triggered', {
+                        detail: {
+                            type: trigger.type,
+                            name: trigger.name,
+                            args: args
+                        }
+                    }));
                 }
+            } else {
+                console.warn(`No action found for tool: ${toolName}`);
             }
-            
-            if (!inferenceData || inferenceData.length === 0) {
-                showEmptyState();
-            }
+        }
+
+        if (!inferenceData || inferenceData.length === 0) {
+            showEmptyState();
+        }
     });
 
     context.eventTarget.addEventListener('site0:genPrivKey', (detail) => {
