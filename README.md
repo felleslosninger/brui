@@ -13,7 +13,7 @@ Download required model:
 
 #### LLM proxy
 
-Go installed is required: https://go.dev/dl/
+Go is required: https://go.dev/dl/
 
 ```
 cd proxy
