@@ -1,0 +1,320 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        font-family: 'Inter', sans-serif;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    * {
+        font-weight: 400;
+    }
+}
+
+@layer utilities {
+    .bg-white {
+        background-color: var(--ds-color-neutral-background-default);
+    }
+
+    .bg-light-white {
+        background-color: var(--ds-color-neutral-background-tinted);
+    }
+
+    .bg-gray {
+        background-color: var(--ds-color-neutral-background-tinted);
+    }
+
+    .bg-hover {
+        background-color: var(--ds-color-accent-surface-hover);
+    }
+
+    .text-accent-default {
+        color: var(--ds-color-accent-text-default);
+    }
+
+    .text-accent-subtle {
+        color: var(--ds-color-accent-text-subtle);
+    }
+
+    .text-danger {
+        color: var(--ds-color-danger-text-subtle);
+    }
+
+    .bg-danger {
+        background-color: #f3d5db;
+    }
+
+    .link-text {
+        color: #3263b8;
+    }
+
+    .border-active {
+        border-radius: 0;
+        border: none #fad85c;
+        border-bottom: 3px solid;
+    }
+
+    .active-table-header {
+        background-color: #e6e9ed;
+    }
+
+    .active-table-header:hover {
+        background-color: #d5dae2;
+    }
+
+    .delete-button {
+        background-color: var(--ds-color-danger-base-default);
+    }
+
+    .delete-button:hover {
+        background-color: var(--ds-color-danger-base-hover);
+    }
+
+    .input-descrition {
+        color: #4d5563;
+        margin-top: 6px;
+    }
+
+    .button-selected {
+        background-color: var(--ds-color-neutral-background-tinted);
+        color: var(--ds-color-accent-text-subtle);
+    }
+
+    .button-unselected {
+        color: var(--ds-color-accent-text-default);
+    }
+
+    .card-info {
+        background-color: var(--info-background);
+        border-color: var(--info-background);
+        color: var(--info-text);
+    }
+
+    .card-success {
+        background-color: var(--success-background);
+        border-color: var(--success-background);
+        color: var(--success-text);
+    }
+
+    .card-warning {
+        background-color: var(--warning-background);
+        border-color: var(--warning-background);
+        color: var(--warning-text);
+    }
+
+    .card-error {
+        background-color: var(--error-background);
+        border-color: var(--error-background);
+        color: var(--error-text);
+    }
+}
+
+@layer ds.components {
+    .ds-helptext {
+        --dsc-helptext-icon-size: 65%;
+        --dsc-helptext-icon-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 8 14'%3E%3Cpath fill='%23000' fill-rule='evenodd' d='M4 11a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM4 0c2.2 0 4 1.66 4 3.7 0 .98-.42 1.9-1.17 2.6l-.6.54-.29.29c-.48.46-.87.93-.94 1.41V9.5H3v-.81c0-1.26.84-2.22 1.68-3L5.42 5C5.8 4.65 6 4.2 6 3.7 6 2.66 5.1 1.83 4 1.83c-1.06 0-1.92.75-2 1.7v.15H0C0 1.66 1.8 0 4 0Z' clip-rule='evenodd'/%3E%3C/svg%3E");
+        --dsc-helptext-size: var(--ds-size-6);
+
+        border-radius: var(--ds-border-radius-full);
+        border: max(1px, calc(var(--ds-size-1) / 2)) solid; /* Allow border-width to grow with font-size */
+        box-sizing: border-box;
+        height: var(--dsc-helptext-size);
+        min-height: 0;
+        min-width: 0;
+        padding: 0;
+        position: relative;
+        width: var(--dsc-helptext-size);
+
+        @media (forced-colors: active) {
+            color: ButtonText;
+        }
+
+        &::before {
+            content: '';
+            border-radius: inherit;
+            background: currentcolor;
+            mask-composite: exclude;
+            mask-image: var(--dsc-helptext-icon-url);
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-size: var(--dsc-helptext-icon-size) var(--dsc-helptext-icon-size), cover;
+            scale: 1.1; /* Hide tiny half pixel rendeing bug */
+            width: 100%;
+            height: 100%;
+
+            @media (forced-colors: active) {
+                background: ButtonText;
+            }
+        }
+
+        &:has(+ :popover-open)::before {
+            mask-image: var(--dsc-helptext-icon-url), linear-gradient(currentcolor, currentcolor); /* Cut icon out of currentcolor surface */
+        }
+
+        @media print {
+            display: none;
+        }
+    }
+}
+
+@layer override {
+    [data-color-scheme="light"] .ds-card {
+        border-color: var(--ds-color-neutral-background-default);
+    }
+
+    [data-color-scheme="light"] .ds-card:hover {
+        border-color: var(--ds-color-neutral-surface-default);
+    }
+
+    @media (prefers-color-scheme: light) {
+        [data-color-scheme="auto"] .ds-card {
+            border-color: var(--ds-color-neutral-background-default);
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        [data-color-scheme="auto"] .ds-card:hover {
+            border-color: var(--ds-color-neutral-surface-default);
+        }
+    }
+
+    .link-no-decoration {
+        text-decoration: none !important;
+    }
+
+    .ds-table {
+        overflow-x: auto;
+        --dsc-table-divider-border-width: 4px;
+        --dsc-table-border-width: 4px;
+        --dsc-table-border-color: var(--ds-color-neutral-background-tinted);
+        --dsc-table-header-background: var(--ds-color-neutral-background-default);
+        --dsc-table-background: var(--ds-color-neutral-background-default);
+        --dsc-table-padding: 1rem;
+    }
+
+    :is(.ds-table > thead > tr > [aria-sort]):not([aria-sort="none"]) > button {
+        background: var(--ds-color-neutral-background-default);
+    }
+
+    .ds-table > thead > tr > [aria-sort]:not([aria-sort="none"]) > button:hover {
+        background: var(--ds-color-accent-surface-hover);
+    }
+
+    /* Variables that differ from light and dark mode */
+    /* ---------------------------------------------- */
+    :root, [data-color-scheme="light"] {
+        --footer: #053A63;
+        --footer-text: #f1f4f6;
+
+        /* Card colors */
+        --error-text: #5A0D0D;
+        --error-background: #FEE9E9;
+        --warning-text: #3C2807;
+        --warning-background: #F8F3D6;
+        --info-text: #2e2e2e;
+        --info-background: #E2F3FA;
+        --success-text: #1D1D1D;
+        --success-background: #e5ffe3;
+
+        /* Figures variables */
+        --shapes: #f0bd5f;
+        --outline: #EDCFC5;
+        --body: #1E2B3C;
+        --objects: #f0bd5f;
+        --details: #1e98f5;
+        --readingDetails: #f0bd5f;
+        --fishingDetails: #1E2B3C;
+        --fishingBody: #1E2B3C;
+        --fishingHair: #e4e5e6;
+    }
+
+    @media (prefers-color-scheme: light) {
+        [data-color-scheme="auto"] {
+            --footer: #053A63;
+            --footer-text: #f1f4f6;
+
+            /* Card colors */
+            --error-text: #5A0D0D;
+            --error-background: #FEE9E9;
+            --warning-text: #3C2807;
+            --warning-background: #F8F3D6;
+            --info-text: #2e2e2e;
+            --info-background: #E2F3FA;
+            --success-text: #1D1D1D;
+            --success-background: #e5ffe3;
+
+            /* Figures variables */
+            --shapes: #f0bd5f;
+            --outline: #EDCFC5;
+            --body: #1E2B3C;
+            --objects: #f0bd5f;
+            --details: #1e98f5;
+            --readingDetails: #f0bd5f;
+            --fishingDetails: #1E2B3C;
+            --fishingBody: #1E2B3C;
+            --fishingHair: #e4e5e6;
+        }
+    }
+
+    [data-color-scheme="dark"] {
+        --footer: #171d25;
+        --var1: var(--ds-color-accent-base-hover);
+
+        /* Card colors */
+        --error-text: #f7f7f7;
+        --error-background: #611e2f;
+        --warning-text: #f7f7f7;
+        --warning-background: #7c6736;
+        --info-text: #f7f7f7;
+        --info-background: #25556a;
+        --success-text: #f7f7f7;
+        --success-background: #2b5945;
+
+        /* Figures variables */
+        --shapes: #27303C;
+        --outline: #092d49;
+        --body: #2b565f;
+        --objects: #2b565f;
+        --details: #ede2e7;
+        --readingDetails: #e4e5e6;
+        --fishingDetails: #e4e5e6;
+        --fishingBody: #27303C;
+        --fishingHair: #e4e5e6;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        [data-color-scheme="auto"] {
+            --footer: #171d25;
+            --var1: var(--ds-color-accent-base-hover);
+
+            /* Card colors */
+            --error-text: #f7f7f7;
+            --error-background: #611e2f;
+            --warning-text: #f7f7f7;
+            --warning-background: #7c6736;
+            --info-text: #f7f7f7;
+            --info-background: #1e5369;
+            --success-text: #f7f7f7;
+            --success-background: #2b5945;
+
+            /* Figures variables */
+            --shapes: #27303C;
+            --outline: #092d49;
+            --body: #2b565f;
+            --objects: #2b565f;
+            --details: #ede2e7;
+            --readingDetails: #e4e5e6;
+            --fishingDetails: #e4e5e6;
+            --fishingBody: #27303C;
+            --fishingHair: #e4e5e6;
+        }
+    }
+    
+    .ds-popover {
+        --dsc-popover-max-width: 60ch;
+    }
+}
