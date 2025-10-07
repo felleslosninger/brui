@@ -9,6 +9,10 @@
     body {
         margin: 0;
         padding: 0;
+<<<<<<< HEAD
+        background-color: var(--ds-color-neutral-background-tinted);
+=======
+>>>>>>> 18b3b66c2fde16b08cd0a158bd800b7981a7828e
     }
     * {
         font-weight: 400;
