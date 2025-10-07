@@ -1,0 +1,8 @@
+.sidebar-root {
+    height: 100%;
+    width: 16rem;
+    background-color: #4a0723;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
