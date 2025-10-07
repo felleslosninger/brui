@@ -33,14 +33,8 @@ function App() {
     };
 
   return (
-    <div
-      style={{
-        maxWidth: '700px',
-        margin: '2rem auto',
-        padding: '1rem',
-      }}
-    >
-      <Paragraph data-size='xl'>
+    <div>
+      <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
         Velkommen til Bogwalds pizza
       </Paragraph>
 
@@ -51,14 +45,14 @@ function App() {
           setSubmitted(false);
         }}
       >
-        <Tabs.List>
+        <Tabs.List className='bg-white px-20'>
           <Tabs.Tab value="home">Home</Tabs.Tab>
           <Tabs.Tab value="menu">Menu</Tabs.Tab>
           <Tabs.Tab value="order">Order</Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="home">
-          <Card>
+        <Tabs.Panel value="home" className='mx-20'>
+          <Card className='bg-white border-none shadow'>
             <div data-size="medium">
               Welcome to Bogwalds pizza
             </div>
@@ -68,9 +62,9 @@ function App() {
           </Card>
         </Tabs.Panel>
 
-        <Tabs.Panel value="menu">
+        <Tabs.Panel value="menu" className='mx-20'>
           {pizzas.map((pizza, i) => (
-            <Card key={i} style={{ marginBottom: '1rem' }}>
+            <Card key={i} className='bg-white border-none shadow mb-2'>
               <Paragraph>{pizza.name}</Paragraph>
               <Paragraph>{pizza.desc}</Paragraph>
               <Paragraph><strong>{pizza.price}</strong></Paragraph>
@@ -78,13 +72,13 @@ function App() {
           ))}
         </Tabs.Panel>
 
-        <Tabs.Panel value="order">
+        <Tabs.Panel value="order" className='mx-20'>
           {!submitted ? (
-            <Card>
+            <Card className='bg-white shadow border-none'>
               <Paragraph>Place your order</Paragraph>
               <form
                 onSubmit={handleSubmit}
-                style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                className='space-y-6'
               >
                 <Textfield
                   label="Name"
@@ -112,7 +106,7 @@ function App() {
               </form>
             </Card>
           ) : (
-            <Card>
+            <Card className='shadow border-none bg-white'>
               <Paragraph>
                 Thank you, {formData.name}!
               </Paragraph>
@@ -125,6 +119,7 @@ function App() {
         </Tabs.Panel>
       </Tabs>
     </div>
+    
   );
 }
 
