@@ -22,6 +22,28 @@
           }
         }
       }
+    },
+    {
+      "kind": "option",
+      "type": "tool",
+      "name": "changeActiveTab",
+      "spec": {
+        "type": "function",
+        "function": {
+          "name": "change_tab",
+          "description": "Change tab to the given tab name",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "description": "Name of the tab to switch to"
+              }
+            },
+            "required": ["value"]
+          }
+        }
+      }
     }
   ],
   "actions": [
@@ -32,6 +54,14 @@
       "spec": {
         "function_name": "addPizzaToOrder"
       }
+    },
+    {
+      "kind": "action",
+      "type": "function",
+      "name": "changeTab",
+      "spec": {
+        "function_name": "changetab"
+      }
     }
   ],
   "decisions": [
@@ -41,6 +71,14 @@
       "spec": {
         "if": ["addPizzaTool"],
         "then": ["callAddPizzaFunction"]
+      }
+    },
+    {
+      "kind": "decision",
+      "name": "handleChangeTab",
+      "spec": {
+        "if": ["changeActiveTab"],
+        "then": ["changeTab"]
       }
     }
   ],

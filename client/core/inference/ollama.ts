@@ -1,7 +1,7 @@
 import type { ChatRequest, ChatResponse, Tool } from 'ollama';
 import type { InferenceContext } from '../inference';
 
-const proxyHost = 'http://localhost:8090';
+const proxyHost = 'http://localhost:8091';
 
 export async function Request(content: string, ctx: InferenceContext): Promise<any> {
     const tools: Tool[] = ctx.config.decisions?.tools || [];
