@@ -1,0 +1,8 @@
+inference:
+  local-nano:
+    endpoint: "http://localhost:11434/api/chat"
+    model: "qwen3:0.6b"
+  
+  external-nano:
+    endpoint: "https://ollama.sandkasse.ai/api/chat"
+    model: "qwen3:0.6b"

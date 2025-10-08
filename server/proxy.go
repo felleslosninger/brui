@@ -1,24 +1,26 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
+"bytes"
+"encoding/json"
+"fmt"
+"io"
+"log"
+"net/http"
 )
+
+const HttpPort = ":8090"
 
 func proxyHandler(w http.ResponseWriter, r *http.Request) {
 
-    // CORS
-    w.Header().Set("Access-Control-Allow-Origin", "*")
-    w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-    if r.Method == "OPTIONS" {
-        w.WriteHeader(http.StatusOK)
-        return
-    }
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 
 	proxyReq := parse(r)
 	modifiedPayload, err := rewrite(proxyReq)
@@ -58,35 +60,40 @@ func rewrite(proxyReq ProxyRequest) ([]byte, error) {
 }
 
 func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWriter) {
-    req, err := http.NewRequest(r.Method, string(TargetMap[pr.Target].Endpoint), bytes.NewBuffer(payload))
+	req, err := http.NewRequest(r.Method, string(TargetMap[pr.Target].Endpoint), bytes.NewBuffer(payload))
 
 	fmt.Println("Proxying request to:", pr.Target)
 
-    if err != nil {
-        http.Error(w, "Error creating request", http.StatusInternalServerError)
-        return
-    }
+	if err != nil {
+		http.Error(w, "Error creating request", http.StatusInternalServerError)
+		return
+	}
 
-    client := &http.Client{}
+	client := &http.Client{}
 
-    resp, err := client.Do(req)
+	resp, err := client.Do(req)
 
-    if err != nil {
-        http.Error(w, "Error proxying request: "+err.Error(), http.StatusBadGateway)
-        return
-    }
+	if err != nil {
+		http.Error(w, "Error proxying request: "+err.Error(), http.StatusBadGateway)
+		return
+	}
 
-    defer resp.Body.Close()
+	defer resp.Body.Close()
 
-    io.Copy(w, resp.Body)
+	io.Copy(w, resp.Body)
 }
 
 func Run() {
+	if err := LoadConfig("config.yaml"); err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	log.Printf("Starting proxy server on %s", HttpPort)
+	log.Printf("Loaded %d inference configurations", len(TargetMap))
+
 	http.HandleFunc("/", proxyHandler)
 
-	fmt.Println("Proxy server running on " + HttpPort)
-
 	if err := http.ListenAndServe(HttpPort, nil); err != nil {
-		fmt.Println("Server error:", err)
+		log.Fatalf("Server error: %v", err)
 	}
 }
