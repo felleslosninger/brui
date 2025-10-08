@@ -88,7 +88,6 @@ export async function executeQuery(
             store,
             decisions,
             parameters,
-            config
         );
         
         console.log('[Core] Actions executed:', results.length);
@@ -179,7 +178,6 @@ async function evaluateAndExecute(
     store: StoreInterface,
     decisions: Decision[],
     parameters: Record<string, unknown>,
-    config: Configuration
 ): Promise<ActionResult[]> {
     const results: ActionResult[] = [];
     

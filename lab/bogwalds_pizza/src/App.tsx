@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent, type SetStateAction } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import {
   Card,
   Paragraph,
@@ -41,14 +41,9 @@ function App() {
     return { success: true, pizzaName };
   };
 
-  const changetab = (args: SetStateAction<string>) => {
-    console.log (args)
-    setActiveTab(args.value)
-  };
-
   const functions: FunctionRegistry = {
     addPizzaToOrder,
-    changetab
+    setActiveTab
   };
 
     function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {

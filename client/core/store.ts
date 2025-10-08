@@ -212,7 +212,7 @@ async function executeActionByType(
     combinedMetadata: Record<string, unknown>
 ): Promise<unknown> {
     if (action.type === 'function') {
-        return executeFunctionAction(functions, action, args, combinedMetadata);
+        return executeFunctionAction(functions, action, args);
     } else if (action.type === 'event') {
         return executeEventAction(eventTarget, actionName, args, combinedMetadata, action);
     } else {
@@ -224,7 +224,6 @@ async function executeFunctionAction(
     functions: FunctionRegistry,
     action: Action,
     args: Record<string, unknown>,
-    combinedMetadata: Record<string, unknown>
 ): Promise<unknown> {
     const functionName = action.spec.function_name;
     if (!functionName) {
@@ -235,7 +234,12 @@ async function executeFunctionAction(
     if (!fn) {
         throw new Error(`Function not registered: ${functionName}`);
     }
-    return await fn(args, combinedMetadata);
+    if (Array.isArray(action.spec.args)) {
+        const values = action.spec.args.map((key: string) => args[key]);
+        return await fn(...values);
+    } else {
+        return await fn(args);
+    }
 }
 
 function executeEventAction(
