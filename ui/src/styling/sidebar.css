@@ -7,9 +7,10 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: #f3f3f4;
+    background-color: #ffffff;
     border-radius: 0;
     border-color: #bbbcbd;
+    padding: 0;
 }
 
 .sidebar-content {
@@ -19,14 +20,16 @@
 }
 
 .sidebar-content .ds-card {
-    flex: 1 1 auto;
-    background-color: #ffffff;
-    border-radius: 1rem;
+    border-radius: 0rem;
+    border: 0;
+    background-color: transparent;
 }
 
 .sidebar-input {
     margin-top: 1rem;
     flex: 0 0 auto;
+    background-color: #bbbcbd;
+    border: 0;
 }
 
 .sidebar-input-content {
@@ -34,6 +37,12 @@
     gap: 0.5rem;
 }
 
-.sidebar-input-field{
+.sidebar-input-field {
     border: none;
+}
+
+.sidebar-content .chat-bubble {
+    border-radius: 1rem;
+    background-color: cyan;
+    padding: 1rem;
 }

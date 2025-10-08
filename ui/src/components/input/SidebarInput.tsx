@@ -3,7 +3,7 @@ import cl from "clsx";
 import InputField from "./InputField";
 import SubmitButton from "./SubmitButton";
 import InputMicrophoneButton from "./InputMicrophoneButton";
-import SidebarChat from "../chat/SidebarChat";
+import SidebarChat from "../output/SidebarChat";
 
 interface SidebarInputProps {
     children?: React.ReactNode;

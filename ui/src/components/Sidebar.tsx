@@ -1,5 +1,5 @@
 import { Card } from "@digdir/designsystemet-react";
-import SidebarChat from "./chat/SidebarChat";
+import SidebarChat from "./output/SidebarChat";
 import SidebarInput from "./input/SidebarInput";
 
 import "../styling/sidebar.css"

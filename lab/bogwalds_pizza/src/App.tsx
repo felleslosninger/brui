@@ -34,11 +34,8 @@ function App() {
     };
 
   return (
-    <div>
-      <div className="w-96 h-full bg-red-200 absolute right-0 top-0 z-10">
-        <Sidebar/>
-      </div>
-      <div>
+  <div className="grid grid-cols-12 min-h-screen">      
+      <div className='col-span-8'>
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
           Velkommen til Bogwalds pizza
         </Paragraph>
@@ -124,6 +121,9 @@ function App() {
             )}
           </Tabs.Panel>
         </Tabs>
+      </div>
+      <div className="col-span-4 bg-gray-50 h-full">
+        <Sidebar/>
       </div>
     </div>
     

@@ -1,5 +1,8 @@
 import { Card } from "@digdir/designsystemet-react";
+import { PersonPregnantFillIcon } from "@navikt/aksel-icons";
 import cl from 'clsx/lite';
+import ChatBubble from "./ChatBubble";
+import ChatText from "./ChatText";
 
 interface SidebarChatProps {
     children?: React.ReactNode;
@@ -9,7 +12,11 @@ interface SidebarChatProps {
 export default function SidebarChat({ children, className }: SidebarChatProps) {
     return (
         <Card className={cl('sidebar-root', className)}>
-            <div>{children}</div>
+            <div>
+                {children}
+                <ChatBubble> heyy </ChatBubble>
+                <ChatText> hey </ChatText>
+            </div>
         </Card>
     )
 }
