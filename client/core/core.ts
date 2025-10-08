@@ -4,7 +4,7 @@ import { createResourceStore } from './store';
 import { Chat } from './inference';
 import type { Tool } from 'ollama';
 
-export async function setup(configSource: string | Configuration, functions: FunctionRegistry): Promise<EventTarget> {
+export async function Setup(configSource: string | Configuration, functions: FunctionRegistry): Promise<EventTarget> {
     const store = typeof configSource === 'string' 
         ? await createResourceStore(configSource, functions)
         : createResourceStore(configSource, functions);
