@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import {
   Card,
   Paragraph,
@@ -7,6 +7,8 @@ import {
   Button,
 } from '@digdir/designsystemet-react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
+import { Setup, type FunctionRegistry, type Configuration } from "../../../client/core/index"
+import configData from "./config.json";
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -33,12 +35,39 @@ function App() {
       setFormData({ ...formData, [field]: e.target.value });
     };
 
+  const addPizzaToOrder = (args: Record<string, unknown>) => {
+    const { pizzaName } = args;
+    console.log('Adding pizza to order:', pizzaName);
+    return { success: true, pizzaName };
+  };
+
+  const functions: FunctionRegistry = {
+    addPizzaToOrder
+  };
+
+  useEffect(() => {
+    Setup(configData as Configuration, functions).then(eventTarget => {
+      
+      // Temporary: Send a test prompt directly to core
+      setTimeout(() => {
+        console.log('Sending test prompt to core...');
+        const chatInputEvent = new CustomEvent('chat:input', {
+          detail: {
+            query: 'Order a Pasta Bolognese, I love bacon',
+            metadata: { test: true },
+          },
+        });
+        eventTarget.dispatchEvent(chatInputEvent);
+      }, 2000);
+    });
+  }, []);
+
   return (
     <div>
       <div className="w-96 h-full bg-red-200 absolute right-0 top-0 z-10">
         <Sidebar/>
       </div>
-      <div>
+      <div className="pr-96">
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
           Velkommen til Bogwalds pizza
         </Paragraph>
@@ -71,9 +100,23 @@ function App() {
           <Tabs.Panel value="menu" className='mx-20'>
             {pizzas.map((pizza, i) => (
                 <Card key={i} className='bg-white border-none shadow mb-2'>
-                  <Paragraph>{pizza.name}</Paragraph>
-                  <Paragraph>{pizza.desc}</Paragraph>
-                  <Paragraph><strong>{pizza.price}</strong></Paragraph>
+                  <div className='flex justify-between items-center'>
+                    <div className='flex-1'>
+                      <Paragraph>{pizza.name}</Paragraph>
+                      <Paragraph>{pizza.desc}</Paragraph>
+                      <Paragraph><strong>{pizza.price}</strong></Paragraph>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        console.log('Button clicked!', pizza.name);
+                        addPizzaToOrder({ pizzaName: pizza.name });
+                      }}
+                      variant="primary"
+                      data-size="sm"
+                    >
+                      Add
+                    </Button>
+                  </div>
                 </Card>
             ))}
           </Tabs.Panel>
