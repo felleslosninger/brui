@@ -1,3 +1,3 @@
 export * from "./Sidebar";
-export * from "./chat/SidebarChat";
+export * from "./output/SidebarOutput";
 export * from "./input/SidebarInput";

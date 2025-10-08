@@ -1,5 +1,4 @@
-import { Card } from "@digdir/designsystemet-react";
-import SidebarChat from "./chat/SidebarChat";
+import SidebarOutput from "./output/SidebarOutput";
 import SidebarInput from "./input/SidebarInput";
 
 import "../styling/sidebar.css"
@@ -15,25 +14,26 @@ interface SidebarRootProps {
 
 function SidebarRoot({ children, className, handleSubmit }: SidebarRootProps) {
     return (
-        <div className={cl('sidebar-root', className)}>
-            <Card className="sidebar-card">
-                {children ? (
-                    children
-                ) : (
-                    <div className="sidebar-content">
-                        <Sidebar.Chat />
-                        <div className="sidebar-input">
-                            <Sidebar.Input handleSubmit={handleSubmit} />
-                        </div>
+        <div className={cl('sidebar-content', className)}>
+            {children ? (
+                children
+            ) : (
+                <div>
+                    <div className="sidebar-output">
+                        <Sidebar.Output />
                     </div>
-                )}
-            </Card>
+
+                    <div className="sidebar-input">
+                        <Sidebar.Input handleSubmit={handleSubmit} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
 const Sidebar = Object.assign(SidebarRoot, {
-    Chat: SidebarChat,
+    Output: SidebarOutput,
     Input: SidebarInput,
 });
 

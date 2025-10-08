@@ -66,11 +66,8 @@ function App() {
     }
 
     return (
-    <div>
-      <div className="w-96 h-full bg-red-200 absolute right-0 top-0 z-10">
-        <Sidebar handleSubmit={handleSubmitChatMessage}/>
-      </div>
-      <div className="pr-96">
+    <div className='grid grid-cols-12 h-screen'>
+      <div className="col-span-8">
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
           Velkommen til Bogwalds pizza
         </Paragraph>
@@ -170,6 +167,9 @@ function App() {
             )}
           </Tabs.Panel>
         </Tabs>
+      </div>
+      <div className="col-span-4 shadow-lg">
+        <Sidebar handleSubmit={handleSubmitChatMessage}/>
       </div>
     </div>
     
