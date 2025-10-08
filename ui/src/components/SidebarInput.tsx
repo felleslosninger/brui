@@ -1,11 +1,15 @@
 import { Card } from "@digdir/designsystemet-react";
+import cl from "clsx";
 
-export default function SidebarInput() {
+interface SidebarInputProps {
+    children?: React.ReactNode;
+    className?: string;
+}
+
+export default function SidebarChat({ children, className }: SidebarInputProps) {
     return (
-        <div>
-            <Card>
-                SidebarInput
-            </Card>
-        </div>
+        <Card className={cl('sidebar-root', className)}>
+            <div>{children}</div>
+        </Card>
     )
 }

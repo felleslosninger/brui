@@ -6,6 +6,7 @@ import {
   Tabs,
   Button,
 } from '@digdir/designsystemet-react';
+import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -34,90 +35,96 @@ function App() {
 
   return (
     <div>
-      <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
-        Velkommen til Bogwalds pizza
-      </Paragraph>
+      <div className="w-96 h-full bg-red-200 absolute right-0 top-0 z-10">
+        <Sidebar/>
+      </div>
+      <div>
+        <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
+          Velkommen til Bogwalds pizza
+        </Paragraph>
 
-      <Tabs
-        value={activeTab}
-        onChange={(value) => {
-          setActiveTab(value);
-          setSubmitted(false);
-        }}
-      >
-        <Tabs.List className='bg-white px-20'>
-          <Tabs.Tab value="home">Home</Tabs.Tab>
-          <Tabs.Tab value="menu">Menu</Tabs.Tab>
-          <Tabs.Tab value="order">Order</Tabs.Tab>
-        </Tabs.List>
+        <Tabs
+            className="z-0"
+            value={activeTab}
+            onChange={(value) => {
+              setActiveTab(value);
+              setSubmitted(false);
+            }}
+        >
+          <Tabs.List className='bg-white px-20'>
+            <Tabs.Tab value="home">Home</Tabs.Tab>
+            <Tabs.Tab value="menu">Menu</Tabs.Tab>
+            <Tabs.Tab value="order">Order</Tabs.Tab>
+          </Tabs.List>
 
-        <Tabs.Panel value="home" className='mx-20'>
-          <Card className='bg-white border-none shadow'>
-            <div data-size="medium">
-              Welcome to Bogwalds pizza
-            </div>
-            <Paragraph>
-              Enjoy our delicious, hand-crafted pasta bolognese made with fresh ingredients and baked in a traditional stone oven.
-            </Paragraph>
-          </Card>
-        </Tabs.Panel>
-
-        <Tabs.Panel value="menu" className='mx-20'>
-          {pizzas.map((pizza, i) => (
-            <Card key={i} className='bg-white border-none shadow mb-2'>
-              <Paragraph>{pizza.name}</Paragraph>
-              <Paragraph>{pizza.desc}</Paragraph>
-              <Paragraph><strong>{pizza.price}</strong></Paragraph>
-            </Card>
-          ))}
-        </Tabs.Panel>
-
-        <Tabs.Panel value="order" className='mx-20'>
-          {!submitted ? (
-            <Card className='bg-white shadow border-none'>
-              <Paragraph>Place your order</Paragraph>
-              <form
-                onSubmit={handleSubmit}
-                className='space-y-6'
-              >
-                <Textfield
-                  label="Name"
-                  value={formData.name}
-                  onChange={handleChange('name')}
-                  required
-                />
-                <Textfield
-                  label="Table number"
-                  type="number"
-                  value={formData.table}
-                  onChange={handleChange('table')}
-                  required
-                />
-                <Textfield
-                  label="Order number"
-                  type="number"
-                  value={formData.orderNumber}
-                  onChange={handleChange('orderNumber')}
-                  required
-                />
-                <Button type="submit" variant="primary">
-                  Submit order
-                </Button>
-              </form>
-            </Card>
-          ) : (
-            <Card className='shadow border-none bg-white'>
+          <Tabs.Panel value="home" className='mx-20'>
+            <Card className='bg-white border-none shadow'>
+              <div data-size="medium">
+                Welcome to Bogwalds pizza
+              </div>
               <Paragraph>
-                Thank you, {formData.name}!
+                Enjoy our delicious, hand-crafted pasta bolognese made with fresh ingredients and baked in a traditional stone oven.
               </Paragraph>
-              <Paragraph>
-                Your order (#{formData.orderNumber}) from table {formData.table} has been received.
-              </Paragraph>
-              <Button onClick={() => setSubmitted(false)}>Place another</Button>
             </Card>
-          )}
-        </Tabs.Panel>
-      </Tabs>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="menu" className='mx-20'>
+            {pizzas.map((pizza, i) => (
+                <Card key={i} className='bg-white border-none shadow mb-2'>
+                  <Paragraph>{pizza.name}</Paragraph>
+                  <Paragraph>{pizza.desc}</Paragraph>
+                  <Paragraph><strong>{pizza.price}</strong></Paragraph>
+                </Card>
+            ))}
+          </Tabs.Panel>
+
+          <Tabs.Panel value="order" className='mx-20'>
+            {!submitted ? (
+                <Card className='bg-white shadow border-none'>
+                  <Paragraph>Place your order</Paragraph>
+                  <form
+                      onSubmit={handleSubmit}
+                      className='space-y-6'
+                  >
+                    <Textfield
+                        label="Name"
+                        value={formData.name}
+                        onChange={handleChange('name')}
+                        required
+                    />
+                    <Textfield
+                        label="Table number"
+                        type="number"
+                        value={formData.table}
+                        onChange={handleChange('table')}
+                        required
+                    />
+                    <Textfield
+                        label="Order number"
+                        type="number"
+                        value={formData.orderNumber}
+                        onChange={handleChange('orderNumber')}
+                        required
+                    />
+                    <Button type="submit" variant="primary">
+                      Submit order
+                    </Button>
+                  </form>
+                </Card>
+            ) : (
+                <Card className='shadow border-none bg-white'>
+                  <Paragraph>
+                    Thank you, {formData.name}!
+                  </Paragraph>
+                  <Paragraph>
+                    Your order (#{formData.orderNumber}) from table {formData.table} has been received.
+                  </Paragraph>
+                  <Button onClick={() => setSubmitted(false)}>Place another</Button>
+                </Card>
+            )}
+          </Tabs.Panel>
+        </Tabs>
+      </div>
     </div>
     
   );

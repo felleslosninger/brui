@@ -1,8 +1,30 @@
 .sidebar-root {
     height: 100%;
-    width: 16rem;
-    background-color: #4a0723;
+    border-color: #bbbcbd;
+}
+
+.sidebar-card {
     display: flex;
     flex-direction: column;
-    position: relative;
+    height: 100%;
+    background-color: #f3f3f4;
+    border-radius: 0;
+    border-color: #bbbcbd;
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sidebar-content .ds-card {
+    flex: 1 1 auto;
+    background-color: #ffffff;
+    border-radius: 1rem;
+}
+
+.sidebar-input {
+    margin-top: 1rem;
+    flex: 0 0 auto;
 }

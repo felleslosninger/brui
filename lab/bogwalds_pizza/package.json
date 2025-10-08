@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@brui/ui": "file:../../ui",
     "@digdir/designsystemet-css": "^1.6.0",
     "@digdir/designsystemet-react": "^1.6.0",
     "@digdir/designsystemet-theme": "^1.6.0",

@@ -14,14 +14,16 @@ interface SidebarRootProps {
 function SidebarRoot({ children, className }: SidebarRootProps) {
     return (
         <div className={cl('sidebar-root', className)}>
-            <Card>
+            <Card className="sidebar-card">
                 {children ? (
                     children
                 ) : (
-                    <>
+                    <div className="sidebar-content">
                         <SidebarChat />
-                        <SidebarInput />
-                    </>
+                        <div className="sidebar-input">
+                            <SidebarInput />
+                        </div>
+                    </div>
                 )}
             </Card>
         </div>
