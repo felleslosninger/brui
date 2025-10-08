@@ -1,0 +1,56 @@
+{
+  "options": [
+    {
+      "kind": "option",
+      "type": "tool",
+      "name": "addPizzaTool",
+      "spec": {
+        "type": "function",
+        "function": {
+          "name": "addPizza",
+          "description": "Add a pizza to the order",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "pizzaName": {
+                "type": "string",
+                "description": "Name of the pizza to add",
+                "enum": ["Pasta Bolognese", "Pasta Bolognese without bacon", "Pasta Bolognese without pasta"]
+              }
+            },
+            "required": ["pizzaName"]
+          }
+        }
+      }
+    }
+  ],
+  "actions": [
+    {
+      "kind": "action",
+      "type": "function",
+      "name": "callAddPizzaFunction",
+      "spec": {
+        "function_name": "addPizzaToOrder"
+      }
+    }
+  ],
+  "decisions": [
+    {
+      "kind": "decision",
+      "name": "handlePizzaAddition",
+      "spec": {
+        "if": ["addPizzaTool"],
+        "then": ["callAddPizzaFunction"]
+      }
+    }
+  ],
+  "inference": {
+    "kind": "inference",
+    "name": "default",
+    "spec": {
+      "name": "local-nano",
+      "provider": "ollama"
+    }
+  }
+}
+    

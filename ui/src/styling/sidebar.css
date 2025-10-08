@@ -1,5 +1,15 @@
 .sidebar-root {
     height: 100%;
+    border-color: #bbbcbd;
+}
+
+.sidebar-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #f3f3f4;
+    border-radius: 0;
+    border-color: #bbbcbd;
 }
 
 .sidebar-content {
@@ -10,14 +20,36 @@
 }
 
 .sidebar-content .ds-card {
-    border-radius: 0rem;
-    border: 0;
-    background-color: transparent;
+    flex: 1 1 auto;
+    background-color: #ffffff;
+    border-radius: 1rem;
 }
 
-.sidebar-input-content {
+.sidebar-input {
+    margin-top: 1rem;
+    flex: 0 0 auto;
+}
+
+.sidebar-input-row {
     display: flex;
     gap: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.sidebar-input-row {
+    display: flex;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.sidebar-input-row, .sidebar-input-row > input {
+    background-color: #ffffff;
+}
+
+.sidebar-input-row > button {
+    min-height: 16px;
 }
 
 .chat-bubble-wrapper,
