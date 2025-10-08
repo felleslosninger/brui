@@ -37,7 +37,8 @@
             "properties": {
               "value": {
                 "type": "string",
-                "description": "Name of the tab to switch to"
+                "description": "Name of the tab to switch to",
+                "enum": ["home", "menu", "order"]
               }
             },
             "required": ["value"]
@@ -60,7 +61,8 @@
       "type": "function",
       "name": "changeTab",
       "spec": {
-        "function_name": "changetab"
+        "function_name": "setActiveTab",
+        "args": ["value"]
       }
     }
   ],
