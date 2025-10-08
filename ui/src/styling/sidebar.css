@@ -28,3 +28,12 @@
     margin-top: 1rem;
     flex: 0 0 auto;
 }
+
+.sidebar-input-content {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sidebar-input-field{
+    border: none;
+}
