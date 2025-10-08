@@ -47,7 +47,7 @@ function App() {
 
   useEffect(() => {
     Setup(configData as Configuration, functions).then(eventTarget => {
-      
+
       // Temporary: Send a test prompt directly to core
       setTimeout(() => {
         console.log('Sending test prompt to core...');
@@ -62,10 +62,23 @@ function App() {
     });
   }, []);
 
-  return (
+    function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        const formData = new FormData(event.currentTarget);
+
+        const inputText = formData.get('chatMessage');
+        const dropdownValue = formData.get('contextChoice');
+
+        console.log('Message:', inputText);
+        console.log('Choice:', dropdownValue);
+    }
+
+
+    return (
     <div>
       <div className="w-96 h-full bg-red-200 absolute right-0 top-0 z-10">
-        <Sidebar/>
+        <Sidebar handleSubmit={handleSubmitChatMessage}/>
       </div>
       <div className="pr-96">
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
@@ -106,7 +119,7 @@ function App() {
                       <Paragraph>{pizza.desc}</Paragraph>
                       <Paragraph><strong>{pizza.price}</strong></Paragraph>
                     </div>
-                    <Button 
+                    <Button
                       onClick={() => {
                         console.log('Button clicked!', pizza.name);
                         addPizzaToOrder({ pizzaName: pizza.name });
