@@ -5,7 +5,6 @@ import { ChevronUpIcon } from "@navikt/aksel-icons";
 import { useState } from "react";
 
 interface InputContextDropdownProps {
-    children?: React.ReactNode;
     className?: string;
 }
 

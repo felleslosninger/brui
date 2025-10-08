@@ -17,8 +17,7 @@ interface ResourceStore {
     decisions: DecisionStore;
 }
 
-export type ActionFunction = (args: Record<string, unknown>, metadata?: Record<string, unknown>) => Promise<unknown> | unknown;
-export type FunctionRegistry = Record<string, ActionFunction>;
+export type FunctionRegistry = Record<string, Function>;
 
 export interface StoreInterface {
     get(kind: string, name: string): Resource | undefined;
