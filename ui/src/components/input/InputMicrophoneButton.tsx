@@ -1,4 +1,5 @@
 import { Button } from "@digdir/designsystemet-react";
+import { MicrophoneIcon } from "@navikt/aksel-icons";
 import cl from "clsx";
 interface InputMicrophoneButtonProps {
     className?: string;

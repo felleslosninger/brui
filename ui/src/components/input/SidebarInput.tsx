@@ -1,4 +1,3 @@
-import { Card } from "@digdir/designsystemet-react";
 import cl from "clsx";
 import InputField from "./InputField";
 import InputSubmitButton from "./InputSubmitButton";
@@ -14,11 +13,11 @@ interface SidebarInputProps {
 
 export default function SidebarInputRoot({ children, className, handleSubmit }: SidebarInputProps) {
     return (
-        <Card className={cl('sidebar-input-root', className)}>
+        <div className={cl('sidebar-input', className)}>
             {children ? (
                 children
             ) : (
-                <form className="sidebar-input-content" onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}>
                     <SidebarInput.ContextMenu/>
                     <div className="sidebar-input-row">
                         <SidebarInput.InputField/>
@@ -27,7 +26,7 @@ export default function SidebarInputRoot({ children, className, handleSubmit }: 
                     </div>
                 </form>
             )}
-        </Card>
+        </div>
     )
 }
 

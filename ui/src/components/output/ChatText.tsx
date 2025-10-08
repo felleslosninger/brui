@@ -9,9 +9,9 @@ interface ChatTextProps {
 export default function ChatText({ children, className }: ChatTextProps) {
     return (
         <div className="chat-text-wrapper right">
-            <Card className={cl("chat-text", className)}>
+            <div className={cl("chat-text", className)}>
                 {children}
-            </Card>
+            </div>
         </div>
     );
 }
