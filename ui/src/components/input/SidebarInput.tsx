@@ -1,23 +1,24 @@
-import cl from "clsx";
+import cl from 'clsx/lite';
 import InputField from "./InputField";
 import InputSubmitButton from "./InputSubmitButton";
 import InputMicrophoneButton from "./InputMicrophoneButton";
 import InputContextDropdown from "./InputContextDropdown";
 import { FormEvent } from "react";
+import { type Configuration, Setup } from "../../../../client/core";
 
 interface SidebarInputProps {
     children?: React.ReactNode;
     className?: string;
-    handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
+    onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
-export default function SidebarInputRoot({ children, className, handleSubmit }: SidebarInputProps) {
+export default function SidebarInputRoot({ children, className, onSubmit }: SidebarInputProps) {
     return (
         <div className={cl('sidebar-input', className)}>
             {children ? (
                 children
             ) : (
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={onSubmit}>
                     <SidebarInput.ContextMenu/>
                     <div className="sidebar-input-row">
                         <SidebarInput.InputField/>

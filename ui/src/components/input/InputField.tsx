@@ -1,5 +1,5 @@
 import { Input } from "@digdir/designsystemet-react";
-import cl from "clsx";
+import cl from 'clsx/lite';
 
 interface InputFieldProps {
     className?: string;

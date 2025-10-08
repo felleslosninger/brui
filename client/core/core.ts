@@ -169,9 +169,8 @@ async function extractParameters(
     if (!toolCalls || toolCalls.length === 0) {
         return {};
     }
-    
-    const params = toolCalls[0].function.arguments || {};
-    return params;
+
+    return toolCalls[0].function.arguments || {};
 }
 
 async function evaluateAndExecute(

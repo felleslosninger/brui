@@ -1,5 +1,5 @@
 import { Button } from "@digdir/designsystemet-react";
-import cl from "clsx";
+import cl from 'clsx/lite';
 import { MicrophoneIcon, PaperplaneIcon } from "@navikt/aksel-icons";
 
 interface InputSubmitButtonProps {

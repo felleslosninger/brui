@@ -4,15 +4,25 @@ import SidebarInput from "./input/SidebarInput";
 import "../styling/sidebar.css"
 
 import cl from 'clsx/lite';
-import { FormEvent } from "react";
 
 interface SidebarRootProps {
     children?: React.ReactNode;
     className?: string;
-    handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
+    inputHandler: (userInput: { textInput: string; contextChoice: string }) => void;
 }
 
-function SidebarRoot({ children, className, handleSubmit }: SidebarRootProps) {
+function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
+    function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        const formData = new FormData(event.currentTarget);
+
+        const inputText = formData.get('chatMessage');
+        const dropdownValue = formData.get('contextChoice');
+
+        inputHandler({ textInput: inputText as string, contextChoice: dropdownValue as string });
+    }
+
     return (
         <div className={cl('sidebar-content', className)}>
             {children ? (
@@ -24,7 +34,7 @@ function SidebarRoot({ children, className, handleSubmit }: SidebarRootProps) {
                     </div>
 
                     <div className="sidebar-input">
-                        <Sidebar.Input handleSubmit={handleSubmit} />
+                        <Sidebar.Input onSubmit={handleSubmitChatMessage} />
                     </div>
                 </div>
             )}

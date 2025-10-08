@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import {
   Card,
   Paragraph,
@@ -9,6 +9,11 @@ import {
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import { Setup, type FunctionRegistry, type Configuration } from "../../../client/core"
 import configData from "./config.json";
+
+type UserInput = {
+  textInput: string;
+  contextChoice: string;
+};
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -41,29 +46,27 @@ function App() {
     return { success: true, pizzaName };
   };
 
+  const createSetup = async () => {
+    return await Setup(configData as Configuration, functions).then(eventTarget => {
+        return eventTarget;
+    });
+  }
+
+  const inputHandler = async (userInput: UserInput) => {
+    const eventHandler = await createSetup();
+    const chatInputEvent = new CustomEvent('chat:input', {
+      detail: {
+        query: userInput.textInput,
+        metadata: { test: true },
+      },
+    });
+    eventHandler.dispatchEvent(chatInputEvent);
+  }
+
   const functions: FunctionRegistry = {
     addPizzaToOrder,
     setActiveTab
   };
-
-    function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-
-        const formData = new FormData(event.currentTarget);
-
-        const inputText = formData.get('chatMessage');
-        const dropdownValue = formData.get('contextChoice');
-
-      Setup(configData as Configuration, functions).then(eventTarget => {
-        const chatInputEvent = new CustomEvent('chat:input', {
-          detail: {
-            query: inputText,
-            metadata: { test: true },
-          },
-        });
-        eventTarget.dispatchEvent(chatInputEvent);
-      });
-    }
 
     return (
     <div className='grid grid-cols-12 h-screen'>
@@ -169,7 +172,7 @@ function App() {
         </Tabs>
       </div>
       <div className="col-span-4 shadow-lg">
-        <Sidebar handleSubmit={handleSubmitChatMessage}/>
+        <Sidebar inputHandler={inputHandler}/>
       </div>
     </div>
     
