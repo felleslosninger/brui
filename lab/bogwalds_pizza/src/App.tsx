@@ -33,10 +33,22 @@ function App() {
       setFormData({ ...formData, [field]: e.target.value });
     };
 
+  function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+
+    const inputText = formData.get('chatMessage');
+    const dropdownValue = formData.get('contextChoice');
+
+    console.log('Message:', inputText);
+    console.log('Choice:', dropdownValue);
+  }
+
   return (
     <div>
       <div className="w-96 h-full bg-red-200 absolute right-0 top-0 z-10">
-        <Sidebar/>
+        <Sidebar handleSubmit={handleSubmitChatMessage}/>
       </div>
       <div>
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>

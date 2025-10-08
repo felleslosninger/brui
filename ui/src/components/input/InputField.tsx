@@ -7,6 +7,6 @@ interface InputFieldProps {
 
 export default function InputField({ className }: InputFieldProps) {
     return (
-        <Input className={cl('sidebar-input-field', className)} placeholder="How can I help you" />
+        <Input name={"chatMessage"} className={cl('sidebar-input-field', className)} placeholder="How can I help you" />
     )
 }

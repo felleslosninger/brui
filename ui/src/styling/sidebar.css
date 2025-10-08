@@ -1,6 +1,5 @@
 .sidebar-root {
     height: 100%;
-    border-color: #bbbcbd;
 }
 
 .sidebar-card {
@@ -20,8 +19,9 @@
 
 .sidebar-content .ds-card {
     flex: 1 1 auto;
-    background-color: #ffffff;
+    background-color: #ededed;
     border-radius: 1rem;
+    border-color: #bbbcbd;
 }
 
 .sidebar-input {
@@ -29,11 +29,47 @@
     flex: 0 0 auto;
 }
 
-.sidebar-input-content {
+.sidebar-input-row {
     display: flex;
     gap: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.sidebar-input-row {
+    display: flex;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.sidebar-input-row, .sidebar-input-row > input {
+    background-color: #ffffff;
+}
+
+.sidebar-input-row > button {
+    min-height: 16px;
 }
 
 .sidebar-input-field{
     border: none;
+}
+
+.sidebar-context-menu {
+    font-size: 14px;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-context-menu > button {
+    padding: 1rem;
+    min-height: 10px;
+}
+
+.sidebar-context-menu-trigger{
+    height:30px;
+}
+
+.dropdown-item-selected {
+    background-color: var(--ds-color-accent-base-default);
+    color: var(--ds-color-accent-base-contrast-default)
 }
