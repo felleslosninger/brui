@@ -1,22 +1,12 @@
 .sidebar-root {
     height: 100%;
-    border-color: #bbbcbd;
-}
-
-.sidebar-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background-color: #ffffff;
-    border-radius: 0;
-    border-color: #bbbcbd;
-    padding: 0;
 }
 
 .sidebar-content {
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding: 0;
 }
 
 .sidebar-content .ds-card {
@@ -25,24 +15,35 @@
     background-color: transparent;
 }
 
-.sidebar-input {
-    margin-top: 1rem;
-    flex: 0 0 auto;
-    background-color: #bbbcbd;
-    border: 0;
-}
-
 .sidebar-input-content {
     display: flex;
     gap: 0.5rem;
 }
 
-.sidebar-input-field {
-    border: none;
+.chat-bubble-wrapper,
+.chat-text-wrapper {
+    display: flex;
+    width: 100%;
+}
+
+/* Alignment */
+.chat-bubble-wrapper.left {
+    justify-content: flex-start;
+}
+
+.chat-text-wrapper.right {
+    justify-content: flex-end;
+}
+
+.chat-bubble,
+.chat-text {
+    width: fit-content;
+    max-width: 70%;
 }
 
 .sidebar-content .chat-bubble {
-    border-radius: 1rem;
-    background-color: cyan;
-    padding: 1rem;
+    border-radius: var(--ds-border-radius-base);
+    background-color: var(--ds-color-accent-base-default);
+    color: var(--ds-color-base-contrast-default);
+    padding: var(var(--dsc-button-padding));
 }

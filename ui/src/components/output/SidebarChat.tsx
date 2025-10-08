@@ -12,11 +12,16 @@ interface SidebarChatProps {
 export default function SidebarChat({ children, className }: SidebarChatProps) {
     return (
         <Card className={cl('sidebar-root', className)}>
-            <div>
+            <div className="chat-container">
                 {children}
-                <ChatBubble> heyy </ChatBubble>
-                <ChatText> hey </ChatText>
+                <div className="chat-row right">
+                    <ChatText>hey</ChatText>
+                </div>
+                <div className="chat-row">
+                    <ChatBubble>hey hey hey hey</ChatBubble>
+                </div>
+                
             </div>
         </Card>
-    )
+    );
 }

@@ -14,7 +14,6 @@ interface SidebarRootProps {
 function SidebarRoot({ children, className }: SidebarRootProps) {
     return (
         <div className={cl('sidebar-root', className)}>
-            <Card className="sidebar-card">
                 {children ? (
                     children
                 ) : (
@@ -25,7 +24,6 @@ function SidebarRoot({ children, className }: SidebarRootProps) {
                         </div>
                     </div>
                 )}
-            </Card>
         </div>
     );
 }

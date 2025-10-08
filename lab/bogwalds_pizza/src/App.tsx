@@ -122,7 +122,7 @@ function App() {
           </Tabs.Panel>
         </Tabs>
       </div>
-      <div className="col-span-4 bg-gray-50 h-full">
+      <div className="col-span-4 bg-gray-50 h-full shadow-lg">
         <Sidebar/>
       </div>
     </div>
