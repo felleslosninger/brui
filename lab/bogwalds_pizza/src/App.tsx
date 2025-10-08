@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent, type SetStateAction } from 'react';
 import {
   Card,
   Paragraph,
@@ -7,7 +7,7 @@ import {
   Button,
 } from '@digdir/designsystemet-react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
-import { Setup, type FunctionRegistry, type Configuration } from "../../../client/core/index"
+import { Setup, type FunctionRegistry, type Configuration } from "../../../client/core"
 import configData from "./config.json";
 
 function App() {
@@ -41,26 +41,15 @@ function App() {
     return { success: true, pizzaName };
   };
 
-  const functions: FunctionRegistry = {
-    addPizzaToOrder
+  const changetab = (args: SetStateAction<string>) => {
+    console.log (args)
+    setActiveTab(args.value)
   };
 
-  useEffect(() => {
-    Setup(configData as Configuration, functions).then(eventTarget => {
-
-      // Temporary: Send a test prompt directly to core
-      setTimeout(() => {
-        console.log('Sending test prompt to core...');
-        const chatInputEvent = new CustomEvent('chat:input', {
-          detail: {
-            query: 'Order a Pasta Bolognese, I love bacon',
-            metadata: { test: true },
-          },
-        });
-        eventTarget.dispatchEvent(chatInputEvent);
-      }, 2000);
-    });
-  }, []);
+  const functions: FunctionRegistry = {
+    addPizzaToOrder,
+    changetab
+  };
 
     function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -70,13 +59,23 @@ function App() {
         const inputText = formData.get('chatMessage');
         const dropdownValue = formData.get('contextChoice');
 
-        console.log('Message:', inputText);
-        console.log('Choice:', dropdownValue);
+      Setup(configData as Configuration, functions).then(eventTarget => {
+        const chatInputEvent = new CustomEvent('chat:input', {
+          detail: {
+            query: inputText,
+            metadata: { test: true },
+          },
+        });
+        eventTarget.dispatchEvent(chatInputEvent);
+      });
     }
 
-  return (
-    <div className='grid grid-cols-12'>
-      <div className='col-span-8'>
+    return (
+    <div>
+      <div className="w-96 h-full bg-red-200 absolute right-0 top-0 z-10">
+        <Sidebar handleSubmit={handleSubmitChatMessage}/>
+      </div>
+      <div className="pr-96">
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
           Velkommen til Bogwalds pizza
         </Paragraph>
@@ -176,9 +175,6 @@ function App() {
             )}
           </Tabs.Panel>
         </Tabs>
-      </div>
-      <div className="col-span-4 bg-gray-50 h-full shadow-lg">
-        <Sidebar handleSubmit={handleSubmitChatMessage}/>
       </div>
     </div>
     

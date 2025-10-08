@@ -1,5 +1,5 @@
-import type { Option, Decision, Configuration } from './types';
-import type { StoreInterface, FunctionRegistry } from './store';
+import type { Configuration, Decision, Option } from './types';
+import type { FunctionRegistry, StoreInterface } from './store';
 import { createResourceStore } from './store';
 import { Chat } from './inference';
 import type { Tool } from 'ollama';
