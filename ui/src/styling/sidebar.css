@@ -6,13 +6,50 @@
 }
 
 .sidebar-output {
+    flex: 1;
     padding: 0.4rem;
+    overflow-y: auto;
 }
 
 .sidebar-input {
     display: flex;
-    gap: 1rem;
+    flex-shrink: 0;
+    width: 100%;
+}
+
+.sidebar-input-content {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     padding: 0.4rem;
+}
+
+.sidebar-input-row {
+    display: flex;
+    margin-top: 0.4rem;
+    padding: 0.2rem 0 0.2rem;
+    border-radius: 2rem;
+    background-color: var(--ds-color-neutral-background-default);
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.sidebar-input-row > input {
+    border: none;
+    outline: none;
+
+    margin-left: 1rem;
+}
+
+.sidebar-input-row > button {
+    background: none;
+    color: var(--ds-color-accent-text-default)
+}
+
+.sidebar-input-row > button:hover {
+    color: var(--ds-color-accent-base-hover)
 }
 
 .chat-bubble-wrapper,

@@ -72,7 +72,7 @@ function App() {
     <div className='grid grid-cols-12 h-screen'>
       <div className="col-span-8">
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
-          Velkommen til Bogwalds pizza
+          Velkommen til Bøgwalds pizza
         </Paragraph>
 
         <Tabs
@@ -92,7 +92,7 @@ function App() {
           <Tabs.Panel value="home" className='mx-20'>
             <Card className='bg-white border-none shadow'>
               <div data-size="medium">
-                Welcome to Bogwalds pizza
+                Welcome to Bægwalds pizza
               </div>
               <Paragraph>
                 Enjoy our delicious, hand-crafted pasta bolognese made with fresh ingredients and baked in a traditional stone oven.

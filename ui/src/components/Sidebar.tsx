@@ -28,7 +28,7 @@ function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
             {children ? (
                 children
             ) : (
-                <div>
+                <>
                     <div className="sidebar-output">
                         <Sidebar.Output />
                     </div>
@@ -36,7 +36,7 @@ function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
                     <div className="sidebar-input">
                         <Sidebar.Input onSubmit={handleSubmitChatMessage} />
                     </div>
-                </div>
+                </>
             )}
         </div>
     );

@@ -15,7 +15,7 @@ export default function SidebarOutputRoot({ children, className }: SidebarOutput
             ) : (
                 <>
                     <div className="chat-row right">
-                        <SidebarOutput.ChatText>hey</SidebarOutput.ChatText>
+                        <SidebarOutput.ChatText>hey, hjelp meg</SidebarOutput.ChatText>
                     </div>
                     <div className="chat-row">
                         <SidebarOutput.ChatBubble>hey hey hey hey</SidebarOutput.ChatBubble>

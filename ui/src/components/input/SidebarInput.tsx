@@ -4,7 +4,6 @@ import InputSubmitButton from "./InputSubmitButton";
 import InputMicrophoneButton from "./InputMicrophoneButton";
 import InputContextDropdown from "./InputContextDropdown";
 import { FormEvent } from "react";
-import { type Configuration, Setup } from "../../../../client/core";
 
 interface SidebarInputProps {
     children?: React.ReactNode;
@@ -18,7 +17,7 @@ export default function SidebarInputRoot({ children, className, onSubmit }: Side
             {children ? (
                 children
             ) : (
-                <form onSubmit={onSubmit}>
+                <form onSubmit={onSubmit} className="sidebar-input-content">
                     <SidebarInput.ContextMenu/>
                     <div className="sidebar-input-row">
                         <SidebarInput.InputField/>
