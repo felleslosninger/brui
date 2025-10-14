@@ -4,57 +4,35 @@ import { createResourceStore } from './store';
 import { Chat } from './inference';
 import type { Tool } from 'ollama';
 
-export async function Setup(configSource: string | Configuration, functions: FunctionRegistry): Promise<EventTarget> {
+export async function Setup(configSource: string | Configuration, functions: FunctionRegistry): Promise<(input: string, metadata?: any) => Promise<ExecutionResult>> {
     const store = typeof configSource === 'string' 
         ? await createResourceStore(configSource, functions)
         : createResourceStore(configSource, functions);
-    
+
     const config: Configuration = {
         options: store.getAll('option') as any,
         actions: store.getAll('action') as any,
         decisions: store.getAll('decision') as any,
         inference: store.get('inference', 'default') as any
     };
-    
-    store.eventTarget.addEventListener('chat:input', async (event: any) => {
-        const { query, metadata } = event.detail;
-        
+
+    // Expose a processMessage handler
+    async function processMessage(query: string, metadata?: any): Promise<ExecutionResult> {
         console.log('[Core] Processing query:', query);
-        
         try {
             const result = await executeQuery(store, query, config);
-            
             console.log('[Core] Query executed:', result.success ? 'success' : 'failed');
-            
-            const outputEvent = new CustomEvent('chat:output', {
-                detail: {
-                    success: result.success,
-                    option: result.option,
-                    parameters: result.parameters,
-                    results: result.executionResults,
-                    error: result.error,
-                    metadata
-                }
-            });
-            
-            store.eventTarget.dispatchEvent(outputEvent);
-            
+            return result;
         } catch (error) {
             console.error('[Core] Error processing query:', error);
-            
-            const errorEvent = new CustomEvent('chat:output', {
-                detail: {
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                    metadata
-                }
-            });
-            
-            store.eventTarget.dispatchEvent(errorEvent);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            };
         }
-    });
-    
-    return store.eventTarget;
+    }
+
+    return processMessage;
 }
 
 export async function executeQuery(
