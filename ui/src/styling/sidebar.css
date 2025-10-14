@@ -3,6 +3,7 @@
     flex-direction: column;
     height: 100%;
     padding: 0;
+    margin: 0 1rem 0;
 }
 
 .sidebar-output {
@@ -14,6 +15,7 @@
 .sidebar-input {
     display: flex;
     flex-shrink: 0;
+    margin-bottom: 0.4rem;
     width: 100%;
 }
 
@@ -39,16 +41,21 @@
 .sidebar-input-row > input {
     border: none;
     outline: none;
-
-    margin-left: 1rem;
+    margin: 0 1rem 0;
 }
 
-.sidebar-input-row > button {
+.sidebar-input-buttons{
+    display: flex;
+    margin-right: 0.8rem;
+}
+
+.sidebar-input-buttons > button {
     background: none;
-    color: var(--ds-color-accent-text-default)
+    padding: 0;
+    color: var(--ds-color-accent-text-default);
 }
 
-.sidebar-input-row > button:hover {
+.sidebar-input-buttons > button:hover {
     color: var(--ds-color-accent-base-hover)
 }
 

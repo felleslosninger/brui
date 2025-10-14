@@ -21,8 +21,10 @@ export default function SidebarInputRoot({ children, className, onSubmit }: Side
                     <SidebarInput.ContextMenu/>
                     <div className="sidebar-input-row">
                         <SidebarInput.InputField/>
-                        <SidebarInput.Microphone/>
-                        <SidebarInput.Submit/>
+                        <div className="sidebar-input-buttons">
+                            <SidebarInput.Microphone/>
+                            <SidebarInput.Submit/>
+                        </div>
                     </div>
                 </form>
             )}
