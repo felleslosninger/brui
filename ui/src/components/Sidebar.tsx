@@ -4,6 +4,7 @@ import SidebarInput from "./input/SidebarInput";
 import "../styling/sidebar.css"
 
 import cl from 'clsx/lite';
+import { useState } from "react";
 
 interface SidebarRootProps {
     children?: React.ReactNode;
@@ -12,15 +13,36 @@ interface SidebarRootProps {
 }
 
 function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
+    const [messageHistory, setMessageHistory] = useState<string[][]>([]);
+    const [questionCounter, setQuestionCounter] = useState(0);
+
     function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const formData = new FormData(event.currentTarget);
 
+
         const inputText = formData.get('chatMessage');
         const dropdownValue = formData.get('contextChoice');
 
-        inputHandler({ textInput: inputText as string, contextChoice: dropdownValue as string });
+        const inputTextStr = inputText ? String(inputText) : '';
+        const dropdownValueStr = dropdownValue ? String(dropdownValue) : '';
+
+        if (!inputTextStr) {
+            return
+        }
+
+        const currentQuestionIndex = questionCounter + 1;
+        setQuestionCounter(currentQuestionIndex);
+
+        setMessageHistory((prev) => [
+            ...prev,
+            ['Q', currentQuestionIndex.toString(), inputTextStr],
+        ]);
+
+        inputHandler({ textInput: inputTextStr, contextChoice: dropdownValueStr });
+
+        event.currentTarget.reset();
     }
 
     return (
@@ -30,7 +52,7 @@ function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
             ) : (
                 <>
                     <div className="sidebar-output">
-                        <Sidebar.Output />
+                        <Sidebar.Output messageHistory={messageHistory} />
                     </div>
 
                     <div className="sidebar-input">

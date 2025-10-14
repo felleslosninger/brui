@@ -5,21 +5,35 @@ import ChatText from "./ChatText";
 interface SidebarOutputProps {
     children?: React.ReactNode;
     className?: string;
+    messageHistory: string[][];
 }
 
-export default function SidebarOutputRoot({ children, className }: SidebarOutputProps) {
+export default function SidebarOutputRoot({ children, className, messageHistory }: SidebarOutputProps) {
     return (
         <div className={cl('sidebar-output', className)}>
             {children ? (
                 children
             ) : (
                 <>
-                    <div className="chat-row right">
-                        <SidebarOutput.ChatText>hey, hjelp meg</SidebarOutput.ChatText>
-                    </div>
-                    <div className="chat-row">
-                        <SidebarOutput.ChatBubble>hey hey hey hey</SidebarOutput.ChatBubble>
-                    </div>
+                    {messageHistory.map((item, index) => {
+                        const [type, , text] = item;
+
+                        if (type === 'Q') {
+                            return (
+                                <div className="chat-row right" key={index}>
+                                    <SidebarOutput.ChatText>{text}</SidebarOutput.ChatText>
+                                </div>
+                            );
+                        } else if (type === 'A') {
+                            return (
+                                <div className="chat-row" key={index}>
+                                    <SidebarOutput.ChatBubble>{text}</SidebarOutput.ChatBubble>
+                                </div>
+                            );
+                        } else {
+                            return null;
+                        }
+                    })}
                 </>
             )}
         </div>
