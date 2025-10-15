@@ -1,11 +1,4 @@
-import type { 
-    Resource, 
-    Option, 
-    Action, 
-    Decision,
-    Inference,
-    Resources
-} from './types';
+import type { Action, Decision, Inference, Option, Resource, Resources } from './types';
 
 type OptionStore = Map<string, Option>;
 type ActionStore = Map<string, Action>;

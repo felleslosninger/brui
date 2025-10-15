@@ -41,12 +41,13 @@ export async function Setup(configSource: string | Configuration, functions: Fun
             
         } catch (error) {
             console.error('[Core] Error processing query:', error);
-            
+
             const errorEvent = new CustomEvent('chat:output', {
                 detail: {
                     success: false,
                     error: error instanceof Error ? error.message : 'Unknown error',
-                    metadata
+                    metadata,
+
                 }
             });
             
@@ -65,7 +66,6 @@ export async function executeQuery(
     try {
         console.log('[Core] Step 1: Selecting option...');
         const selectedOption = await selectOption(config.options, userQuery, config);
-        
         if (!selectedOption) {
             console.log('[Core] No option selected');
             return {
@@ -98,7 +98,6 @@ export async function executeQuery(
             parameters,
             executionResults: results
         };
-        
     } catch (error) {
         console.error('[Core] executeQuery error:', error);
         return {
@@ -137,8 +136,11 @@ async function selectOption(
     }
     
     const selectedTool = toolCalls[0];
+    if(!selectedTool.function || !selectedTool.function.name) {
+        throw new Error('No tool selected by inference');
+    }
+
     const matchingOption = options.find(opt => opt.name === selectedTool.function.name);
-    
     return matchingOption || null;
 }
 
@@ -187,16 +189,45 @@ async function evaluateAndExecute(
                 parameters,
                 {}
             );
-            
+
+            const description = await generateActionDescriptionAI(actionName, parameters, result);
+
             results.push({
                 action: actionName,
                 success: true,
-                result
+                result,
+                description
             });
         }
     }
     
     return results;
+}
+
+async function generateActionDescriptionAI(
+    actionName: string,
+    parameters: Record<string, unknown>,
+    result: unknown
+): Promise<string> {
+    console.log("result:", result);
+    const prompt = `
+        You are an assistant that summarizes actions.
+        Given the action name, its parameters, and the result of executing it, 
+        provide a short human-readable description of what was done, written in english, as if you performed the action.
+        
+        Action Name: ${actionName}
+        Parameters: ${JSON.stringify(parameters)}
+        
+        Description:
+    `;
+
+    const descriptions = await Chat(prompt, {
+        config: {},
+    });
+
+    if (!descriptions || descriptions.length === 0) return `Executed action ${actionName}`;
+
+    return descriptions || `Executed action ${actionName}`;
 }
 
 export interface ExecutionResult {
@@ -212,4 +243,5 @@ export interface ActionResult {
     success: boolean;
     result?: unknown;
     error?: string;
+    description?: string;
 }

@@ -15,10 +15,41 @@
               "pizzaName": {
                 "type": "string",
                 "description": "Name of the pizza to add",
-                "enum": ["Pasta Bolognese", "Pasta Bolognese without bacon", "Pasta Bolognese without pasta"]
+                "enum": ["1. Pasta Bolognese", "2. Pasta Bolognese without bacon", "3. Pasta Bolognese without pasta"]
               }
             },
             "required": ["pizzaName"]
+          }
+        }
+      }
+    },
+    {
+      "kind": "option",
+      "type": "tool",
+      "name": "fillFormTool",
+      "spec": {
+        "type": "function",
+        "function": {
+          "name": "fillForm",
+          "description": "Fill the order form with given args",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the customer"
+              },
+              "table": {
+                "type": "string",
+                "description": "Table number"
+              },
+              "orderNumber": {
+                "type": "string",
+                "description": "Order number",
+                "enum": ["1. Pasta Bolognese", "2. Pasta Bolognese without bacon", "3. Pasta Bolognese without pasta"]
+              }
+            },
+            "required": ["name, table, orderNumber"]
           }
         }
       }
@@ -59,6 +90,14 @@
     {
       "kind": "action",
       "type": "function",
+      "name": "callFillFormFunction",
+      "spec": {
+        "function_name": "goToOrderAndFillFields"
+      }
+    },
+    {
+      "kind": "action",
+      "type": "function",
       "name": "changeTab",
       "spec": {
         "function_name": "setActiveTab",
@@ -73,6 +112,14 @@
       "spec": {
         "if": ["addPizzaTool"],
         "then": ["callAddPizzaFunction"]
+      }
+    },
+    {
+      "kind": "decision",
+      "name": "handleFillForm",
+      "spec": {
+        "if": ["fillFormTool"],
+        "then": ["callFillFormFunction"]
       }
     },
     {
