@@ -6,7 +6,6 @@ import {
   Tabs,
   Button,
 } from '@digdir/designsystemet-react';
-import React from 'react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index"
 import configData from "./config.json";
@@ -41,11 +40,11 @@ function App() {
       setFormData({ ...formData, [field]: e.target.value });
     };
 
-  const addPizzaToOrder = React.useCallback((args: Record<string, unknown>) => {
+  function addPizzaToOrder(args: Record<string, unknown>) {
     const { pizzaName } = args;
     console.log('Adding pizza to order:', pizzaName);
     return { success: true, pizzaName };
-  }, []);
+  }
 
 
   const functions: Brui.FunctionRegistry = {
