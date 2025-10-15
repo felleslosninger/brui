@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent, useEffect } from 'react';
 import {
   Card,
   Paragraph,
@@ -9,6 +9,7 @@ import {
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index"
 import configData from "./config.json";
+import type { ActionResult } from "../../../client/brui.ts";
 
 type UserInput = {
   textInput: string;
@@ -23,11 +24,20 @@ function App() {
     orderNumber: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [eventTarget, setEventTarget] = useState<EventTarget | null>(null);
+
+  useEffect(() => {
+    const setup = async () => {
+      const target = await Setup(configData as Configuration, functions);
+      setEventTarget(target);
+    };
+    setup();
+  }, []);
 
   const pizzas = [
-    { name: 'Pasta Bolognese', desc: 'Classic tomato sauce, mozzarella, and fresh basil.', price: '149 kr' },
-    { name: 'Pasta Bolognese without bacon', desc: 'Spicy pepperoni with mozzarella and tomato sauce.', price: '169 kr' },
-    { name: 'Pasta Bolognese without pasta', desc: 'Grilled vegetables, olives, and mozzarella.', price: '159 kr' },
+    { name: '1. Pasta Bolognese', desc: 'Classic tomato sauce, mozzarella, and fresh basil.', price: '149 kr' },
+    { name: '2. Pasta Bolognese without bacon', desc: 'Spicy pepperoni with mozzarella and tomato sauce.', price: '169 kr' },
+    { name: '3. Pasta Bolognese without pasta', desc: 'Grilled vegetables, olives, and mozzarella.', price: '159 kr' },
   ];
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -44,11 +54,62 @@ function App() {
     const { pizzaName } = args;
     console.log('Adding pizza to order:', pizzaName);
     return { success: true, pizzaName };
-  }
+  };
 
+  const goToOrderAndFillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
+    setActiveTab('order');
+
+    setFormData(prev => ({
+      ...prev,
+      name: args.name ?? prev.name,
+      table: args.table ?? prev.table,
+      orderNumber: args.orderNumber ?? prev.orderNumber,
+    }));
+
+    setSubmitted(false);
+  };
+
+  const inputHandler = async (
+      userInput: UserInput,
+      onResponse?: (results: ActionResult[] | null, error?: string) => void
+  ) => {
+    if (!eventTarget) return;
+
+    const listener = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        success: boolean;
+        results?: ActionResult[];
+        error?: string;
+      }>;
+
+      const { success, results, error } = customEvent.detail;
+
+      if (onResponse) {
+        if (!success || error) {
+          onResponse(null, error || "Unknown error");
+        } else {
+          onResponse(results || [], undefined);
+        }
+      }
+
+      eventTarget.removeEventListener('chat:output', listener);
+    };
+
+    eventTarget.addEventListener('chat:output', listener);
+
+    const chatInputEvent = new CustomEvent('chat:input', {
+      detail: {
+        query: userInput.textInput,
+        metadata: { test: true },
+      },
+    });
+
+    eventTarget.dispatchEvent(chatInputEvent);
+  };
 
   const functions: Brui.FunctionRegistry = {
     addPizzaToOrder,
+    goToOrderAndFillFields,
     setActiveTab
   };
 
@@ -61,7 +122,7 @@ function App() {
   const inputHandler = async (userInput: UserInput) => {
     return processMessage(userInput.textInput);
   }
-
+///asdasdasasdasdsaasasdasdasasdsad
   return (
     <div className='grid grid-cols-12 h-screen'>
       <div className="col-span-8">

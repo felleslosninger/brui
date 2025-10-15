@@ -7,21 +7,21 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  define: { 'process.env': {} },
-  plugins: [react()],
-  server: {
-    watch: {
-      usePolling: true,
+    define: { 'process.env': {} },
+    plugins: [react()],
+    server: {
+        watch: {
+            usePolling: true,
+        },
     },
-  },
-  resolve: {
-    alias: {
-      react: path.resolve(__dirname, './node_modules/react'),
-      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+    resolve: {
+        alias: {
+            react: path.resolve(__dirname, './node_modules/react'),
+            'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+        },
     },
-  },
-  // Temporary "fix" https://github.com/storybookjs/storybook/issues/28542
-  optimizeDeps: {
-    exclude: ['./node_modules/.cache/storybook'],
-  },
+    // Temporary "fix" https://github.com/storybookjs/storybook/issues/28542
+    optimizeDeps: {
+        exclude: ['./node_modules/.cache/storybook'],
+    },
 });

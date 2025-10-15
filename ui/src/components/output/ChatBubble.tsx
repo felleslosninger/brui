@@ -1,4 +1,4 @@
-import { Card } from "@digdir/designsystemet-react";
+import { Card } from '@digdir/designsystemet-react';
 import cl from 'clsx/lite';
 
 interface ChatBubbleProps {
@@ -9,7 +9,7 @@ interface ChatBubbleProps {
 export default function ChatBubble({ children, className }: ChatBubbleProps) {
     return (
         <div className="chat-bubble-wrapper left">
-            <Card className={cl("chat-bubble", className)}>
+            <Card className={cl('chat-bubble', className)}>
                 {children}
             </Card>
         </div>

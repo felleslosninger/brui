@@ -1,9 +1,9 @@
 import cl from 'clsx/lite';
-import InputField from "./InputField";
-import InputSubmitButton from "./InputSubmitButton";
-import InputMicrophoneButton from "./InputMicrophoneButton";
-import InputContextDropdown from "./InputContextDropdown";
-import { FormEvent } from "react";
+import InputField from './InputField';
+import InputSubmitButton from './InputSubmitButton';
+import InputMicrophoneButton from './InputMicrophoneButton';
+import InputContextDropdown from './InputContextDropdown';
+import { FormEvent } from 'react';
 
 interface SidebarInputProps {
     children?: React.ReactNode;

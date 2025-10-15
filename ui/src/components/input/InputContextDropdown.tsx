@@ -1,15 +1,15 @@
 import cl from 'clsx/lite';
 
-import { Dropdown, Input } from "@digdir/designsystemet-react";
-import { ChevronUpIcon } from "@navikt/aksel-icons";
-import { useState } from "react";
+import { Dropdown, Input } from '@digdir/designsystemet-react';
+import { ChevronUpIcon } from '@navikt/aksel-icons';
+import { useState } from 'react';
 
 interface InputContextDropdownProps {
     className?: string;
 }
 
 export default function InputContextDropdown({ className }: InputContextDropdownProps) {
-    const [selectedContext, setSelectedContext] = useState<string>("This page");
+    const [selectedContext, setSelectedContext] = useState<string>('This page');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     return (
@@ -32,7 +32,7 @@ export default function InputContextDropdown({ className }: InputContextDropdown
                         Pages
                     </Dropdown.Heading>
                     <Dropdown.List>
-                        {["This page", "Home", "Menu", "Order"].map((page) => (
+                        {['This page', 'Home', 'Menu', 'Order'].map((page) => (
                             <Dropdown.Item key={page}>
                                 <Dropdown.Button
                                     onClick={() => {

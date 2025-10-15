@@ -1,6 +1,6 @@
-import { Button } from "@digdir/designsystemet-react";
+import { Button } from '@digdir/designsystemet-react';
 import cl from 'clsx/lite';
-import { MicrophoneIcon, PaperplaneIcon } from "@navikt/aksel-icons";
+import { PaperplaneIcon } from '@navikt/aksel-icons';
 
 interface InputSubmitButtonProps {
     className?: string;
@@ -8,7 +8,7 @@ interface InputSubmitButtonProps {
 
 export default function InputSubmitButton({ className }: InputSubmitButtonProps) {
     return (
-        <Button className={cl('input-field', className)} data-size="sm" type={"submit"}>
+        <Button className={cl('input-field', className)} data-size="sm" type={'submit'}>
             <PaperplaneIcon title="send-chat" fontSize="1.5rem" />
         </Button>
     )

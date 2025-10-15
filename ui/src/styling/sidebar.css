@@ -87,3 +87,7 @@
     color: var(--ds-color-base-contrast-default);
     padding: var(var(--dsc-button-padding));
 }
+
+.chat-bubble-skeleton {
+    margin: 1rem;
+}
