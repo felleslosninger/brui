@@ -40,7 +40,7 @@ function App() {
       setFormData({ ...formData, [field]: e.target.value });
     };
 
-  function addPizzaToOrder(args: Record<string, unknown>) {
+  const addPizzaToOrder = (args: Record<string, unknown>) => {
     const { pizzaName } = args;
     console.log('Adding pizza to order:', pizzaName);
     return { success: true, pizzaName };
