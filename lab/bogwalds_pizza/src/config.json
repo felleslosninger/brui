@@ -84,7 +84,8 @@
       "type": "function",
       "name": "callAddPizzaFunction",
       "spec": {
-        "function_name": "addPizzaToOrder"
+        "function_name": "addPizzaToOrder",
+        "message": "Added pizza to the order."
       }
     },
     {
@@ -92,7 +93,8 @@
       "type": "function",
       "name": "callFillFormFunction",
       "spec": {
-        "function_name": "goToOrderAndFillFields"
+        "function_name": "goToOrderAndFillFields",
+        "message": "Filled out order fields."
       }
     },
     {
@@ -101,7 +103,8 @@
       "name": "changeTab",
       "spec": {
         "function_name": "setActiveTab",
-        "args": ["value"]
+        "args": ["value"],
+        "message": "Switched to the '{value}' tab."
       }
     }
   ],

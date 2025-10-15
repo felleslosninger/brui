@@ -15,7 +15,7 @@ export type FunctionRegistry = Record<string, Function>;
 export interface StoreInterface {
     get(kind: string, name: string): Resource | undefined;
     getAll(kind: string): Resource[];
-    executeAction(actionName: string, args: Record<string, unknown>, decisionMetadata?: Record<string, unknown>): Promise<unknown>;
+    executeAction(actionName: string, args: Record<string, unknown>, decisionMetadata?: Record<string, unknown>): Promise<{ result: string, message?: string }>;
     getDecisionsByOption(optionName: string): Decision[];
     eventTarget: EventTarget;
 }
