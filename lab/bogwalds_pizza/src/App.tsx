@@ -8,7 +8,7 @@ import {
 } from '@digdir/designsystemet-react';
 import React from 'react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
-import { Setup, type FunctionRegistry, type Configuration } from "../../../client/core"
+import * as Brui from "../../../client/index"
 import configData from "./config.json";
 
 type UserInput = {
@@ -47,25 +47,20 @@ function App() {
     return { success: true, pizzaName };
   }, []);
 
-  // Memoize functions to avoid useEffect dependency issues
-  const functions: FunctionRegistry = React.useMemo(() => ({
+
+  const functions: Brui.FunctionRegistry = {
     addPizzaToOrder,
     setActiveTab
-  }), [addPizzaToOrder, setActiveTab]);
+  };
 
-  // Use processMessage as inputHandler
-  const [processMessage, setProcessMessage] = useState<null | ((query: string, metadata?: Record<string, unknown>) => Promise<import("../../../client/core").ExecutionResult>)>(null);
-
-  // Setup processMessage on mount
-  useEffect(() => {
-    Setup(configData as Configuration, functions).then(handler => {
-      setProcessMessage(() => handler);
-    });
-  }, [functions]);
+  // Init Brui
+  const processMessage = Brui.Setup(
+    configData as Brui.Configuration,
+    functions
+  );
 
   const inputHandler = async (userInput: UserInput) => {
-    if (!processMessage) return;
-    await processMessage(userInput.textInput, { contextChoice: userInput.contextChoice });
+    return processMessage(userInput.textInput);
   }
 
   return (
