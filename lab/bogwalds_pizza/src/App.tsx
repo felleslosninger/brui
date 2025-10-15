@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import {
   Card,
   Paragraph,
@@ -6,6 +6,7 @@ import {
   Tabs,
   Button,
 } from '@digdir/designsystemet-react';
+import React from 'react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import { Setup, type FunctionRegistry, type Configuration } from "../../../client/core"
 import configData from "./config.json";
@@ -40,35 +41,34 @@ function App() {
       setFormData({ ...formData, [field]: e.target.value });
     };
 
-  const addPizzaToOrder = (args: Record<string, unknown>) => {
+  const addPizzaToOrder = React.useCallback((args: Record<string, unknown>) => {
     const { pizzaName } = args;
     console.log('Adding pizza to order:', pizzaName);
     return { success: true, pizzaName };
-  };
+  }, []);
 
-  const createSetup = async () => {
-    return await Setup(configData as Configuration, functions).then(eventTarget => {
-        return eventTarget;
-    });
-  }
-
-  const inputHandler = async (userInput: UserInput) => {
-    const eventHandler = await createSetup();
-    const chatInputEvent = new CustomEvent('chat:input', {
-      detail: {
-        query: userInput.textInput,
-        metadata: { test: true },
-      },
-    });
-    eventHandler.dispatchEvent(chatInputEvent);
-  }
-
-  const functions: FunctionRegistry = {
+  // Memoize functions to avoid useEffect dependency issues
+  const functions: FunctionRegistry = React.useMemo(() => ({
     addPizzaToOrder,
     setActiveTab
-  };
+  }), [addPizzaToOrder, setActiveTab]);
 
-    return (
+  // Use processMessage as inputHandler
+  const [processMessage, setProcessMessage] = useState<null | ((query: string, metadata?: Record<string, unknown>) => Promise<import("../../../client/core").ExecutionResult>)>(null);
+
+  // Setup processMessage on mount
+  useEffect(() => {
+    Setup(configData as Configuration, functions).then(handler => {
+      setProcessMessage(() => handler);
+    });
+  }, [functions]);
+
+  const inputHandler = async (userInput: UserInput) => {
+    if (!processMessage) return;
+    await processMessage(userInput.textInput, { contextChoice: userInput.contextChoice });
+  }
+
+  return (
     <div className='grid grid-cols-12 h-screen'>
       <div className="col-span-8">
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
