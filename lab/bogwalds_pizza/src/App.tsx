@@ -7,7 +7,7 @@ import {
   Button,
 } from '@digdir/designsystemet-react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
-import { Setup, type FunctionRegistry, type Configuration } from "../../../client/core"
+import * as Brui from "../../../client/index"
 import configData from "./config.json";
 
 type UserInput = {
@@ -44,31 +44,25 @@ function App() {
     const { pizzaName } = args;
     console.log('Adding pizza to order:', pizzaName);
     return { success: true, pizzaName };
-  };
-
-  const createSetup = async () => {
-    return await Setup(configData as Configuration, functions).then(eventTarget => {
-        return eventTarget;
-    });
   }
 
-  const inputHandler = async (userInput: UserInput) => {
-    const eventHandler = await createSetup();
-    const chatInputEvent = new CustomEvent('chat:input', {
-      detail: {
-        query: userInput.textInput,
-        metadata: { test: true },
-      },
-    });
-    eventHandler.dispatchEvent(chatInputEvent);
-  }
 
-  const functions: FunctionRegistry = {
+  const functions: Brui.FunctionRegistry = {
     addPizzaToOrder,
     setActiveTab
   };
 
-    return (
+  // Init Brui
+  const processMessage = Brui.Setup(
+    configData as Brui.Configuration,
+    functions
+  );
+
+  const inputHandler = async (userInput: UserInput) => {
+    return processMessage(userInput.textInput);
+  }
+
+  return (
     <div className='grid grid-cols-12 h-screen'>
       <div className="col-span-8">
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
