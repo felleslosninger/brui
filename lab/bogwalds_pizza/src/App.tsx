@@ -7,9 +7,9 @@ import {
   Button,
 } from '@digdir/designsystemet-react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
-import { Setup, type FunctionRegistry, type Configuration } from "../../../client/core"
+import * as Brui from "../../../client/index"
 import configData from "./config.json";
-import type { ActionResult } from "../../../client/core/core.ts";
+import type { ActionResult } from "../../../client/brui.ts";
 
 type UserInput = {
   textInput: string;
@@ -107,13 +107,23 @@ function App() {
     eventTarget.dispatchEvent(chatInputEvent);
   };
 
-  const functions: FunctionRegistry = {
+  const functions: Brui.FunctionRegistry = {
     addPizzaToOrder,
     goToOrderAndFillFields,
     setActiveTab
   };
 
-    return (
+  // Init Brui
+  const processMessage = Brui.Setup(
+    configData as Brui.Configuration,
+    functions
+  );
+
+  const inputHandler = async (userInput: UserInput) => {
+    return processMessage(userInput.textInput);
+  }
+
+  return (
     <div className='grid grid-cols-12 h-screen'>
       <div className="col-span-8">
         <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>

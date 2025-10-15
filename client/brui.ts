@@ -5,27 +5,27 @@ import { Chat } from './inference';
 import type { Tool } from 'ollama';
 
 export async function Setup(configSource: string | Configuration, functions: FunctionRegistry): Promise<EventTarget> {
-    const store = typeof configSource === 'string' 
+    const store = typeof configSource === 'string'
         ? await createResourceStore(configSource, functions)
         : createResourceStore(configSource, functions);
-    
+
     const config: Configuration = {
         options: store.getAll('option') as any,
         actions: store.getAll('action') as any,
         decisions: store.getAll('decision') as any,
         inference: store.get('inference', 'default') as any
     };
-    
+
     store.eventTarget.addEventListener('chat:input', async (event: any) => {
         const { query, metadata } = event.detail;
-        
+
         console.log('[Core] Processing query:', query);
-        
+
         try {
             const result = await executeQuery(store, query, config);
-            
+
             console.log('[Core] Query executed:', result.success ? 'success' : 'failed');
-            
+
             const outputEvent = new CustomEvent('chat:output', {
                 detail: {
                     success: result.success,
@@ -36,9 +36,9 @@ export async function Setup(configSource: string | Configuration, functions: Fun
                     metadata
                 }
             });
-            
+
             store.eventTarget.dispatchEvent(outputEvent);
-            
+
         } catch (error) {
             console.error('[Core] Error processing query:', error);
 
@@ -50,11 +50,11 @@ export async function Setup(configSource: string | Configuration, functions: Fun
 
                 }
             });
-            
+
             store.eventTarget.dispatchEvent(errorEvent);
         }
     });
-    
+
     return store.eventTarget;
 }
 
@@ -73,15 +73,15 @@ export async function executeQuery(
                 error: 'No option selected'
             };
         }
-        
+
         console.log('[Core] Option selected:', selectedOption.name);
         console.log('[Core] Step 2: Extracting parameters...');
         const parameters = await extractParameters(userQuery, selectedOption, config);
-        
+
         console.log('[Core] Parameters extracted:', parameters);
         console.log('[Core] Step 3: Finding decisions...');
         const decisions = store.getDecisionsByOption(selectedOption.name);
-        
+
         console.log('[Core] Decisions found:', decisions.length);
         console.log('[Core] Step 4: Executing actions...');
         const results = await evaluateAndExecute(
@@ -89,9 +89,9 @@ export async function executeQuery(
             decisions,
             parameters,
         );
-        
+
         console.log('[Core] Actions executed:', results.length);
-        
+
         return {
             success: true,
             option: selectedOption.name,
@@ -120,21 +120,21 @@ async function selectOption(
             parameters: opt.spec.function.parameters
         }
     }));
-    
+
     const inferenceContext = {
         config: {
             inference: config.inference?.spec,
             decisions: { tools }
         }
     };
-    
+
     const prompt = `Select the appropriate tool for: ${userQuery}`;
     const toolCalls = await Chat(prompt, inferenceContext);
-    
+
     if (!toolCalls || toolCalls.length === 0) {
         return null;
     }
-    
+
     const selectedTool = toolCalls[0];
     if(!selectedTool.function || !selectedTool.function.name) {
         throw new Error('No tool selected by inference');
@@ -157,17 +157,17 @@ async function extractParameters(
             parameters: option.spec.function.parameters
         }
     }];
-    
+
     const inferenceContext = {
         config: {
             inference: config.inference?.spec,
             decisions: { tools }
         }
     };
-    
+
     const prompt = `Extract parameters for ${option.spec.function.name}: ${userQuery}`;
     const toolCalls = await Chat(prompt, inferenceContext);
-    
+
     if (!toolCalls || toolCalls.length === 0) {
         return {};
     }
@@ -181,7 +181,7 @@ async function evaluateAndExecute(
     parameters: Record<string, unknown>,
 ): Promise<ActionResult[]> {
     const results: ActionResult[] = [];
-    
+
     for (const decision of decisions) {
         for (const actionName of decision.spec.then) {
             const result = await store.executeAction(
@@ -200,7 +200,7 @@ async function evaluateAndExecute(
             });
         }
     }
-    
+
     return results;
 }
 
