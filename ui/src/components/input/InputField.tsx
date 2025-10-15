@@ -1,4 +1,4 @@
-import { Input } from "@digdir/designsystemet-react";
+import { Input } from '@digdir/designsystemet-react';
 import cl from 'clsx/lite';
 
 interface InputFieldProps {
@@ -7,6 +7,6 @@ interface InputFieldProps {
 
 export default function InputField({ className }: InputFieldProps) {
     return (
-        <Input name={"chatMessage"} className={cl('input-field', className)} placeholder="How can I help you" />
+        <Input name={'chatMessage'} className={cl('input-field', className)} placeholder="How can I help you" />
     )
 }
