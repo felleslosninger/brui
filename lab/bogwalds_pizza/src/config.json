@@ -1,88 +1,57 @@
 {
-  "options": [
+  "tools": [
     {
-      "kind": "option",
-      "type": "tool",
-      "name": "addPizzaTool",
-      "spec": {
-        "type": "function",
-        "function": {
-          "name": "addPizza",
-          "description": "Add a pizza to the order",
-          "parameters": {
-            "type": "object",
-            "properties": {
-              "pizzaName": {
-                "type": "string",
-                "description": "Name of the pizza to add",
-                "enum": ["Pasta Bolognese", "Pasta Bolognese without bacon", "Pasta Bolognese without pasta"]
-              }
-            },
-            "required": ["pizzaName"]
-          }
+      "type": "function",
+      "function": {
+        "name": "addPizza",
+        "description": "Add a pizza to the order",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "pizzaName": {
+              "type": "string",
+              "description": "Name of the pizza to add",
+              "enum": ["Pasta Bolognese", "Pasta Bolognese without bacon", "Pasta Bolognese without pasta"]
+            }
+          },
+          "required": ["pizzaName"]
         }
       }
     },
     {
-      "kind": "option",
-      "type": "tool",
-      "name": "changeActiveTab",
-      "spec": {
-        "type": "function",
-        "function": {
-          "name": "change_tab",
-          "description": "Change tab to the given tab name",
-          "parameters": {
-            "type": "object",
-            "properties": {
-              "value": {
-                "type": "string",
-                "description": "Name of the tab to switch to",
-                "enum": ["home", "menu", "order"]
-              }
-            },
-            "required": ["value"]
-          }
+      "type": "function",
+      "function": {
+        "name": "changeActiveTab",
+        "description": "Change tab to the given tab name",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "Name of the tab to switch to",
+              "enum": ["home", "menu", "order"]
+            }
+          },
+          "required": ["value"]
         }
       }
     }
   ],
   "actions": [
     {
-      "kind": "action",
+      "name": "addPizzaToOrder",
       "type": "function",
-      "name": "callAddPizzaFunction",
-      "spec": {
-        "function_name": "addPizzaToOrder"
-      }
+      "args": []
     },
     {
-      "kind": "action",
+      "name": "setActiveTab",
       "type": "function",
-      "name": "changeTab",
-      "spec": {
-        "function_name": "setActiveTab",
-        "args": ["value"]
-      }
+      "args": ["value"]
     }
   ],
   "decisions": [
-    {
-      "kind": "decision",
-      "name": "handlePizzaAddition",
-      "spec": {
-        "if": ["addPizzaTool"],
-        "then": ["callAddPizzaFunction"]
-      }
-    },
-    {
-      "kind": "decision",
-      "name": "handleChangeTab",
-      "spec": {
-        "if": ["changeActiveTab"],
-        "then": ["changeTab"]
-      }
-    }
+    { "tool": "addPizza", "actions": ["addPizzaToOrder"] },
+    { "tool": "changeActiveTab", "actions": ["setActiveTab"] }
   ],
   "inference": {
     "kind": "inference",

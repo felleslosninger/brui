@@ -18,8 +18,9 @@ export async function Request(content: string, ctx: InferenceContext): Promise<a
     };
 
     try {
-        console.log(`[Inference] Calling ${target} via proxy...`);
-        
+        // Print the full tool request
+        console.log('[Inference] Tool request payload:', JSON.stringify({ target, payload: requestPayload }, null, 2));
+
         const response = await fetch(`${proxyHost}`, {
             method: 'POST',
             headers: {
@@ -30,21 +31,23 @@ export async function Request(content: string, ctx: InferenceContext): Promise<a
                 payload: requestPayload
             })
         });
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Proxy error (${response.status}): ${errorText}`);
         }
-        
+
         const chat = await response.json() as ChatResponse;
-        
-        console.log('[Inference] Response received');
+
+        // Print the full response from ollama
+        console.log('[Inference] Full response from ollama:', JSON.stringify(chat, null, 2));
+
         if (chat.message.tool_calls) {
             console.log(`[Inference] Tool calls: ${chat.message.tool_calls.length}`);
         }
 
         return chat.message.tool_calls || [];
-        
+
     } catch (error) {
         console.error('[Inference] Error:', error instanceof Error ? error.message : error);
         throw error;
