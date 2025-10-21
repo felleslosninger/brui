@@ -30,7 +30,7 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
             for (const toolCall of toolCalls) {
                 const toolName: string = toolCall.function.name;
                 const parameters: Record<string, unknown> = toolCall.function.arguments || {};
-                // Print tool name and args from ollama
+
                 console.log('Tool called from ollama:', toolName, 'Args:', parameters);
                 const decisions = (config.decisions || []).filter((d: any) => d.tool === toolName);
                 if (!decisions.length) {
