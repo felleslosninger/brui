@@ -15,8 +15,8 @@ export type FunctionRegistry = Record<string, Function>;
 export interface StoreInterface {
     get(kind: string, name: string): Resource | undefined;
     getAll(kind: string): Resource[];
-    executeAction(actionName: string, args: Record<string, unknown>, decisionMetadata?: Record<string, unknown>): Promise<{ result: string, message?: string }>;
-    getDecisionsByOption(optionName: string): Decision[];
+    executeAction(actionName: string, args: Record<string, unknown>, decisionMetadata?: Record<string, unknown>): Promise<unknown>;
+    getDecisionsByOption(optionName: Set<Option>): Decision[];
     eventTarget: EventTarget;
 }
 
@@ -148,13 +148,20 @@ function createStoreInterface(
         getAll: (kind: string) => getAllResourcesFromStore(storeMap, kind),
         executeAction: async (actionName: string, args: Record<string, unknown>, decisionMetadata?: Record<string, unknown>) => 
             executeActionHandler(data, eventTarget, functions, actionName, args, decisionMetadata),
-        getDecisionsByOption: (optionName: string) => getDecisionsByOptionName(lookupMaps, optionName),
+        getDecisionsByOption: (options: Set<Option>) => getDecisionsByOptionName(lookupMaps, options),
         eventTarget
     };
 }
 
-function getDecisionsByOptionName(lookupMaps: { optionToDecisions: Map<string, Decision[]> }, optionName: string): Decision[] {
-    return lookupMaps.optionToDecisions.get(optionName) || [];
+function getDecisionsByOptionName(lookupMaps: { optionToDecisions: Map<string, Decision[]> }, options: Set<Option>): Decision[] {
+    const decisions: Decision[] = [];
+    for (const option of options) {
+        const decisionList = lookupMaps.optionToDecisions.get(option.name);
+        if (decisionList) {
+            decisions.push(decisionList);
+        }
+    }
+    return decisions
 }
 
 function getResourceFromStore(storeMap: Map<string, Map<string, Resource>>, kind: string, name: string): Resource | undefined {

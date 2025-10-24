@@ -41,6 +41,7 @@ const proxyHost = 'http://localhost:8091';
             console.log('[Inference] Response received');
             if (chat.message.tool_calls) {
                 console.log(`[Inference] Tool calls: ${chat.message.tool_calls.length}`);
+                console.log(chat.message.tool_calls);
             }
 
             return chat.message.tool_calls?.length

@@ -1,61 +1,30 @@
-import type { Configuration, Decision, Option } from './types';
+import type { Configuration } from './types';
 import type { FunctionRegistry, StoreInterface } from './store';
 import { createResourceStore } from './store';
-import { Chat } from './inference';
-import type { Tool } from 'ollama';
+import { extractParameters, selectOption } from './option';
+import { evaluateAndExecute } from './decision';
+import type { Tool } from "ollama";
+import { Chat } from "./inference";
 
-export async function Setup(configSource: string | Configuration, functions: FunctionRegistry): Promise<EventTarget> {
-    const store = typeof configSource === 'string'
-        ? await createResourceStore(configSource, functions)
-        : createResourceStore(configSource, functions);
+export function Setup(config: Configuration, functions: FunctionRegistry): (input: string, metadata?: any) => Promise<ExecutionResult> {
+    const store = createResourceStore(config, functions);
 
-    const config: Configuration = {
-        options: store.getAll('option') as any,
-        actions: store.getAll('action') as any,
-        decisions: store.getAll('decision') as any,
-        inference: store.get('inference', 'default') as any
-    };
-
-    store.eventTarget.addEventListener('chat:input', async (event: any) => {
-        const { query, metadata } = event.detail;
-
-        console.log('[Core] Processing query:', query);
-
+    async function processPayload(payload: string): Promise<ExecutionResult> {
+        console.log('[Core] Processing payload:', payload);
         try {
-            const result = await executeQuery(store, query, config);
-
-            console.log('[Core] Query executed:', result.success ? 'success' : 'failed');
-
-            const outputEvent = new CustomEvent('chat:output', {
-                detail: {
-                    success: result.success,
-                    option: result.option,
-                    parameters: result.parameters,
-                    results: result.executionResults,
-                    error: result.error,
-                    metadata
-                }
-            });
-
-            store.eventTarget.dispatchEvent(outputEvent);
-
+            const result = await executeQuery(store, payload, config);
+            console.log('[Core] Payload processed:', result.success ? 'success' : 'failed');
+            return result;
         } catch (error) {
-            console.error('[Core] Error processing query:', error);
-
-            const errorEvent = new CustomEvent('chat:output', {
-                detail: {
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                    metadata,
-
-                }
-            });
-
-            store.eventTarget.dispatchEvent(errorEvent);
+            console.error('[Core] Error processing payload:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            };
         }
-    });
+    }
 
-    return store.eventTarget;
+    return processPayload;
 }
 
 export async function executeQuery(
@@ -64,8 +33,29 @@ export async function executeQuery(
     config: Configuration
 ): Promise<ExecutionResult> {
     try {
+        const tools: Tool[] = config.options.map(opt => ({
+            type: 'function',
+            function: {
+                name: opt.name,
+                description: opt.spec.function.description,
+                parameters: opt.spec.function.parameters
+            }
+        }));
+        const inferenceContext = {
+            config: {
+                inference: config.inference?.spec,
+                decisions: { tools }
+            }
+        };
+        const prompt = `Select the appropriate tool for: ${userQuery}`;
+        const toolCalls = await Chat(prompt, inferenceContext);
+        if (!toolCalls || toolCalls.length === 0) {
+            throw new Error('No tool calls returned from inference');
+        }
+
         console.log('[Core] Step 1: Selecting option...');
-        const selectedOption = await selectOption(config.options, userQuery, config);
+        const selectedOption = await selectOption(config.options, toolCalls);
+
         if (!selectedOption) {
             console.log('[Core] No option selected');
             return {
@@ -74,13 +64,13 @@ export async function executeQuery(
             };
         }
 
-        console.log('[Core] Option selected:', selectedOption.name);
+        console.log('[Core] Options selected:', selectedOption);
         console.log('[Core] Step 2: Extracting parameters...');
-        const parameters = await extractParameters(userQuery, selectedOption, config);
+        const parameters = await extractParameters(toolCalls);
 
         console.log('[Core] Parameters extracted:', parameters);
         console.log('[Core] Step 3: Finding decisions...');
-        const decisions = store.getDecisionsByOption(selectedOption.name);
+        const decisions = store.getDecisionsByOption(selectedOption);
 
         console.log('[Core] Decisions found:', decisions.length);
         console.log('[Core] Step 4: Executing actions...');
@@ -98,6 +88,7 @@ export async function executeQuery(
             parameters,
             executionResults: results
         };
+
     } catch (error) {
         console.error('[Core] executeQuery error:', error);
         return {
@@ -107,128 +98,6 @@ export async function executeQuery(
     }
 }
 
-async function selectOption(
-    options: Option[],
-    userQuery: string,
-    config: Configuration
-): Promise<Option | null> {
-    const tools: Tool[] = options.map(opt => ({
-        type: 'function',
-        function: {
-            name: opt.name,
-            description: opt.spec.function.description,
-            parameters: opt.spec.function.parameters
-        }
-    }));
-
-    const inferenceContext = {
-        config: {
-            inference: config.inference?.spec,
-            decisions: { tools }
-        }
-    };
-
-    const prompt = `Select the appropriate tool for: ${userQuery}`;
-    const toolCalls = await Chat(prompt, inferenceContext);
-
-    if (!toolCalls || toolCalls.length === 0) {
-        return null;
-    }
-
-    const selectedTool = toolCalls[0];
-    if(!selectedTool.function || !selectedTool.function.name) {
-        throw new Error('No tool selected by inference');
-    }
-
-    const matchingOption = options.find(opt => opt.name === selectedTool.function.name);
-    return matchingOption || null;
-}
-
-async function extractParameters(
-    userQuery: string,
-    option: Option,
-    config: Configuration
-): Promise<Record<string, unknown>> {
-    const tools: Tool[] = [{
-        type: 'function',
-        function: {
-            name: option.spec.function.name,
-            description: option.spec.function.description,
-            parameters: option.spec.function.parameters
-        }
-    }];
-
-    const inferenceContext = {
-        config: {
-            inference: config.inference?.spec,
-            decisions: { tools }
-        }
-    };
-
-    const prompt = `Extract parameters for ${option.spec.function.name}: ${userQuery}`;
-    const toolCalls = await Chat(prompt, inferenceContext);
-
-    if (!toolCalls || toolCalls.length === 0) {
-        return {};
-    }
-
-    return toolCalls[0].function.arguments || {};
-}
-
-async function evaluateAndExecute(
-    store: StoreInterface,
-    decisions: Decision[],
-    parameters: Record<string, unknown>,
-): Promise<ActionResult[]> {
-    const results: ActionResult[] = [];
-
-    for (const decision of decisions) {
-        for (const actionName of decision.spec.then) {
-            const result = await store.executeAction(
-                actionName,
-                parameters,
-                {}
-            );
-
-            const description = await generateActionDescriptionAI(actionName, parameters, result);
-
-            results.push({
-                action: actionName,
-                success: true,
-                result,
-                description
-            });
-        }
-    }
-
-    return results;
-}
-
-async function generateActionDescriptionAI(
-    actionName: string,
-    parameters: Record<string, unknown>,
-    result: unknown
-): Promise<string> {
-    console.log("result:", result);
-    const prompt = `
-        You are an assistant that summarizes actions.
-        Given the action name, its parameters, and the result of executing it, 
-        provide a short human-readable description of what was done, written in english, as if you performed the action.
-        
-        Action Name: ${actionName}
-        Parameters: ${JSON.stringify(parameters)}
-        
-        Description:
-    `;
-
-    const descriptions = await Chat(prompt, {
-        config: {},
-    });
-
-    if (!descriptions || descriptions.length === 0) return `Executed action ${actionName}`;
-
-    return descriptions || `Executed action ${actionName}`;
-}
 
 export interface ExecutionResult {
     success: boolean;
@@ -243,5 +112,4 @@ export interface ActionResult {
     success: boolean;
     result?: unknown;
     error?: string;
-    description?: string;
 }

@@ -138,7 +138,7 @@
     "kind": "inference",
     "name": "default",
     "spec": {
-      "name": "local-nano",
+      "name": "external-nano",
       "provider": "ollama"
     }
   }
