@@ -37,7 +37,8 @@ export function createResourceStore(
                 }
                 console.log('[Store] Extracted args for function:', JSON.stringify(extracted, null, 2));
             }
-            return await fn(args);
+            console.log("ARGS HERE: ", args)
+            return await fn(args.value);
         }
     };
     if (config.useEventTarget) {

@@ -58,7 +58,7 @@
                           "enum": ["1. Pasta Bolognese", "2. Pasta Bolognese without bacon", "3. Pasta Bolognese without pasta"]
                       }
                   },
-                  "required": ["value"]
+                  "required": ["name", "table", "orderNumber"]
               }
           }
       }
@@ -73,11 +73,17 @@
       "name": "setActiveTab",
       "type": "function",
       "args": ["value"]
+    },
+    {
+      "name": "goToOrderAndFillFields",
+      "type": "function",
+      "args": ["name", "table", "orderNumber"]
     }
   ],
   "decisions": [
     { "tool": "addPizza", "actions": ["addPizzaToOrder"] },
-    { "tool": "changeActiveTab", "actions": ["setActiveTab"] }
+    { "tool": "changeActiveTab", "actions": ["setActiveTab"] },
+      { "tool": "fillForm", "actions": ["goToOrderAndFillFields"] }
   ],
   "inference": {
     "kind": "inference",

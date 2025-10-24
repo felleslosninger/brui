@@ -9,8 +9,7 @@ export async function executeAction(
 	try {
 		const result = await store.executeAction(
 			actionName,
-			parameters,
-			{}
+			parameters
 		);
 		return {
 			action: actionName,

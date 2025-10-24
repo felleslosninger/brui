@@ -50,6 +50,8 @@ function App() {
     const goToOrderAndFillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
         setActiveTab('order');
 
+        console.log("args", args)
+
         setFormData(prev => ({
             ...prev,
             name: args.name ?? prev.name,

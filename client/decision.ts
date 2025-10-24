@@ -10,14 +10,12 @@ export async function evaluateAndExecute(
 ): Promise<ActionResult[]> {
     const results: ActionResult[] = [];
     for (const decision of decisions) {
-        for (const actionName of decision.spec.then) {
-            const result = await executeAction(
-                store,
-                actionName,
-                parameters
-            );
-            results.push(result);
-        }
+        const result = await executeAction(
+            store,
+            decision.name,
+            parameters
+        );
+        results.push(result);
     }
     return results;
 }
