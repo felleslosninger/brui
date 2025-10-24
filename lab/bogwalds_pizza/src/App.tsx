@@ -40,24 +40,25 @@ function App() {
       setFormData({ ...formData, [field]: e.target.value });
     };
 
-  const addPizzaToOrder = (args: Record<string, unknown>) => {
-    const { pizzaName } = args;
+  // Add pizza to order handler
+  function addPizzaToOrder(args: Record<string, unknown>) {
+    const pizzaName = args.pizzaName;
     console.log('Adding pizza to order:', pizzaName);
     return { success: true, pizzaName };
-  };
+  }
 
-  const goToOrderAndFillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
-    setActiveTab('order');
+    const goToOrderAndFillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
+        setActiveTab('order');
 
-    setFormData(prev => ({
-      ...prev,
-      name: args.name ?? prev.name,
-      table: args.table ?? prev.table,
-      orderNumber: args.orderNumber ?? prev.orderNumber,
-    }));
+        setFormData(prev => ({
+            ...prev,
+            name: args.name ?? prev.name,
+            table: args.table ?? prev.table,
+            orderNumber: args.orderNumber ?? prev.orderNumber,
+        }));
 
-    setSubmitted(false);
-  };
+        setSubmitted(false);
+    };
 
   const functions: Brui.FunctionRegistry = {
     addPizzaToOrder,

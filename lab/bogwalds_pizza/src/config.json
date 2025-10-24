@@ -1,144 +1,89 @@
 {
-  "options": [
+  "tools": [
     {
-      "kind": "option",
-      "type": "tool",
-      "name": "addPizzaTool",
-      "spec": {
-        "type": "function",
-        "function": {
-          "name": "addPizza",
-          "description": "Add a pizza to the order",
-          "parameters": {
-            "type": "object",
-            "properties": {
-              "pizzaName": {
-                "type": "string",
-                "description": "Name of the pizza to add",
-                "enum": ["1. Pasta Bolognese", "2. Pasta Bolognese without bacon", "3. Pasta Bolognese without pasta"]
-              }
-            },
-            "required": ["pizzaName"]
-          }
+      "type": "function",
+      "function": {
+        "name": "addPizza",
+        "description": "Add a pizza to the order",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "pizzaName": {
+              "type": "string",
+              "description": "Name of the pizza to add",
+              "enum": ["1. Pasta Bolognese", "2. Pasta Bolognese without bacon", "3. Pasta Bolognese without pasta"]
+            }
+          },
+          "required": ["pizzaName"]
         }
       }
     },
     {
-      "kind": "option",
-      "type": "tool",
-      "name": "fillFormTool",
-      "spec": {
-        "type": "function",
-        "function": {
-          "name": "fillForm",
-          "description": "Fill the order form with given args",
-          "parameters": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Name of the customer"
-              },
-              "table": {
-                "type": "string",
-                "description": "Table number"
-              },
-              "orderNumber": {
-                "type": "string",
-                "description": "Order number",
-                "enum": ["1. Pasta Bolognese", "2. Pasta Bolognese without bacon", "3. Pasta Bolognese without pasta"]
-              }
-            },
-            "required": ["name, table, orderNumber"]
-          }
+      "type": "function",
+      "function": {
+        "name": "changeActiveTab",
+        "description": "Change tab to the given tab name",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "Name of the tab to switch to",
+              "enum": ["home", "menu", "order"]
+            }
+          },
+          "required": ["value"]
         }
       }
     },
-    {
-      "kind": "option",
-      "type": "tool",
-      "name": "changeActiveTab",
-      "spec": {
-        "type": "function",
-        "function": {
-          "name": "change_tab",
-          "description": "Change tab to the given tab name",
-          "parameters": {
-            "type": "object",
-            "properties": {
-              "value": {
-                "type": "string",
-                "description": "Name of the tab to switch to",
-                "enum": ["home", "menu", "order"]
+      {
+          "type": "function",
+          "function": {
+              "name": "fillForm",
+              "description": "Fill the order form with given args",
+              "parameters": {
+                  "type": "object",
+                  "properties": {
+                      "name": {
+                          "type": "string",
+                          "description": "Name of the customer"
+                      },
+                      "table": {
+                          "type": "string",
+                          "description": "Table number"
+                      },
+                      "orderNumber": {
+                          "type": "string",
+                          "description": "Order number",
+                          "enum": ["1. Pasta Bolognese", "2. Pasta Bolognese without bacon", "3. Pasta Bolognese without pasta"]
+                      }
+                  },
+                  "required": ["value"]
               }
-            },
-            "required": ["value"]
           }
-        }
       }
-    }
   ],
   "actions": [
     {
-      "kind": "action",
+      "name": "addPizzaToOrder",
       "type": "function",
-      "name": "callAddPizzaFunction",
-      "spec": {
-        "function_name": "addPizzaToOrder",
-        "message": "Added pizza to the order."
-      }
+      "args": []
     },
     {
-      "kind": "action",
+      "name": "setActiveTab",
       "type": "function",
-      "name": "callFillFormFunction",
-      "spec": {
-        "function_name": "goToOrderAndFillFields",
-        "message": "Filled out order fields."
-      }
-    },
-    {
-      "kind": "action",
-      "type": "function",
-      "name": "changeTab",
-      "spec": {
-        "function_name": "setActiveTab",
-        "args": ["value"],
-        "message": "Switched to the '{value}' tab."
-      }
+      "args": ["value"]
     }
   ],
   "decisions": [
-    {
-      "kind": "decision",
-      "name": "handlePizzaAddition",
-      "spec": {
-        "if": ["addPizzaTool"],
-        "then": ["callAddPizzaFunction"]
-      }
-    },
-    {
-      "kind": "decision",
-      "name": "handleFillForm",
-      "spec": {
-        "if": ["fillFormTool"],
-        "then": ["callFillFormFunction"]
-      }
-    },
-    {
-      "kind": "decision",
-      "name": "handleChangeTab",
-      "spec": {
-        "if": ["changeActiveTab"],
-        "then": ["changeTab"]
-      }
-    }
+    { "tool": "addPizza", "actions": ["addPizzaToOrder"] },
+    { "tool": "changeActiveTab", "actions": ["setActiveTab"] }
   ],
   "inference": {
     "kind": "inference",
     "name": "default",
     "spec": {
-      "name": "external-nano",
+      "name": "local-nano",
       "provider": "ollama"
     }
   }

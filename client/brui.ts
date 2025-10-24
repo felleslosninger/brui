@@ -1,22 +1,59 @@
 import type { Configuration } from './types';
-import type { FunctionRegistry, StoreInterface } from './store';
+import type { FunctionRegistry } from './store';
 import { createResourceStore } from './store';
-import { extractParameters, selectOption } from './option';
-import { evaluateAndExecute } from './decision';
-import type { Tool } from "ollama";
-import { Chat } from "./inference";
+import { Chat } from './inference';
+
 
 export function Setup(config: Configuration, functions: FunctionRegistry): (input: string, metadata?: any) => Promise<ExecutionResult> {
     const store = createResourceStore(config, functions);
 
-    async function processPayload(payload: string): Promise<ExecutionResult> {
-        console.log('[Core] Processing payload:', payload);
+    async function processPayload(userInput: string): Promise<ExecutionResult> {
         try {
-            const result = await executeQuery(store, payload, config);
-            console.log('[Core] Payload processed:', result.success ? 'success' : 'failed');
-            return result;
+            const inferenceContext = {
+                config: {
+                    inference: config.inference?.spec,
+                    decisions: { tools: config.tools }
+                }
+            };
+            const toolCalls = await Chat(userInput, inferenceContext);
+            if (!toolCalls || toolCalls.length === 0) {
+                return {
+                    success: false,
+                    error: 'No tool calls returned from inference.'
+                };
+            }
+
+            const allResults: ActionResult[] = [];
+            for (const toolCall of toolCalls) {
+                const toolName: string = toolCall.function.name;
+                const parameters: Record<string, unknown> = toolCall.function.arguments || {};
+
+                console.log('Tool called from ollama:', toolName, 'Args:', parameters);
+                const decisions = (config.decisions || []).filter((d: any) => d.tool === toolName);
+                if (!decisions.length) {
+                    allResults.push({
+                        action: toolName,
+                        success: false,
+                        error: `No decision found for tool: ${toolName}`
+                    });
+                    continue;
+                }
+                const actionNames = decisions.flatMap((d: any) => d.actions);
+                for (const actionName of actionNames) {
+                    try {
+                        const result = await store.executeAction(actionName, parameters);
+                        allResults.push({ action: actionName, success: true, result });
+                    } catch (error) {
+                        allResults.push({ action: actionName, success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+                    }
+                }
+            }
+
+            return {
+                success: true,
+                executionResults: allResults
+            };
         } catch (error) {
-            console.error('[Core] Error processing payload:', error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -27,81 +64,11 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
     return processPayload;
 }
 
-export async function executeQuery(
-    store: StoreInterface,
-    userQuery: string,
-    config: Configuration
-): Promise<ExecutionResult> {
-    try {
-        const tools: Tool[] = config.options.map(opt => ({
-            type: 'function',
-            function: {
-                name: opt.name,
-                description: opt.spec.function.description,
-                parameters: opt.spec.function.parameters
-            }
-        }));
-        const inferenceContext = {
-            config: {
-                inference: config.inference?.spec,
-                decisions: { tools }
-            }
-        };
-        const prompt = `Select the appropriate tool for: ${userQuery}`;
-        const toolCalls = await Chat(prompt, inferenceContext);
-        if (!toolCalls || toolCalls.length === 0) {
-            throw new Error('No tool calls returned from inference');
-        }
-
-        console.log('[Core] Step 1: Selecting option...');
-        const selectedOption = await selectOption(config.options, toolCalls);
-
-        if (!selectedOption) {
-            console.log('[Core] No option selected');
-            return {
-                success: false,
-                error: 'No option selected'
-            };
-        }
-
-        console.log('[Core] Options selected:', selectedOption);
-        console.log('[Core] Step 2: Extracting parameters...');
-        const parameters = await extractParameters(toolCalls);
-
-        console.log('[Core] Parameters extracted:', parameters);
-        console.log('[Core] Step 3: Finding decisions...');
-        const decisions = store.getDecisionsByOption(selectedOption);
-
-        console.log('[Core] Decisions found:', decisions.length);
-        console.log('[Core] Step 4: Executing actions...');
-        const results = await evaluateAndExecute(
-            store,
-            decisions,
-            parameters,
-        );
-
-        console.log('[Core] Actions executed:', results.length);
-
-        return {
-            success: true,
-            option: selectedOption.name,
-            parameters,
-            executionResults: results
-        };
-
-    } catch (error) {
-        console.error('[Core] executeQuery error:', error);
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error'
-        };
-    }
-}
 
 
 export interface ExecutionResult {
     success: boolean;
-    option?: string;
+    tool?: string;
     parameters?: Record<string, unknown>;
     executionResults?: ActionResult[];
     error?: string;
