@@ -1,5 +1,3 @@
-
-
 import type { Configuration } from './types';
 import type { FunctionRegistry } from './store';
 import { createResourceStore } from './store';
@@ -11,7 +9,6 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
 
     async function processPayload(userInput: string): Promise<ExecutionResult> {
         try {
-            // Send user input to inference provider (Chat)
             const inferenceContext = {
                 config: {
                     inference: config.inference?.spec,

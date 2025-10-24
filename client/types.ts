@@ -5,8 +5,6 @@ export interface Resource {
     spec: Record<string, unknown>;
 }
 
-
-
 export interface Decision extends Resource {
     kind: 'decision';
     tool: string;
