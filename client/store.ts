@@ -54,8 +54,6 @@ export function createResourceStore(
                 });
             }
 
-            console.log("Store message here")
-            console.log(message)
             return { result, message, args: extracted };
         }
     };

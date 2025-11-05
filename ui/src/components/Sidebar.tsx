@@ -50,15 +50,11 @@ function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
 
         setIsLoadingResponse(true);
 
-        console.log("000000000");
-
         try {
             const result = await inputHandler({
                 textInput: inputTextStr,
                 contextChoice: dropdownValueStr,
             });
-
-            console.log("111111111");
 
             if (!result.success) {
                 console.error("Chat error:", result.error);
@@ -72,9 +68,6 @@ function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
             const responses =
                 result.executionResults
                     ?.map((r: { success: boolean; error?: string; action: string; message?: string; description?: string; }) => {
-                        console.log("message here")
-                        console.log(r.message)
-                        console.log("message here")
                             if (!r.success || r.error) {
                                 return `Error in ${r.action}: ${r.error || "Unknown error"}`;
                             }

@@ -42,9 +42,7 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
                 const actionNames = decisions.flatMap((d: any) => d.actions);
                 for (const actionName of actionNames) {
                     try {
-                        console.log("ompa")
                         const { result, message } = await store.executeAction(actionName, parameters);
-                        console.log("loompa", result)
                         allResults.push({ action: actionName, success: true, result, message });
                     } catch (error) {
                         allResults.push({ action: actionName, success: false, error: error instanceof Error ? error.message : 'Unknown error' });
