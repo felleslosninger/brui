@@ -38,11 +38,14 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
                     });
                     continue;
                 }
+
                 const actionNames = decisions.flatMap((d: any) => d.actions);
                 for (const actionName of actionNames) {
                     try {
-                        const result = await store.executeAction(actionName, parameters);
-                        allResults.push({ action: actionName, success: true, result });
+                        console.log("ompa")
+                        const { result, message } = await store.executeAction(actionName, parameters);
+                        console.log("loompa", result)
+                        allResults.push({ action: actionName, success: true, result, message });
                     } catch (error) {
                         allResults.push({ action: actionName, success: false, error: error instanceof Error ? error.message : 'Unknown error' });
                     }
@@ -78,5 +81,6 @@ export interface ActionResult {
     action: string;
     success: boolean;
     result?: unknown;
+    message?: string;
     error?: string;
 }

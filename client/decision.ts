@@ -3,6 +3,8 @@ import type { Decision } from './types';
 import type { ActionResult } from './brui';
 import { executeAction } from './action';
 
+// Is this still used?
+
 export async function evaluateAndExecute(
     store: StoreInterface,
     decisions: Decision[],

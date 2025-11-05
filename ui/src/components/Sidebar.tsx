@@ -11,7 +11,13 @@ type AIResponseCallback = (executionResults: any, error: any) => void
 interface SidebarRootProps {
     children?: React.ReactNode;
     className?: string;
-    inputHandler: (userInput: { textInput: string; contextChoice: string }, onResponse?: AIResponseCallback) => void;
+    inputHandler: (
+        userInput: { textInput: string; contextChoice: string }
+    ) => Promise<{
+        success: boolean;
+        executionResults?: any[];
+        error?: string;
+    }>;
 }
 
 function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
@@ -19,64 +25,77 @@ function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
     const [questionCounter, setQuestionCounter] = useState(0);
     const [isLoadingResponse, setIsLoadingResponse] = useState(false);
 
-    function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmitChatMessage(
+        event: React.FormEvent<HTMLFormElement>
+    ) {
         event.preventDefault();
 
         const formData = new FormData(event.currentTarget);
+        const inputText = formData.get("chatMessage");
+        const dropdownValue = formData.get("contextChoice");
 
-        const inputText = formData.get('chatMessage');
-        const dropdownValue = formData.get('contextChoice');
+        const inputTextStr = inputText ? String(inputText) : "";
+        const dropdownValueStr = dropdownValue ? String(dropdownValue) : "";
 
-        const inputTextStr = inputText ? String(inputText) : '';
-        const dropdownValueStr = dropdownValue ? String(dropdownValue) : '';
-
-        if (!inputTextStr) {
-            return
-        }
+        if (!inputTextStr) return;
 
         const currentQuestionIndex = questionCounter + 1;
         setQuestionCounter(currentQuestionIndex);
 
+        // Add user question to chat
         setMessageHistory((prev) => [
             ...prev,
-            ['Q', currentQuestionIndex.toString(), inputTextStr],
+            ["Q", currentQuestionIndex.toString(), inputTextStr],
         ]);
 
         setIsLoadingResponse(true);
 
-        inputHandler(
-            { textInput: inputTextStr, contextChoice: dropdownValueStr },
-            (executionResults, error) => {
-                if (error) {
-                    console.error('Chat error:', error);
+        console.log("000000000");
 
-                    setMessageHistory((prev) => [
-                        ...prev,
-                        ['A', currentQuestionIndex.toString(), `Error: ${error}`],
-                    ]);
+        try {
+            const result = await inputHandler({
+                textInput: inputTextStr,
+                contextChoice: dropdownValueStr,
+            });
 
-                    setIsLoadingResponse(false);
-                    return;
-                }
+            console.log("111111111");
 
-                const descriptions = executionResults
-                    ?.map((r: { success: any; error: any; action: any; description: any; }) => {
-                        if (!r.success || r.error) {
-                            return `Error in ${r.action}: ${r.error || 'Unknown error'}`;
-                        }
-                        return r.description || r.action;
-                    })
-                    .join('; ') || 'No actions performed';
-
+            if (!result.success) {
+                console.error("Chat error:", result.error);
                 setMessageHistory((prev) => [
                     ...prev,
-                    ['A', currentQuestionIndex.toString(), descriptions],
+                    ["A", currentQuestionIndex.toString(), `Error: ${result.error}`],
                 ]);
-                setIsLoadingResponse(false);
+                return;
             }
-        );
 
-        event.currentTarget.reset();
+            const responses =
+                result.executionResults
+                    ?.map((r: { success: boolean; error?: string; action: string; message?: string; description?: string; }) => {
+                        console.log("message here")
+                        console.log(r.message)
+                        console.log("message here")
+                            if (!r.success || r.error) {
+                                return `Error in ${r.action}: ${r.error || "Unknown error"}`;
+                            }
+                            return r.message || r.description || r.action;
+                        }
+                    )
+                    .join("; ") || "No actions performed";
+
+            setMessageHistory((prev) => [
+                ...prev,
+                ["A", currentQuestionIndex.toString(), responses],
+            ]);
+        } catch (error) {
+            console.error("Chat error:", error);
+            setMessageHistory((prev) => [
+                ...prev,
+                ["A", currentQuestionIndex.toString(), `Unexpected error: ${error instanceof Error ? error.message : String(error)}`,],
+            ]);
+        } finally {
+            setIsLoadingResponse(false);
+        }
     }
 
     return (

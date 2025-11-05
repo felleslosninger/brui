@@ -5,16 +5,17 @@ export interface Resource {
     spec: Record<string, unknown>;
 }
 
-export interface Decision extends Resource {
-    kind: 'decision';
+export interface Decision {
     tool: string;
     actions: string[];
 }
+
 
 export interface Action {
     name: string;
     type: 'function' | 'event';
     args: string[];
+    message?: string;
 }
 
 export interface Inference extends Resource {
@@ -30,6 +31,6 @@ export type Resources = Resource[];
 export interface Configuration {
     tools: any[];
     actions: Action[];
-    decisions: Decision[];
+    decisions: { tool: string; actions: string[] }[];
     inference?: Inference;
 }
