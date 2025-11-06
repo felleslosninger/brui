@@ -42,7 +42,6 @@ function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
         const currentQuestionIndex = questionCounter + 1;
         setQuestionCounter(currentQuestionIndex);
 
-        // Add user question to chat
         setMessageHistory((prev) => [
             ...prev,
             ["Q", currentQuestionIndex.toString(), inputTextStr],

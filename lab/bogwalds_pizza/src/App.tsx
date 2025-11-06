@@ -34,7 +34,6 @@ function App() {
       setFormData({ ...formData, [field]: e.target.value });
     };
 
-  // Add pizza to order handler
   function addPizzaToOrder(args: Record<string, unknown>) {
     const pizzaName = args.pizzaName;
     console.log('Adding pizza to order:', pizzaName);
@@ -66,7 +65,6 @@ function App() {
     handleSetActiveTab
   };
 
-  // Init Brui
   const processMessage = Brui.Setup(
     configData as Brui.Configuration,
     functions
