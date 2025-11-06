@@ -1,11 +1,5 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
-import {
-  Card,
-  Paragraph,
-  Textfield,
-  Tabs,
-  Button,
-} from '@digdir/designsystemet-react';
+import { type ChangeEvent, type FormEvent, useState } from 'react';
+import { Button, Card, Paragraph, Tabs, Textfield, } from '@digdir/designsystemet-react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index"
 import configData from "./config.json";
@@ -40,7 +34,6 @@ function App() {
       setFormData({ ...formData, [field]: e.target.value });
     };
 
-  // Add pizza to order handler
   function addPizzaToOrder(args: Record<string, unknown>) {
     const pizzaName = args.pizzaName;
     console.log('Adding pizza to order:', pizzaName);
@@ -62,21 +55,35 @@ function App() {
         setSubmitted(false);
     };
 
+  const handleSetActiveTab = (args: { value: string}) => {
+      setActiveTab(args.value)
+  }
+
   const functions: Brui.FunctionRegistry = {
     addPizzaToOrder,
     goToOrderAndFillFields,
-    setActiveTab
+    handleSetActiveTab
   };
 
-  // Init Brui
   const processMessage = Brui.Setup(
     configData as Brui.Configuration,
     functions
   );
 
-  const inputHandler = async (userInput: UserInput) => {
-    return processMessage(userInput.textInput);
-  }
+    const inputHandler = async (userInput: UserInput): Promise<{
+        success: boolean;
+        executionResults?: any[];
+        error?: string;
+    }> => {
+        try {
+            return await processMessage(userInput.textInput);
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : "Unknown error",
+            };
+        }
+    };
 
   return (
     <div className='grid grid-cols-12 h-screen'>

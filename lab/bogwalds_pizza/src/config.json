@@ -67,29 +67,32 @@
     {
       "name": "addPizzaToOrder",
       "type": "function",
-      "args": []
+      "args": [],
+      "message": "Added pizza to the order."
     },
     {
-      "name": "setActiveTab",
+      "name": "handleSetActiveTab",
       "type": "function",
-      "args": ["value"]
+      "args": ["value"],
+      "message": "Changed active tab to {value}"
     },
     {
       "name": "goToOrderAndFillFields",
       "type": "function",
-      "args": ["name", "table", "orderNumber"]
+      "args": ["name", "table", "orderNumber"],
+      "message": "Updated order form with name: {name}, table: {table}, order number: {orderNumber}"
     }
   ],
   "decisions": [
     { "tool": "addPizza", "actions": ["addPizzaToOrder"] },
-    { "tool": "changeActiveTab", "actions": ["setActiveTab"] },
-      { "tool": "fillForm", "actions": ["goToOrderAndFillFields"] }
+    { "tool": "changeActiveTab", "actions": ["handleSetActiveTab"] },
+    { "tool": "fillForm", "actions": ["goToOrderAndFillFields"] }
   ],
   "inference": {
     "kind": "inference",
     "name": "default",
     "spec": {
-      "name": "local-nano",
+      "name": "external-nano",
       "provider": "ollama"
     }
   }
