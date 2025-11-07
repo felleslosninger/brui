@@ -22,7 +22,7 @@
       "type": "function",
       "function": {
         "name": "changeActiveTab",
-        "description": "Change tab to the given tab name",
+        "description": "Change tab to the given tab name. Home is the home page, welcoming the user. Menu is the menu page, showing the food options. Order is the order page, showing the current order and allowing to fill the order form.",
         "parameters": {
           "type": "object",
           "properties": {
@@ -77,24 +77,23 @@
       "message": "Changed active tab to {value}"
     },
     {
-      "name": "goToOrderAndFillFields",
+      "name": "fillFields",
       "type": "function",
       "args": ["name", "table", "orderNumber"],
       "message": "Updated order form with name: {name}, table: {table}, order number: {orderNumber}"
     }
   ],
   "decisions": [
-    { "tool": "addPizza", "actions": ["addPizzaToOrder"] },
     { "tool": "changeActiveTab", "actions": ["handleSetActiveTab"] },
-    { "tool": "fillForm", "actions": ["goToOrderAndFillFields"] }
+    { "tool": "addPizza", "actions": ["addPizzaToOrder"] },
+    { "tool": "fillForm", "actions": ["fillFields"] }
   ],
   "inference": {
     "kind": "inference",
     "name": "default",
     "spec": {
-      "name": "external-nano",
+      "name": "local-nano",
       "provider": "ollama"
     }
   }
 }
-    

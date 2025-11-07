@@ -3,6 +3,7 @@ import { Button, Card, Paragraph, Tabs, Textfield, } from '@digdir/designsysteme
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index"
 import configData from "./config.json";
+import { ShoppingBasketIcon } from "@navikt/aksel-icons";
 
 type UserInput = {
   textInput: string;
@@ -16,6 +17,8 @@ function App() {
     table: '',
     orderNumber: '',
   });
+
+  const [submittedItems, setSubmittedItems] = useState<FormData[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
   const pizzas = [
@@ -24,10 +27,13 @@ function App() {
     { name: '3. Pasta Bolognese without pasta', desc: 'Grilled vegetables, olives, and mozzarella.', price: '159 kr' },
   ];
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setSubmitted(true);
+
+        setSubmittedItems((prevItems) => [...prevItems, formData]);
+        setFormData({ name: "", table: "", orderNumber: "" });
+    };
 
   const handleChange =
     (field: string) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -40,11 +46,7 @@ function App() {
     return { success: true, pizzaName };
   }
 
-    const goToOrderAndFillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
-        setActiveTab('order');
-
-        console.log("args", args)
-
+    const fillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
         setFormData(prev => ({
             ...prev,
             name: args.name ?? prev.name,
@@ -53,6 +55,8 @@ function App() {
         }));
 
         setSubmitted(false);
+
+        console.log("Submitted order")
     };
 
   const handleSetActiveTab = (args: { value: string}) => {
@@ -61,7 +65,7 @@ function App() {
 
   const functions: Brui.FunctionRegistry = {
     addPizzaToOrder,
-    goToOrderAndFillFields,
+    fillFields,
     handleSetActiveTab
   };
 
@@ -104,6 +108,7 @@ function App() {
             <Tabs.Tab value="home">Home</Tabs.Tab>
             <Tabs.Tab value="menu">Menu</Tabs.Tab>
             <Tabs.Tab value="order">Order</Tabs.Tab>
+              <Tabs.Tab value="cart" className="ml-auto"><ShoppingBasketIcon /></Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="home" className='mx-20'>
@@ -186,6 +191,33 @@ function App() {
                 </Card>
             )}
           </Tabs.Panel>
+
+            <Tabs.Panel value="cart" className="mx-20">
+                <Card className="bg-white border-none shadow p-4">
+                    {submittedItems.length === 0 ? (
+                        <>
+                            <div data-size="medium">Your cart is empty</div>
+                            <Paragraph>
+                                Add some orders using the form to see them listed here.
+                            </Paragraph>
+                        </>
+                    ) : (
+                        <>
+                            <div data-size="medium" className="mb-2">
+                                Submitted Orders
+                            </div>
+                            <ul className="list-disc list-inside space-y-2">
+                                {submittedItems.map((item, index) => (
+                                    <li key={index}>
+                                        <strong>{item.name}</strong> — Table {item.table} — Order #
+                                        {item.orderNumber}
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                </Card>
+            </Tabs.Panel>
         </Tabs>
       </div>
       <div className="col-span-4 shadow-lg">

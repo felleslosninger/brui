@@ -56,7 +56,7 @@ function SidebarRoot({ children, className, inputHandler }: SidebarRootProps) {
             });
 
             if (!result.success) {
-                console.error("Chat error:", result.error);
+                console.error("Chat error2:", result.error);
                 setMessageHistory((prev) => [
                     ...prev,
                     ["A", currentQuestionIndex.toString(), `Error: ${result.error}`],
