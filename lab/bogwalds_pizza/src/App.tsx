@@ -10,15 +10,22 @@ type UserInput = {
   contextChoice: string;
 };
 
+interface FormEntry {
+    name: string;
+    table: string;
+    orderNumber: string;
+}
+
+
 function App() {
   const [activeTab, setActiveTab] = useState('home');
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormEntry>({
     name: '',
     table: '',
     orderNumber: '',
   });
 
-  const [submittedItems, setSubmittedItems] = useState<FormData[]>([]);
+  const [submittedItems, setSubmittedItems] = useState<FormEntry[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
   const pizzas = [

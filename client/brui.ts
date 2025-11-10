@@ -23,15 +23,8 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
                 };
             }
 
-
-            console.log("test2222222")
-
-            console.log(toolCalls)
-
             const allResults: ActionResult[] = [];
             for (const toolCall of toolCalls) {
-                console.log(toolCall)
-                console.log("test3333333")
                 if (!toolCall.function || !toolCall.function.name) {
                     allResults.push({
                         action: null,
@@ -42,7 +35,6 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
                 }
 
                 const toolName: string = toolCall.function.name;
-                console.log("test444444444")
                 const parameters: Record<string, unknown> = toolCall.function.arguments || {};
 
                 console.log('Tool called from ollama:', toolName, 'Args:', parameters);
@@ -55,8 +47,6 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
                     });
                     continue;
                 }
-
-                console.log("test555555")
 
                 const actionNames = decisions.flatMap((d: any) => d.actions);
                 for (const actionName of actionNames) {
