@@ -1,0 +1,115 @@
+[data-theme="party"]::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+    z-index: 0;
+}
+
+[data-theme="party"] > * {
+    position: relative;
+    z-index: 1;
+}
+
+[data-theme="party"] {
+    --color-shifting-1: #ff00ff;
+    --color-shifting-2: #00ffff;
+    --color-shifting-3: #ffff00;
+    --color-shifting-4: #ff0000;
+
+    animation: color-shift 8s linear infinite;
+    background-image: repeating-conic-gradient(
+            from 0deg,
+            var(--color-shifting-1) 0% 10%,
+            var(--color-shifting-2) 10% 20%,
+            var(--color-shifting-3) 20% 30%,
+            var(--color-shifting-4) 30% 40%,
+            var(--color-shifting-1) 40% 50%
+    );
+    background-size: 200% 200%;
+}
+
+[data-theme="party"] .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+[data-theme="party"]  .pizza-title {
+    @apply text-shimmer text-5xl font-black leading-tight
+    text-white max-w-3xl text-center
+    md:text-7xl md:leading-tight;
+
+    letter-spacing: -0.033em;
+    filter: drop-shadow(0 2px 10px rgba(244, 37, 244, 0.7));
+}
+
+[data-theme="party"]  .pizza-subtitle {
+    @apply max-w-xl text-base font-normal leading-normal text-white/80 text-center
+    md:text-lg md:leading-normal;
+}
+
+[data-theme="party"] .pizza-bg {
+    overflow-x: hidden;
+}
+[data-theme="party"] .text-shimmer {
+    animation: text-shimmer 2s ease-in-out infinite;
+}
+[data-theme="party"] .wave-element {
+    animation: wave 8s ease-in-out infinite alternate;
+}
+[data-theme="party"] .breathing-element {
+    animation: breathing 6s ease-in-out infinite;
+}
+
+@keyframes color-shift {
+    0% {
+        --color-shifting-1: #ff00ff;
+        --color-shifting-2: #00ffff;
+        --color-shifting-3: #ffff00;
+        --color-shifting-4: #ff0000;
+    }
+    25% {
+        --color-shifting-1: #00ffff;
+        --color-shifting-2: #ffff00;
+        --color-shifting-3: #ff0000;
+        --color-shifting-4: #ff00ff;
+    }
+    50% {
+        --color-shifting-1: #ffff00;
+        --color-shifting-2: #ff0000;
+        --color-shifting-3: #ff00ff;
+        --color-shifting-4: #00ffff;
+    }
+    75% {
+        --color-shifting-1: #ff0000;
+        --color-shifting-2: #ff00ff;
+        --color-shifting-3: #00ffff;
+        --color-shifting-4: #ffff00;
+    }
+    100% {
+        --color-shifting-1: #ff00ff;
+        --color-shifting-2: #00ffff;
+        --color-shifting-3: #ffff00;
+        --color-shifting-4: #ff0000;
+    }
+}
+@keyframes text-shimmer {
+    0%, 100% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff00ff, 0 0 20px #ff00ff, 0 0 25px #ff00ff; }
+    50% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #00ffff, 0 0 20px #00ffff, 0 0 25px #00ffff; }
+}
+
+@keyframes breathing {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.03); opacity: 1; }
+}
+
+@keyframes wave {
+    0% { transform: skewX(0deg) skewY(0deg); }
+    25% { transform: skewX(-1.5deg) skewY(1deg); }
+    50% { transform: skewX(0deg) skewY(0deg); }
+    75% { transform: skewX(1.5deg) skewY(-1deg); }
+    100% { transform: skewX(0deg) skewY(0deg); }
+}

@@ -5,6 +5,7 @@ import '@digdir/designsystemet-theme';
 import '@digdir/designsystemet-css';
 import '../styles/layers.css';
 import '../styles/designsystemet.css'
+import '../styles/party.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

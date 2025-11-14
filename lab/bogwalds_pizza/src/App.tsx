@@ -1,9 +1,11 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react';
-import { Button, Card, Paragraph, Tabs, Textfield, } from '@digdir/designsystemet-react';
+import { Button, Card, Heading, Paragraph, Tabs, Textfield, } from '@digdir/designsystemet-react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index"
 import configData from "./config.json";
 import { ShoppingBasketIcon } from "@navikt/aksel-icons";
+
+type Theme = "digdir" | "party";
 
 type UserInput = {
   textInput: string;
@@ -18,6 +20,7 @@ interface FormEntry {
 
 
 function App() {
+  const [theme, setTheme] = useState<Theme>("digdir");
   const [activeTab, setActiveTab] = useState('home');
   const [formData, setFormData] = useState<FormEntry>({
     name: '',
@@ -97,11 +100,21 @@ function App() {
     };
 
   return (
-    <div className='grid grid-cols-12 h-screen'>
+    <div className='grid grid-cols-12 h-screen' data-theme={theme}>
       <div className="col-span-8">
-        <Paragraph data-size='xl' className='pt-6 px-6 bg-white'>
-          Velkommen til Bøgwalds pizza
-        </Paragraph>
+          <div className="flex flex-row justify-between items-center m-auto px-6 py-6">
+              <Paragraph data-size="xl">
+                  Velkommen til Bøgwalds pizza
+              </Paragraph>
+
+              <Button onClick={() => setTheme(theme === "digdir" ? "party" : "digdir")}>
+                  {theme === "party" ? (
+                      <>D</>
+                  ) : (
+                      <>🍕</>
+                  )}
+              </Button>
+          </div>
 
         <Tabs
             className="z-0"
@@ -111,23 +124,33 @@ function App() {
               setSubmitted(false);
             }}
         >
-          <Tabs.List className='bg-white px-20'>
+          <Tabs.List className='px-20'>
             <Tabs.Tab value="home">Home</Tabs.Tab>
             <Tabs.Tab value="menu">Menu</Tabs.Tab>
             <Tabs.Tab value="order">Order</Tabs.Tab>
-              <Tabs.Tab value="cart" className="ml-auto"><ShoppingBasketIcon /></Tabs.Tab>
+            <Tabs.Tab value="cart" className="ml-auto">
+                <>
+                    {submittedItems.length > 0 && <div>{submittedItems.length}</div>}
+                    <ShoppingBasketIcon />
+                </>
+            </Tabs.Tab>
           </Tabs.List>
 
-          <Tabs.Panel value="home" className='mx-20'>
-            <Card className='bg-white border-none shadow'>
-              <div data-size="medium">
-                Welcome to Bægwalds pizza
-              </div>
-              <Paragraph>
-                Enjoy our delicious, hand-crafted pasta bolognese made with fresh ingredients and baked in a traditional stone oven.
-              </Paragraph>
-            </Card>
-          </Tabs.Panel>
+            <Tabs.Panel value="home" className="mx-20">
+                <Card className="pizza-bg breathing-element card bg-transparent border-0">
+
+                    <Heading className="pizza-title">
+                        Bøgwald's Pizza: A Trip for Your Tastebuds
+                    </Heading>
+
+                    <Paragraph className="pizza-subtitle">
+                        Descend into a delicious dimension of mind-bending pizza creations.
+                        Each slice is a portal to a new reality of flavor.
+                        Are you ready to explore?
+                    </Paragraph>
+
+                </Card>
+            </Tabs.Panel>
 
           <Tabs.Panel value="menu" className='mx-20'>
             {pizzas.map((pizza, i) => (
