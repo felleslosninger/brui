@@ -78,14 +78,15 @@
 .chat-text {
     width: fit-content;
     max-width: 70%;
-    margin: 1rem;
+    margin-top: 0.8rem;
+    margin-bottom: 0.8rem;
 }
 
 .sidebar-content .chat-bubble {
-    border-radius: var(--ds-border-radius-base);
+    border-radius: var(--ds-border-radius-lg);
     background-color: var(--ds-color-accent-base-default);
     color: var(--ds-color-base-contrast-default);
-    padding: var(var(--dsc-button-padding));
+    padding: 1rem 1.4rem;
 }
 
 .chat-bubble-skeleton {
