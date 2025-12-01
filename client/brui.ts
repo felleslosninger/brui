@@ -25,6 +25,7 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
 
             const allResults: ActionResult[] = [];
             for (const toolCall of toolCalls) {
+                console.log(toolCall)
                 if (!toolCall.function || !toolCall.function.name) {
                     allResults.push({
                         action: null,
