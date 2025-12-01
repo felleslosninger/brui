@@ -3,7 +3,6 @@
     flex-direction: column;
     height: 100%;
     padding: 0;
-    margin: 0 1rem 0;
 }
 
 .sidebar-output {
@@ -12,57 +11,28 @@
     overflow-y: auto;
 }
 
-.sidebar-input {
-    display: flex;
-    flex-shrink: 0;
-    margin-bottom: 0.4rem;
-    width: 100%;
-}
-
-.sidebar-input-content {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 0.4rem;
-}
-
-.sidebar-input-row {
-    display: flex;
-    margin-top: 0.4rem;
-    padding: 0.2rem 0 0.2rem;
-    border-radius: 2rem;
-    background-color: var(--ds-color-neutral-background-default);
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-}
-
-.sidebar-input-row > input {
-    border: none;
-    outline: none;
-    margin: 0 1rem 0;
-}
-
-.sidebar-input-buttons{
-    display: flex;
-    margin-right: 0.8rem;
-}
-
-.sidebar-input-buttons > button {
-    background: none;
-    padding: 0;
-    color: var(--ds-color-accent-text-default);
-}
-
-.sidebar-input-buttons > button:hover {
-    color: var(--ds-color-accent-base-hover)
-}
-
 .chat-bubble-wrapper,
 .chat-text-wrapper {
     display: flex;
     width: 100%;
+}
+
+.brui-sidebar-select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 0 0 0.8rem;
+}
+
+.brui-sidebar-select button {
+  padding: 0.1rem 0.8rem 0rem 0.8rem;
+}
+
+.brui-sidebar-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem;
 }
 
 /* Alignment */
@@ -89,6 +59,6 @@
     padding: 1rem 1.4rem;
 }
 
-.chat-bubble-skeleton {
-    margin: 1rem;
+.icon {
+    font-size: 1.8rem;
 }
