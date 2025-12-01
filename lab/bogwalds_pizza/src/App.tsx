@@ -4,6 +4,7 @@ import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index"
 import configData from "./config.json";
 import { ShoppingBasketIcon } from "@navikt/aksel-icons";
+import type { Mode } from "@brui/ui/src/types/message.ts";
 
 type Theme = "digdir" | "party";
 
@@ -27,6 +28,8 @@ function App() {
     table: '',
     orderNumber: '',
   });
+
+    const modes: Mode[] = ["Act", "Info"];
 
   const [submittedItems, setSubmittedItems] = useState<FormEntry[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -251,7 +254,7 @@ function App() {
         </Tabs>
       </div>
       <div className="col-span-4 shadow-lg">
-        <Sidebar inputHandler={inputHandler}/>
+        <Sidebar inputHandler={inputHandler} modes={modes}/>
       </div>
     </div>
     

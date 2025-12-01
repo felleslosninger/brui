@@ -16,7 +16,7 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
                 }
             };
             const toolCalls = await Chat(userInput, inferenceContext);
-            if (!toolCalls || toolCalls.length === 0) {
+            if (!toolCalls || toolCalls.length === 0 || typeof toolCalls === 'string') {
                 return {
                     success: false,
                     error: 'No tool calls returned from inference.'

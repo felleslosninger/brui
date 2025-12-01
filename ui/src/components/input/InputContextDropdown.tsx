@@ -3,13 +3,15 @@ import cl from 'clsx/lite';
 import { Dropdown, Input } from '@digdir/designsystemet-react';
 import { ChevronUpIcon } from '@navikt/aksel-icons';
 import { useState } from 'react';
+import { Mode } from "../../types/message";
 
 interface InputContextDropdownProps {
+    modes: Mode[];
     className?: string;
 }
 
-export default function InputContextDropdown({ className }: InputContextDropdownProps) {
-    const [selectedContext, setSelectedContext] = useState<string>('This page');
+export default function InputContextDropdown({ modes, className }: InputContextDropdownProps) {
+    const [selectedContext, setSelectedContext] = useState<string>(modes[0]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     return (
@@ -29,10 +31,10 @@ export default function InputContextDropdown({ className }: InputContextDropdown
                     placement="bottom-end"
                 >
                     <Dropdown.Heading>
-                        Pages
+                        Modes
                     </Dropdown.Heading>
                     <Dropdown.List>
-                        {['This page', 'Home', 'Menu', 'Order'].map((page) => (
+                        {modes.map((page) => (
                             <Dropdown.Item key={page}>
                                 <Dropdown.Button
                                     onClick={() => {
