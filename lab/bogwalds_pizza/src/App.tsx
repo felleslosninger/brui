@@ -37,9 +37,12 @@ function App() {
     { name: '3. Pasta Bolognese without pasta', desc: 'Grilled vegetables, olives, and mozzarella.', price: '159 kr' },
   ];
 
-    const handleSubmit = (e?: FormEvent<HTMLFormElement>) => {
-        if (e) e.preventDefault();
-        submitOrder();
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setSubmitted(true);
+
+        setSubmittedItems((prevItems) => [...prevItems, formData]);
+        setFormData({ name: "", table: "", orderNumber: "" });
     };
 
   const handleChange =
@@ -53,12 +56,6 @@ function App() {
     return { success: true, pizzaName };
   }
 
-    const submitOrder = () => {
-        setSubmitted(true);
-        setSubmittedItems(prev => [...prev, formData]);
-        setFormData({ name: "", table: "", orderNumber: "" });
-    };
-
     const fillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
         setFormData(prev => ({
             ...prev,
@@ -70,7 +67,6 @@ function App() {
         setSubmitted(false);
 
         console.log("Submitted order")
-        submitOrder()
     };
 
   const handleSetActiveTab = (args: { value: string}) => {

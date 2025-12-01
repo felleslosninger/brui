@@ -46,10 +46,9 @@ export async function Request(content: string, ctx: InferenceContext): Promise<a
             console.log(`[Inference] Tool calls: ${chat.message.tool_calls.length}`);
         }
 
-            return chat.message.tool_calls?.length
-                ? chat.message.tool_calls
-                : chat.message.content;
-
+        return chat.message.tool_calls?.length
+            ? chat.message.tool_calls
+            : chat.message.content;
     } catch (error) {
         console.error('[Inference] Error:', error instanceof Error ? error.message : error);
         throw error;

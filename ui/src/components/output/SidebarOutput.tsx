@@ -2,6 +2,9 @@ import cl from 'clsx/lite';
 import ChatBubble from './ChatBubble';
 import ChatText from './ChatText';
 import { Skeleton } from '@digdir/designsystemet-react';
+import { Link, Process } from "@navikt/ds-react";
+import { BabyWrappedIcon, FileIcon, TasklistSendIcon } from "@navikt/aksel-icons";
+import "@navikt/ds-css";
 
 interface SidebarOutputProps {
     children?: React.ReactNode;
@@ -37,6 +40,26 @@ export default function SidebarOutputRoot({ children, className, messageHistory,
                             return null;
                         }
                     })}
+
+                    <Process>
+                        <Process.Event
+                            status="completed"
+                            title="Barnet ble født"
+                            timestamp="04. august 2025"
+                            bullet={<BabyWrappedIcon />}
+                        />
+                        <Process.Event
+                            status="completed"
+                            title="Du søkte om FORELDREPENGER"
+                            timestamp="22. august 2025"
+                            bullet={<TasklistSendIcon />}
+                        >
+                            <Link href="/eksempel">
+                                <FileIcon aria-hidden fontSize={24} />
+                                Søknad om foreldrepenger ved fødsel
+                            </Link>
+                        </Process.Event>
+                    </Process>
 
                     {isLoadingResponse && (
                         <div className="chat-bubble-skeleton" key={'isLoadingResponse'}>
