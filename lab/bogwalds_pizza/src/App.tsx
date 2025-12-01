@@ -4,6 +4,7 @@ import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index"
 import configData from "./config.json";
 import { ShoppingBasketIcon } from "@navikt/aksel-icons";
+import type { Mode } from "@brui/ui/src/types/message.ts";
 
 type Theme = "digdir" | "party";
 
@@ -28,6 +29,8 @@ function App() {
     orderNumber: '',
   });
 
+    const modes: Mode[] = ["Act", "Info"];
+
   const [submittedItems, setSubmittedItems] = useState<FormEntry[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
@@ -37,9 +40,12 @@ function App() {
     { name: '3. Pasta Bolognese without pasta', desc: 'Grilled vegetables, olives, and mozzarella.', price: '159 kr' },
   ];
 
-    const handleSubmit = (e?: FormEvent<HTMLFormElement>) => {
-        if (e) e.preventDefault();
-        submitOrder();
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setSubmitted(true);
+
+        setSubmittedItems((prevItems) => [...prevItems, formData]);
+        setFormData({ name: "", table: "", orderNumber: "" });
     };
 
   const handleChange =
@@ -53,12 +59,6 @@ function App() {
     return { success: true, pizzaName };
   }
 
-    const submitOrder = () => {
-        setSubmitted(true);
-        setSubmittedItems(prev => [...prev, formData]);
-        setFormData({ name: "", table: "", orderNumber: "" });
-    };
-
     const fillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
         setFormData(prev => ({
             ...prev,
@@ -70,7 +70,6 @@ function App() {
         setSubmitted(false);
 
         console.log("Submitted order")
-        submitOrder()
     };
 
   const handleSetActiveTab = (args: { value: string}) => {
@@ -255,7 +254,7 @@ function App() {
         </Tabs>
       </div>
       <div className="col-span-4 shadow-lg">
-        <Sidebar inputHandler={inputHandler}/>
+        <Sidebar inputHandler={inputHandler} modes={modes}/>
       </div>
     </div>
     

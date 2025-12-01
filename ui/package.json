@@ -15,6 +15,8 @@
     "@digdir/designsystemet-react": "^1.1.10",
     "@digdir/designsystemet-theme": "^1.1.10",
     "@navikt/aksel-icons": "^7.32.1",
+    "@navikt/ds-css": "^7.35.0",
+    "@navikt/ds-react": "^7.35.0",
     "clsx": "^2.1.1",
     "jiti": "^2.6.1",
     "react": "^19.2.0",

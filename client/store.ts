@@ -47,6 +47,7 @@ export function createResourceStore(
             const result = await fn(extracted);
 
             let message = action.message || '';
+
             if (message) {
                 message = message.replace(/\{(\w+)}/g, (_, key) => {
                     const val = extracted[key];
