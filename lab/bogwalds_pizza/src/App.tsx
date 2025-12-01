@@ -4,6 +4,7 @@ import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index";
 import configData from "./config.json";
 import { ShoppingBasketIcon, MonitorFillIcon, MoonFillIcon, SunFillIcon } from "@navikt/aksel-icons";
+import type { Mode } from "@brui/ui/src/types/message.ts";
 
 type ColorMode = "light" | "dark" | "system";
 
@@ -29,6 +30,8 @@ function App() {
     table: "",
     orderNumber: "",
   });
+
+    const modes: Mode[] = ["Act", "Info"];
 
   const [submittedItems, setSubmittedItems] = useState<FormEntry[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -73,10 +76,13 @@ function App() {
     }
   };
 
-  const handleSubmit = (e?: FormEvent<HTMLFormElement>) => {
-    if (e) e.preventDefault();
-    submitOrder();
-  };
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setSubmitted(true);
+
+        setSubmittedItems((prevItems) => [...prevItems, formData]);
+        setFormData({ name: "", table: "", orderNumber: "" });
+    };
 
   const handleChange =
     (field: string) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -89,12 +95,6 @@ function App() {
     return { success: true, pizzaName };
   }
 
-  const submitOrder = () => {
-    setSubmitted(true);
-    setSubmittedItems(prev => [...prev, formData]);
-    setFormData({ name: "", table: "", orderNumber: "" });
-  };
-
   const fillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
     setFormData(prev => ({
       ...prev,
@@ -103,10 +103,10 @@ function App() {
       orderNumber: args.orderNumber ?? prev.orderNumber,
     }));
 
-    setSubmitted(false);
-    console.log("Submitted order");
-    submitOrder();
-  };
+        setSubmitted(false);
+
+        console.log("Submitted order")
+    };
 
   const handleSetActiveTab = (args: { value: string }) => {
     setActiveTab(args.value);
@@ -283,9 +283,8 @@ function App() {
           </Tabs.Panel>
         </Tabs>
       </div>
-
       <div className="col-span-4 shadow-lg h-screen">
-        <Sidebar inputHandler={inputHandler} />
+        <Sidebar inputHandler={inputHandler} modes={modes}/>
       </div>
     </div>
   );

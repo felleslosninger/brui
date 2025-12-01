@@ -4,14 +4,16 @@ import InputSubmitButton from './InputSubmitButton';
 import InputMicrophoneButton from './InputMicrophoneButton';
 import InputContextDropdown from './InputContextDropdown';
 import { FormEvent } from 'react';
+import { Mode } from "../../types/message";
 
 interface SidebarInputProps {
     children?: React.ReactNode;
     className?: string;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+    modes: Mode[];
 }
 
-export default function SidebarInputRoot({ children, className, onSubmit }: SidebarInputProps) {
+export default function SidebarInputRoot({ children, className, onSubmit, modes }: SidebarInputProps) {
     return (
         <div className={cl('sidebar-input', className)}>
             {children ? (
@@ -19,8 +21,7 @@ export default function SidebarInputRoot({ children, className, onSubmit }: Side
             ) : (
                 <form onSubmit={onSubmit} className="sidebar-input-content">
                     <div className='brui-sidebar-select'>
-                        <SidebarInput.ContextMenu/>
-                        <SidebarInput.ContextMenu/>
+                        <SidebarInput.ContextMenu modes={modes}/>
                     </div>
                     <div className='brui-sidebar-input'>
                         <SidebarInput.InputField/>
