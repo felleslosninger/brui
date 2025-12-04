@@ -4,6 +4,8 @@
 
 ### 1. Install Dependencies
 
+> **Note:** If you don't have a local Ollama instance or want to run one, you can use a remote one by editing [`server/config.yaml`](server/config.yaml) and [`lab/bogwalds_pizza/src/config.json`](lab/bogwalds_pizza/src/config.json). Change the inference `name` from `local-nano` to `external-nano` in the config.json file.
+
 **Ollama** (local LLM inference)
 ```sh
 # Download from https://ollama.com/
@@ -66,9 +68,6 @@ Type these prompts in the chat sidebar:
 **"Connection refused"**
 - Make sure Ollama is running: `ollama list`
 - Check proxy server is running on port 8091
-
-**Tool calls not working**
-- Try simpler prompts like "go to menu"
 
 **Model errors**
 - Verify model downloaded: `ollama list`
