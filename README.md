@@ -68,7 +68,6 @@ Type these prompts in the chat sidebar:
 - Check proxy server is running on port 8091
 
 **Tool calls not working**
-- Check browser console for `[Inference]` logs
 - Try simpler prompts like "go to menu"
 
 **Model errors**
