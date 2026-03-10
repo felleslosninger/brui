@@ -1,5 +1,11 @@
 import type { Option } from './types';
-import type { ToolCall } from "ollama";
+
+interface ToolCall {
+    function?: {
+        name: string;
+        arguments?: any;
+    };
+}
 
 export async function selectOption(
     options: Option[],
