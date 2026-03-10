@@ -16,7 +16,7 @@ Download required model:
 Go is required: https://go.dev/dl/
 
 ```
-cd proxy
+cd server
 go run .
 ```
 

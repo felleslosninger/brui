@@ -25,7 +25,6 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
 
             console.log("returning tool calls:", JSON.stringify(toolCalls, null, 2));
 
-            return;
 
             if (!toolCalls || toolCalls.length === 0 || typeof toolCalls === 'string') {
                 return {

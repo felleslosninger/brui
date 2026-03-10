@@ -34,7 +34,7 @@ export function SidebarRoot({ children, className, modes, config, functions }: S
         setIsLoadingResponse(true);
 
         try {
-            askAI(inputText, dropdownValue);
+            await askAI(inputText, dropdownValue);
 
         } finally {
             setIsLoadingResponse(false);
