@@ -6,7 +6,7 @@ import {
     CheckmarkCircleIcon,
 } from '@navikt/aksel-icons';
 
-interface ThinkingStep {
+export interface ThinkingStep {
     label: string;
     status: 'completed' | 'active' | 'pending';
 }
@@ -15,6 +15,7 @@ interface ThinkingProcessProps {
     children?: React.ReactNode;
     className?: string;
     steps?: string[];
+    controlledSteps?: ThinkingStep[];
 }
 
 const defaultSteps = [
@@ -24,7 +25,7 @@ const defaultSteps = [
     'Formulating a response',
 ];
 
-export default function ThinkingProcess({ children, className, steps }: ThinkingProcessProps) {
+export default function ThinkingProcess({ children, className, steps, controlledSteps }: ThinkingProcessProps) {
     const stepLabels = steps ?? defaultSteps;
     const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>(
         stepLabels.map((label, i) => ({
@@ -34,6 +35,9 @@ export default function ThinkingProcess({ children, className, steps }: Thinking
     );
 
     useEffect(() => {
+        // Skip auto-animation when controlled externally
+        if (controlledSteps) return;
+
         let current = 0;
 
         const interval = setInterval(() => {
@@ -58,12 +62,14 @@ export default function ThinkingProcess({ children, className, steps }: Thinking
         }, 1200);
 
         return () => clearInterval(interval);
-    }, [stepLabels.length]);
+    }, [stepLabels.length, controlledSteps]);
+
+    const displaySteps = controlledSteps ?? thinkingSteps;
 
     return (
         <div className={cl('brui-thinking-process', className)} data-size="sm">
             <ol className="brui-thinking-steps">
-                {thinkingSteps.map((step, i) => (
+                {displaySteps.map((step, i) => (
                     <li
                         key={i}
                         className={cl('brui-thinking-step', `brui-thinking-step--${step.status}`)}

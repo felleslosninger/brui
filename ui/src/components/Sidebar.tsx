@@ -3,27 +3,23 @@ import '../styling/sidebar.css';
 import cl from 'clsx/lite';
 import { useState } from 'react';
 import { SidebarContext } from './SidebarContext';
-import { Message, Mode } from '../types/message';
+import { Mode } from '../types/message';
 import SidebarOutput from './output/SidebarOutput';
 import SidebarInput from './input/SidebarInput';
+import { useToolRunner } from './hooks/useToolRunner';
+import * as Brui from '../../../client/index';
+import { FunctionRegistry } from '../../../client/index';
 
 interface SidebarProps {
-    children: React.ReactNode;
+    children?: React.ReactNode;
     className?: string;
     modes: Mode[];
-    inputHandler: (
-        userInput: { textInput: string; contextChoice: string }
-    ) => Promise<{
-        success: boolean;
-        executionResults?: any[];
-        error?: string;
-    }>;
+    config: Brui.Configuration;
+    functions: FunctionRegistry;
 }
 
-function SidebarRoot({ children, className, inputHandler, modes }: SidebarProps) {
-    const [messageHistory, setMessageHistory] = useState<Message[]>([]);
-    const [questionCounter, setQuestionCounter] = useState(0);
->>>>>>> Stashed changes
+function SidebarRoot({ children, className, modes, config, functions }: SidebarProps) {
+    const { askAI, messageHistory } = useToolRunner(config, functions);
     const [isLoadingResponse, setIsLoadingResponse] = useState(false);
 
     async function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
@@ -32,31 +28,10 @@ function SidebarRoot({ children, className, inputHandler, modes }: SidebarProps)
         const form = event.currentTarget;
         const formData = new FormData(form);
         const inputText = String(formData.get('chatMessage') || '');
-        const dropdownValue = String(formData.get('contextChoice') || '');
+        const dropdownValue = String(formData.get('contextChoice') || '') as Mode;
 
         if (!inputText.trim()) return;
 
-        // Clear the textarea immediately
-        const textarea = form.querySelector<HTMLTextAreaElement>('textarea[name="chatMessage"]');
-        if (textarea) textarea.value = '';
-
-        const currentQuestionIndex = questionCounter + 1;
-        setQuestionCounter(currentQuestionIndex);
-
-        setMessageHistory(prev => [
-            ...prev,
-            {
-                userMessage: {
-                    messageIndex: currentQuestionIndex.toString(),
-                    timeToComplete: 0,
-                    mode: dropdownValue as Mode,
-                    text: inputText
-                },
-                assistantMessages: []
-            }
-        ]);
-
->>>>>>> Stashed changes
         setIsLoadingResponse(true);
 
         try {

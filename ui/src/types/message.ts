@@ -5,6 +5,7 @@ export type Mode = 'Info' | 'Act';
 export interface Message {
     userMessage: UserMessage;
     assistantMessages: AssistantMessage[];
+    finalResponse?: string;
 }
 
 interface UserMessage {

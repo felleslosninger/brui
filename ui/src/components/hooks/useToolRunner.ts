@@ -34,7 +34,7 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
             });
         }
 
-        await runTools(inputText, null, {
+        const result = await runTools(inputText, null, {
             onToolCallsKnown: (actions) => {
                 console.log("Tool calls known:", actions);
                 setMessageHistory(prev => {
@@ -67,6 +67,20 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
                 updateAssistantMessage(action, { status: "uncompleted", text: error });
             }
         });
+
+        // Store the final LLM response
+        if (result) {
+            const responseText = typeof result === 'string' ? result : result?.message?.content ?? result?.content ?? '';
+            if (responseText) {
+                setMessageHistory(prev => {
+                    const copy = [...prev];
+                    const m = { ...copy[copy.length - 1] };
+                    m.finalResponse = responseText;
+                    copy[copy.length - 1] = m;
+                    return copy;
+                });
+            }
+        }
     }
 
     return { askAI, messageHistory };

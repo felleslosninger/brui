@@ -3,8 +3,6 @@ import ChatBubble from './ChatBubble';
 import ChatText from './ChatText';
 import ThinkingProcess from './ThinkingProcess';
 import { Skeleton } from '@digdir/designsystemet-react';
-import { Process } from '@navikt/ds-react';
-import { TasklistSendIcon } from '@navikt/aksel-icons';
 import { useSidebarContext } from '../SidebarContext';
 import { Message } from '../../types/message';
 
@@ -29,10 +27,6 @@ function SidebarOutputRoot({
                                 {msg.userMessage.text}
                             </SidebarOutput.ChatText>
 
-                            {msg.userMessage.text.toLowerCase().includes('think about it') && (
-                                <SidebarOutput.ThinkingProcess />
-                            )}
-
                             {msg.userMessage.mode === 'Info' && (
                                 msg.assistantMessages.map((assistantMsg, i) => (
                                     <SidebarOutput.ChatBubble key={i}>
@@ -41,18 +35,20 @@ function SidebarOutputRoot({
                                 ))
                             )}
 
-                            {msg.userMessage.mode === 'Act' && (
-                                <Process>
-                                    {msg.assistantMessages.map((assistantMsg, i) => (
-                                        <Process.Event
-                                            key={i}
-                                            status={assistantMsg.status}
-                                            title={assistantMsg.text}
-                                            timestamp={new Date().toLocaleDateString('nb-NO')}
-                                            bullet={<TasklistSendIcon />}
-                                        />
-                                    ))}
-                                </Process>
+                            {msg.userMessage.mode === 'Act' && msg.assistantMessages.length > 0 && (
+                                <SidebarOutput.ThinkingProcess
+                                    controlledSteps={msg.assistantMessages.map(am => ({
+                                        label: am.text,
+                                        status: am.status === 'uncompleted' ? 'pending' as const
+                                            : (am.status as 'completed' | 'active' | 'pending'),
+                                    }))}
+                                />
+                            )}
+
+                            {msg.finalResponse && (
+                                <SidebarOutput.ChatBubble>
+                                    {msg.finalResponse}
+                                </SidebarOutput.ChatBubble>
                             )}
                         </div>
                     ))}
