@@ -1,0 +1,188 @@
+name: Agent
+
+env:
+  AGENT_NAME: claude
+  AGENT_PACKAGE: "@anthropic-ai/claude-code"
+  AGENT_COMMAND: claude
+  AGENT_ARGS: --permission-mode acceptEdits --output-format text
+  AGENT_PR_LABEL: agent:suggest
+
+on:
+  issues:
+    types: [labeled]
+  pull_request_target:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      AGENT_AUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+    steps:
+      - id: trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          body="$(jq -r '.comment.body // ""' "${GITHUB_EVENT_PATH}")"
+          match=false
+          can_pr=false
+          number=""
+          author=""
+
+          if [[ "${GITHUB_EVENT_NAME}" == "issues" ]]; then
+            number="$(jq -r '.issue.number' "${GITHUB_EVENT_PATH}")"
+            author="$(jq -r '.issue.user.login' "${GITHUB_EVENT_PATH}")"
+            [[ "$(jq -r '.label.name // ""' "${GITHUB_EVENT_PATH}")" == "${AGENT_NAME}" ]] && match=true
+            jq -e -r --arg label "${AGENT_PR_LABEL}" '[.issue.labels[]?.name == $label] | any' "${GITHUB_EVENT_PATH}" >/dev/null && can_pr=true || true
+          elif [[ "${GITHUB_EVENT_NAME}" == "pull_request_target" ]]; then
+            number="$(jq -r '.pull_request.number' "${GITHUB_EVENT_PATH}")"
+            [[ "$(jq -r '.label.name // ""' "${GITHUB_EVENT_PATH}")" == "${AGENT_NAME}" ]] && match=true
+          elif [[ "${body}" == "/${AGENT_NAME}"* ]] || [[ "${body}" == "@${AGENT_NAME}"* ]] || [[ "${body}" == *" @${AGENT_NAME}"* ]]; then
+            match=true
+            number="$(jq -r '.issue.number' "${GITHUB_EVENT_PATH}")"
+            author="$(jq -r '.issue.user.login' "${GITHUB_EVENT_PATH}")"
+            if ! jq -e '.issue.pull_request' "${GITHUB_EVENT_PATH}" >/dev/null; then
+              jq -e -r --arg label "${AGENT_PR_LABEL}" '[.issue.labels[]?.name == $label] | any' "${GITHUB_EVENT_PATH}" >/dev/null && can_pr=true || true
+            fi
+          fi
+
+          echo "match=${match}" >> "${GITHUB_OUTPUT}"
+          echo "can_pr=${can_pr}" >> "${GITHUB_OUTPUT}"
+          echo "number=${number}" >> "${GITHUB_OUTPUT}"
+          echo "author=${author}" >> "${GITHUB_OUTPUT}"
+
+      - if: steps.trigger.outputs.match != 'true'
+        run: echo "No matching agent trigger."
+
+      - id: ref
+        if: steps.trigger.outputs.match == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ref="${GITHUB_SHA}"
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request_target" ]]; then
+            if [[ "${{ github.event.pull_request.head.repo.full_name }}" != "${GITHUB_REPOSITORY}" ]]; then
+              echo "Fork pull requests are not supported."
+              exit 1
+            fi
+            ref="${{ github.event.pull_request.head.sha }}"
+          elif jq -e '.issue.pull_request' "${GITHUB_EVENT_PATH}" >/dev/null; then
+            pr="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ github.event.issue.number }}")"
+            if [[ "$(jq -r '.head.repo.full_name' <<< "${pr}")" != "${GITHUB_REPOSITORY}" ]]; then
+              echo "Fork pull requests are not supported."
+              exit 1
+            fi
+            ref="$(jq -r '.head.sha' <<< "${pr}")"
+          fi
+
+          echo "value=${ref}" >> "${GITHUB_OUTPUT}"
+
+      - if: steps.trigger.outputs.match == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.value }}
+
+      - if: steps.trigger.outputs.match == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - if: steps.trigger.outputs.match == 'true'
+        run: npm install --global "${AGENT_PACKAGE}"
+
+      - id: prompt
+        if: steps.trigger.outputs.match == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${AGENT_AUTH_TOKEN}" ]]; then
+            echo "Missing CLAUDE_CODE_OAUTH_TOKEN."
+            exit 1
+          fi
+
+          if [[ "${GITHUB_EVENT_NAME}" == "issue_comment" ]]; then
+            number="$(jq -r '.issue.number' "${GITHUB_EVENT_PATH}")"
+            title="$(jq -r '.issue.title' "${GITHUB_EVENT_PATH}")"
+            body="$(jq -r '.issue.body // ""' "${GITHUB_EVENT_PATH}")"
+            comment="$(jq -r '.comment.body // ""' "${GITHUB_EVENT_PATH}")"
+            printf '%s\n\n%s\n\n%s\n' "${title}" "${body}" "${comment}" > prompt.txt
+          elif [[ "${GITHUB_EVENT_NAME}" == "pull_request_target" ]]; then
+            number="$(jq -r '.pull_request.number' "${GITHUB_EVENT_PATH}")"
+            title="$(jq -r '.pull_request.title' "${GITHUB_EVENT_PATH}")"
+            body="$(jq -r '.pull_request.body // ""' "${GITHUB_EVENT_PATH}")"
+            printf '%s\n\n%s\n' "${title}" "${body}" > prompt.txt
+          else
+            number="$(jq -r '.issue.number' "${GITHUB_EVENT_PATH}")"
+            title="$(jq -r '.issue.title' "${GITHUB_EVENT_PATH}")"
+            body="$(jq -r '.issue.body // ""' "${GITHUB_EVENT_PATH}")"
+            printf '%s\n\n%s\n' "${title}" "${body}" > prompt.txt
+          fi
+
+          echo "number=${number}" >> "${GITHUB_OUTPUT}"
+
+      - if: steps.trigger.outputs.match == 'true'
+        shell: bash
+        run: |
+          set -o pipefail
+          export CLAUDE_CODE_OAUTH_TOKEN="${AGENT_AUTH_TOKEN}"
+          "${AGENT_COMMAND}" -p "$(cat prompt.txt)" ${AGENT_ARGS} | tee response.txt
+
+      - id: pr
+        if: steps.trigger.outputs.match == 'true' && steps.trigger.outputs.can_pr == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "created=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          branch="agent/${AGENT_NAME}-${{ steps.trigger.outputs.number }}-${GITHUB_RUN_ID}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${branch}"
+          git add -A
+          git commit -m "agent: address #${{ steps.trigger.outputs.number }}"
+          git push --set-upstream origin "${branch}"
+
+          pr_url="$(
+            gh pr create \
+              --title "${AGENT_NAME}: address #${{ steps.trigger.outputs.number }}" \
+              --body $'Closes #${{ steps.trigger.outputs.number }}\n\n@${{ steps.trigger.outputs.author }}' \
+              --base "${{ github.event.repository.default_branch }}" \
+              --head "${branch}"
+          )"
+
+          echo "created=true" >> "${GITHUB_OUTPUT}"
+          echo "url=${pr_url}" >> "${GITHUB_OUTPUT}"
+
+      - if: always() && steps.trigger.outputs.match == 'true'
+        shell: bash
+        run: |
+          {
+            if [[ "${{ steps.pr.outputs.created }}" == "true" ]]; then
+              echo "PR: ${{ steps.pr.outputs.url }}"
+              echo
+            fi
+            if [[ -f response.txt ]]; then
+              cat response.txt
+            else
+              echo "Agent run failed."
+            fi
+          } > comment.txt
+
+          gh issue comment "${{ steps.prompt.outputs.number }}" --body-file comment.txt
