@@ -20,7 +20,6 @@ export default function SidebarInputRoot({ children, className, onSubmit, modes 
                 children
             ) : (
                 <form onSubmit={onSubmit} className="sidebar-input-content">
-                    <SidebarInput.ContextMenu modes={modes} />
                     <div className='brui-sidebar-input'>
                         <SidebarInput.InputField/>
                         <SidebarInput.Microphone/>

@@ -10,11 +10,14 @@ export interface Decision {
     actions: string[];
 }
 
-interface FunctionParameter {
+export interface FunctionParameter {
     type: string;
+    description?: string;
     enum?: string[];
+    items?: FunctionParameter;
     properties?: Record<string, FunctionParameter | undefined>;
     required?: string[];
+    additionalProperties?: boolean | FunctionParameter;
 }
 
 interface Tool {

@@ -3,68 +3,101 @@ import { Message, Mode } from "../../types/message";
 import { Configuration, FunctionRegistry, Setup } from "../../../../client";
 import { ProcessEventProps } from "@navikt/ds-react/Process";
 
+type InternalStatus = "pending" | "running" | "success" | "error";
+
+const statusMap: Record<InternalStatus, ProcessEventProps["status"]> = {
+    pending: "uncompleted",
+    running: "active",
+    success: "completed",
+    error: "completed"
+};
+
 export function useToolRunner(config: Configuration, functions: FunctionRegistry) {
     const runTools = Setup(config, functions);
     const [messageHistory, setMessageHistory] = useState<Message[]>([]);
 
     async function askAI(inputText: string, chosenMode: Mode) {
-        setMessageHistory(prev => {
-            const index = prev.length;
-            const newMessage: Message = {
+        const messageId = crypto.randomUUID();
+
+        // Add the user message
+        setMessageHistory(prev => [
+            ...prev,
+            {
+                id: messageId,
                 userMessage: {
                     text: inputText,
                     mode: chosenMode,
-                    messageIndex: index,
                     timestamp: Date.now(),
+                    messageIndex: prev.length,
                 },
                 assistantMessages: []
-            };
-            return [...prev, newMessage];
-        });
+            }
+        ]);
 
-        function updateAssistantMessage(action: string, patch: { status: ProcessEventProps['status']; text: string }) {
-            setMessageHistory(prev => {
-                const copy = [...prev];
-                const m = copy[copy.length - 1];
-                m.assistantMessages = m.assistantMessages.map(am =>
-                    am.action === action ? { ...am, ...patch } : am
-                );
-                copy[copy.length - 1] = m;
-                return copy;
-            });
+        function updateAssistantMessage(
+            action: string,
+            patch: { status: ProcessEventProps["status"]; text: string }
+        ) {
+            setMessageHistory(prev =>
+                prev.map(msg => {
+                    if (msg.id !== messageId) return msg;
+
+                    return {
+                        ...msg,
+                        assistantMessages: msg.assistantMessages.map(am =>
+                            am.action === action ? { ...am, ...patch } : am
+                        )
+                    };
+                })
+            );
         }
 
         await runTools(inputText, null, {
             onToolCallsKnown: (actions) => {
-                console.log("Tool calls known:", actions);
-                setMessageHistory(prev => {
-                    const copy = [...prev];
-                    const m = copy[copy.length - 1];
-                    const pending = actions.map(action => ({
-                        id: crypto.randomUUID(),
-                        action,
-                        status: "pending" as ProcessEventProps['status'],
-                        text: `Waiting for ${action}...`,
-                        timestamp: Date.now(),
-                        messageIndex: m.userMessage.messageIndex,
-                        mode: m.userMessage.mode
-                    }));
-                    m.assistantMessages = [...m.assistantMessages, ...pending];
-                    copy[copy.length - 1] = m;
-                    return copy;
-                });
+                setMessageHistory(prev =>
+                    prev.map(msg => {
+                        if (msg.id !== messageId) return msg;
+
+                        const pending = actions.map(action => ({
+                            id: crypto.randomUUID(),
+                            action,
+                            status: statusMap.pending,
+                            text: `Waiting for ${action}...`,
+                            timestamp: Date.now(),
+                            messageIndex: prev.length,
+                            mode: msg.userMessage.mode
+                        }));
+
+                        return {
+                            ...msg,
+                            assistantMessages: [
+                                ...msg.assistantMessages,
+                                ...pending
+                            ]
+                        };
+                    })
+                );
             },
 
             onActionStart: (action) => {
-                updateAssistantMessage(action, { status: "active", text: `Running ${action}...` });
+                updateAssistantMessage(action, {
+                    status: statusMap.running,
+                    text: `Running ${action}...`
+                });
             },
 
             onActionComplete: (action, result) => {
-                updateAssistantMessage(action, { status: "completed", text: result.message || result.result || `${action} completed` });
+                updateAssistantMessage(action, {
+                    status: statusMap.success,
+                    text: result.message || result.result || `${action} completed`
+                });
             },
 
             onActionError: (action, error) => {
-                updateAssistantMessage(action, { status: "uncompleted", text: error });
+                updateAssistantMessage(action, {
+                    status: statusMap.error,
+                    text: String(error)
+                });
             }
         });
     }

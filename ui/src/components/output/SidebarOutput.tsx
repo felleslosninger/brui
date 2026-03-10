@@ -52,7 +52,7 @@ export default function SidebarOutputRoot({
                                             key={i}
                                             status={assistantMsg.status}
                                             title={assistantMsg.text}
-                                            timestamp={new Date().toLocaleDateString("nb-NO")}
+                                            timestamp={new Date(assistantMsg.timestamp).toLocaleString("nb-NO")}
                                             bullet={<TasklistSendIcon />}
                                         />
                                     ))}
