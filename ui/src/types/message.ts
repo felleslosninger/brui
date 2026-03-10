@@ -16,6 +16,7 @@ interface UserMessage {
 }
 
 interface AssistantMessage {
+    id: string;
     messageIndex: number;
     timestamp: number;
     text: string;

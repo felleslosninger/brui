@@ -9,7 +9,7 @@ const statusMap: Record<InternalStatus, ProcessEventProps["status"]> = {
     pending: "uncompleted",
     running: "active",
     success: "completed",
-    error: "completed"
+    error: undefined
 };
 
 export function useToolRunner(config: Configuration, functions: FunctionRegistry) {
@@ -63,7 +63,7 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
                             status: statusMap.pending,
                             text: `Waiting for ${action}...`,
                             timestamp: Date.now(),
-                            messageIndex: prev.length,
+                            messageIndex: msg.userMessage.messageIndex,
                             mode: msg.userMessage.mode
                         }));
 
