@@ -2,7 +2,7 @@ name: Agent
 
 env:
   AGENT_NAME: claude
-  AGENT_PACKAGE: "@anthropic-ai/claude-code"
+  AGENT_PACKAGE: "@anthropic-ai/claude-code@1.0.100"
   AGENT_COMMAND: claude
   AGENT_ARGS: --permission-mode acceptEdits --output-format text
   AGENT_SUGGEST_LABEL: agent:suggest
@@ -20,11 +20,17 @@ permissions:
   issues: write
   pull-requests: write
 
+concurrency:
+  group: agent-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   run:
     runs-on: ubuntu-latest
     env:
       AGENT_AUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      PROMPT_PATH: ${{ runner.temp }}/agent-prompt.txt
+      RESPONSE_PATH: ${{ runner.temp }}/agent-response.txt
     steps:
       - id: context
         uses: actions/github-script@v8
@@ -37,6 +43,20 @@ jobs:
             const suggestLabel = process.env.AGENT_SUGGEST_LABEL;
             const payload = context.payload;
             const repoFullName = `${context.repo.owner}/${context.repo.repo}`;
+            const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+
+            async function actorHasWriteAccess() {
+              try {
+                const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  username: context.actor,
+                });
+                return ["admin", "write"].includes(data.permission);
+              } catch {
+                return false;
+              }
+            }
 
             let match = false;
             let canSuggest = false;
@@ -49,13 +69,14 @@ jobs:
               const issue = payload.issue;
               number = String(issue.number);
               author = issue.user.login;
-              match = payload.label?.name === agent;
+              match = payload.label?.name === agent && (await actorHasWriteAccess());
               canSuggest = issue.labels?.some((label) => label.name === suggestLabel) ?? false;
               prompt = [issue.title, issue.body || ""].filter(Boolean).join("\n\n");
             } else if (context.eventName === "pull_request_target") {
               const pr = payload.pull_request;
               number = String(pr.number);
-              if (payload.label?.name === agent && pr.head.repo.full_name === repoFullName) {
+              author = pr.user.login;
+              if (payload.label?.name === agent && pr.head.repo.full_name === repoFullName && (await actorHasWriteAccess())) {
                 match = true;
                 ref = pr.head.sha;
                 prompt = [pr.title, pr.body || ""].filter(Boolean).join("\n\n");
@@ -66,8 +87,10 @@ jobs:
                 comment.startsWith(`/${agent}`) ||
                 comment.startsWith(`@${agent}`) ||
                 comment.includes(` @${agent}`);
+              const isTrustedCommenter = trustedAssociations.has(payload.comment?.author_association || "");
+              const isBotComment = Boolean(payload.comment?.user?.type === "Bot" || payload.comment?.user?.login === "github-actions[bot]");
 
-              if (chatsWithAgent) {
+              if (chatsWithAgent && isTrustedCommenter && !isBotComment) {
                 match = true;
                 number = String(payload.issue.number);
                 author = payload.issue.user.login;
@@ -99,13 +122,11 @@ jobs:
             core.setOutput("ref", ref);
             core.setOutput("prompt", prompt);
 
-      - if: steps.context.outputs.match != 'true'
-        run: echo "No matching agent trigger."
-
       - if: steps.context.outputs.match == 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.context.outputs.ref }}
+          persist-credentials: false
 
       - if: steps.context.outputs.match == 'true'
         uses: actions/setup-node@v4
@@ -127,13 +148,14 @@ jobs:
             exit 1
           fi
 
-          printf '%s' "${PROMPT}" > prompt.txt
+          printf '%s' "${PROMPT}" > "${PROMPT_PATH}"
           export CLAUDE_CODE_OAUTH_TOKEN="${AGENT_AUTH_TOKEN}"
-          set -o pipefail
-          "${AGENT_COMMAND}" -p "$(cat prompt.txt)" ${AGENT_ARGS} | tee response.txt
+          "${AGENT_COMMAND}" -p "$(cat "${PROMPT_PATH}")" ${AGENT_ARGS} | tee "${RESPONSE_PATH}"
 
       - id: branch
         if: steps.context.outputs.match == 'true' && steps.context.outputs.can_suggest == 'true'
+        env:
+          PUSH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -150,7 +172,7 @@ jobs:
           git checkout -b "${branch}"
           git add -A
           git commit -m "agent: address #${{ steps.context.outputs.number }}"
-          git push --set-upstream origin "${branch}"
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "${PUSH_TOKEN}" | base64 | tr -d '\n')" push origin "HEAD:${branch}"
 
           echo "created=true" >> "${GITHUB_OUTPUT}"
           echo "name=${branch}" >> "${GITHUB_OUTPUT}"
@@ -163,6 +185,7 @@ jobs:
           BRANCH_CREATED: ${{ steps.branch.outputs.created }}
           BRANCH_NAME: ${{ steps.branch.outputs.name }}
           AGENT_NAME: ${{ env.AGENT_NAME }}
+          RESPONSE_PATH: ${{ env.RESPONSE_PATH }}
         with:
           script: |
             const fs = require("fs");
@@ -186,15 +209,30 @@ jobs:
               prUrl = pr.data.html_url;
             }
 
-            const response = fs.existsSync("response.txt")
-              ? fs.readFileSync("response.txt", "utf8")
+            const response = fs.existsSync(process.env.RESPONSE_PATH)
+              ? fs.readFileSync(process.env.RESPONSE_PATH, "utf8")
               : "Agent run failed.";
 
             const body = prUrl ? `PR: ${prUrl}\n\n${response}` : response;
+            const maxLength = 60000;
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: number,
-              body,
-            });
+            if (body.length <= maxLength) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: number,
+                body,
+              });
+              return;
+            }
+
+            const parts = Math.ceil(body.length / maxLength);
+            for (let i = 0; i < parts; i += 1) {
+              const chunk = body.slice(i * maxLength, (i + 1) * maxLength);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: number,
+                body: `Part ${i + 1}/${parts}\n\n${chunk}`,
+              });
+            }
