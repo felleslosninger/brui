@@ -111,6 +111,7 @@ jobs:
                   }
 
                   ref = pr.data.head.sha;
+                  canSuggest = (pr.data.labels || []).some((label) => label.name === suggestLabel);
                 } else {
                   canSuggest = payload.issue.labels?.some((label) => label.name === suggestLabel) ?? false;
                 }
@@ -153,7 +154,13 @@ jobs:
 
           printf '%s' "${PROMPT}" > "${PROMPT_PATH}"
           export CLAUDE_CODE_OAUTH_TOKEN="${AGENT_AUTH_TOKEN}"
-          "${AGENT_COMMAND}" -p "$(cat "${PROMPT_PATH}")" ${AGENT_ARGS} | tee "${RESPONSE_PATH}"
+          "${AGENT_COMMAND}" -p "$(cat "${PROMPT_PATH}")" ${AGENT_ARGS} > "${RESPONSE_PATH}"
+
+          # Redact the auth token from agent output before it is logged or posted
+          if [[ -n "${AGENT_AUTH_TOKEN}" && -f "${RESPONSE_PATH}" ]]; then
+            sed -i "s|${AGENT_AUTH_TOKEN}|***REDACTED***|g" "${RESPONSE_PATH}"
+          fi
+          cat "${RESPONSE_PATH}"
 
       - id: branch
         if: steps.context.outputs.match == 'true' && steps.context.outputs.can_suggest == 'true'
