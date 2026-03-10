@@ -1,26 +1,29 @@
-import { type ChangeEvent, type FormEvent, useState } from 'react';
-import { Button, Card, Heading, Paragraph, Tabs, Textfield, } from '@digdir/designsystemet-react';
+import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react';
+import { Button, Card, Heading, Paragraph, Tabs, Textfield } from '@digdir/designsystemet-react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
-import * as Brui from "../../../client/index"
+import * as Brui from "../../../client/index";
 import configDataRaw from "./config.json";
-import { ShoppingBasketIcon } from "@navikt/aksel-icons";
+import { ShoppingBasketIcon, MonitorFillIcon, MoonFillIcon, SunFillIcon } from "@navikt/aksel-icons";
 import type { Mode } from "@brui/ui/src/types/message.ts";
 
-type Theme = "digdir" | "party";
+type ColorMode = "light" | "dark" | "system";
 
 interface FormEntry {
-    name: string;
-    table: string;
-    orderNumber: string;
+  name: string;
+  table: string;
+  orderNumber: string;
 }
 
 function App() {
-  const [theme, setTheme] = useState<Theme>("digdir");
-  const [activeTab, setActiveTab] = useState('home');
+  const [colorMode, setColorMode] = useState<ColorMode>(
+    (localStorage.getItem("color-mode") as ColorMode) || "system"
+  );
+
+  const [activeTab, setActiveTab] = useState("home");
   const [formData, setFormData] = useState<FormEntry>({
-    name: '',
-    table: '',
-    orderNumber: '',
+    name: "",
+    table: "",
+    orderNumber: "",
   });
 
   const configData = configDataRaw as Brui.Configuration;
@@ -34,6 +37,40 @@ function App() {
     { name: '2. Pasta Bolognese without bacon', desc: 'Spicy pepperoni with mozzarella and tomato sauce.', price: '169 kr' },
     { name: '3. Pasta Bolognese without pasta', desc: 'Grilled vegetables, olives, and mozzarella.', price: '159 kr' },
   ];
+
+  const darkMode =
+    colorMode === "dark" ||
+    (colorMode === "system" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  useEffect(() => {
+    const html = document.documentElement;
+
+    html.setAttribute("data-color-scheme", colorMode);
+
+    html.classList.toggle("dark", darkMode);
+    html.classList.toggle("light", !darkMode);
+  }, [colorMode, darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem("color-mode", colorMode);
+  }, [colorMode]);
+
+  const cycleThemeButton = () => {
+    setColorMode(prev =>
+      prev === "light"  ? "dark" :
+      prev === "dark"   ? "system" :
+                          "light"
+    );
+  };
+
+  const cycleButtonLabel = () => {
+    switch (colorMode) {
+      case "light": return <><SunFillIcon/> Light mode</>;
+      case "dark": return <><MoonFillIcon/> Darn mode</>;
+      case "system": return <><MonitorFillIcon/> System mode</>;
+    }
+  };
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -50,7 +87,7 @@ function App() {
 
   function addPizzaToOrder(args: Record<string, unknown>) {
     const pizzaName = args.pizzaName;
-    console.log('Adding pizza to order:', pizzaName);
+    console.log("Adding pizza to order:", pizzaName);
     return { success: true, pizzaName };
   }
 
@@ -67,9 +104,9 @@ function App() {
         console.log("Submitted order")
     };
 
-  const handleSetActiveTab = (args: { value: string}) => {
-      setActiveTab(args.value)
-  }
+  const handleSetActiveTab = (args: { value: string }) => {
+    setActiveTab(args.value);
+  };
 
   const functions: Brui.FunctionRegistry = {
     addPizzaToOrder,
@@ -78,161 +115,154 @@ function App() {
   };
 
   return (
-    <div className='grid grid-cols-12 h-screen' data-theme={theme}>
+    <div className="grid grid-cols-12 h-screen">
       <div className="col-span-8">
-          <div className="flex flex-row justify-between items-center m-auto px-6 py-6">
-              <Paragraph data-size="xl">
-                  Velkommen til Bøgwalds pizza
-              </Paragraph>
+        <div className="flex flex-row justify-between items-center m-auto px-6 py-6">
+          <Paragraph data-size="xl">
+            Velkommen til Bøgwalds pizza
+          </Paragraph>
 
-              <Button onClick={() => setTheme(theme === "digdir" ? "party" : "digdir")}>
-                  {theme === "party" ? (
-                      <>D</>
-                  ) : (
-                      <>🍕</>
-                  )}
-              </Button>
-          </div>
+          <Button data-size={'sm'} onClick={cycleThemeButton}>
+            {cycleButtonLabel()}
+          </Button>
+        </div>
 
         <Tabs
-            className="z-0"
-            value={activeTab}
-            onChange={(value) => {
-              setActiveTab(value);
-              setSubmitted(false);
-            }}
+          className="z-0"
+          value={activeTab}
+          onChange={(value) => {
+            setActiveTab(value);
+            setSubmitted(false);
+          }}
         >
-          <Tabs.List className='px-20'>
+          <Tabs.List className="px-20">
             <Tabs.Tab value="home">Home</Tabs.Tab>
             <Tabs.Tab value="menu">Menu</Tabs.Tab>
             <Tabs.Tab value="order">Order</Tabs.Tab>
             <Tabs.Tab value="cart" className="ml-auto">
-                <>
-                    {submittedItems.length > 0 && <div>{submittedItems.length}</div>}
-                    <ShoppingBasketIcon />
-                </>
+              <>
+                {submittedItems.length > 0 && <div>{submittedItems.length}</div>}
+                <ShoppingBasketIcon />
+              </>
             </Tabs.Tab>
           </Tabs.List>
 
-            <Tabs.Panel value="home" className="mx-20">
-                <Card className="pizza-bg breathing-element card bg-transparent border-0">
+          <Tabs.Panel value="home" className="mx-20">
+            <Card className="pizza-bg breathing-element card bg-transparent border-0">
+              <Heading className="pizza-title">
+                Bøgwald's Pizza: A Trip for Your Tastebuds
+              </Heading>
 
-                    <Heading className="pizza-title">
-                        Bøgwald's Pizza: A Trip for Your Tastebuds
-                    </Heading>
+              <Paragraph className="pizza-subtitle">
+                Descend into a delicious dimension of mind-bending pizza creations.
+                Each slice is a portal to a new reality of flavor.
+                Are you ready to explore?
+              </Paragraph>
+            </Card>
+          </Tabs.Panel>
 
-                    <Paragraph className="pizza-subtitle">
-                        Descend into a delicious dimension of mind-bending pizza creations.
-                        Each slice is a portal to a new reality of flavor.
-                        Are you ready to explore?
-                    </Paragraph>
-
-                </Card>
-            </Tabs.Panel>
-
-          <Tabs.Panel value="menu" className='mx-20'>
+          <Tabs.Panel value="menu" className="mx-20">
             {pizzas.map((pizza, i) => (
-                <Card key={i} className='bg-white border-none shadow mb-2'>
-                  <div className='flex justify-between items-center'>
-                    <div className='flex-1'>
-                      <Paragraph>{pizza.name}</Paragraph>
-                      <Paragraph>{pizza.desc}</Paragraph>
-                      <Paragraph><strong>{pizza.price}</strong></Paragraph>
-                    </div>
-                    <Button
-                      onClick={() => {
-                        console.log('Button clicked!', pizza.name);
-                        addPizzaToOrder({ pizzaName: pizza.name });
-                      }}
-                      variant="primary"
-                      data-size="sm"
-                    >
-                      Add
-                    </Button>
+              <Card key={i} className="bg-white border-none shadow mb-2">
+                <div className="flex justify-between items-center">
+                  <div className="flex-1">
+                    <Paragraph>{pizza.name}</Paragraph>
+                    <Paragraph>{pizza.desc}</Paragraph>
+                    <Paragraph><strong>{pizza.price}</strong></Paragraph>
                   </div>
-                </Card>
+                  <Button
+                    onClick={() => {
+                      console.log("Button clicked!", pizza.name);
+                      addPizzaToOrder({ pizzaName: pizza.name });
+                    }}
+                    variant="primary"
+                    data-size="sm"
+                  >
+                    Add
+                  </Button>
+                </div>
+              </Card>
             ))}
           </Tabs.Panel>
 
-          <Tabs.Panel value="order" className='mx-20'>
+          <Tabs.Panel value="order" className="mx-20">
             {!submitted ? (
-                <Card className='bg-white shadow border-none'>
-                  <Paragraph>Place your order</Paragraph>
-                  <form
-                      onSubmit={handleSubmit}
-                      className='space-y-6'
-                  >
-                    <Textfield
-                        label="Name"
-                        value={formData.name}
-                        onChange={handleChange('name')}
-                        required
-                    />
-                    <Textfield
-                        label="Table number"
-                        type="number"
-                        value={formData.table}
-                        onChange={handleChange('table')}
-                        required
-                    />
-                    <Textfield
-                        label="Order number"
-                        type="number"
-                        value={formData.orderNumber}
-                        onChange={handleChange('orderNumber')}
-                        required
-                    />
-                    <Button type="submit" variant="primary">
-                      Submit order
-                    </Button>
-                  </form>
-                </Card>
+              <Card className="bg-white shadow border-none">
+                <Paragraph>Place your order</Paragraph>
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-6"
+                >
+                  <Textfield
+                    label="Name"
+                    value={formData.name}
+                    onChange={handleChange("name")}
+                    required
+                  />
+                  <Textfield
+                    label="Table number"
+                    type="number"
+                    value={formData.table}
+                    onChange={handleChange("table")}
+                    required
+                  />
+                  <Textfield
+                    label="Order number"
+                    type="number"
+                    value={formData.orderNumber}
+                    onChange={handleChange("orderNumber")}
+                    required
+                  />
+                  <Button type="submit" variant="primary">
+                    Submit order
+                  </Button>
+                </form>
+              </Card>
             ) : (
-                <Card className='shadow border-none bg-white'>
-                  <Paragraph>
-                    Thank you, {formData.name}!
-                  </Paragraph>
-                  <Paragraph>
-                    Your order (#{formData.orderNumber}) from table {formData.table} has been received.
-                  </Paragraph>
-                  <Button onClick={() => setSubmitted(false)}>Place another</Button>
-                </Card>
+              <Card className="shadow border-none bg-white">
+                <Paragraph>
+                  Thank you, {formData.name}!
+                </Paragraph>
+                <Paragraph>
+                  Your order (#{formData.orderNumber}) from table {formData.table} has been received.
+                </Paragraph>
+                <Button onClick={() => setSubmitted(false)}>Place another</Button>
+              </Card>
             )}
           </Tabs.Panel>
 
-            <Tabs.Panel value="cart" className="mx-20">
-                <Card className="bg-white border-none shadow p-4">
-                    {submittedItems.length === 0 ? (
-                        <>
-                            <div data-size="medium">Your cart is empty</div>
-                            <Paragraph>
-                                Add some orders using the form to see them listed here.
-                            </Paragraph>
-                        </>
-                    ) : (
-                        <>
-                            <div data-size="medium" className="mb-2">
-                                Submitted Orders
-                            </div>
-                            <ul className="list-disc list-inside space-y-2">
-                                {submittedItems.map((item, index) => (
-                                    <li key={index}>
-                                        <strong>{item.name}</strong> — Table {item.table} — Order #
-                                        {item.orderNumber}
-                                    </li>
-                                ))}
-                            </ul>
-                        </>
-                    )}
-                </Card>
-            </Tabs.Panel>
+          <Tabs.Panel value="cart" className="mx-20">
+            <Card className="bg-white border-none shadow p-4">
+              {submittedItems.length === 0 ? (
+                <>
+                  <div data-size="medium">Your cart is empty</div>
+                  <Paragraph>
+                    Add some orders using the form to see them listed here.
+                  </Paragraph>
+                </>
+              ) : (
+                <>
+                  <div data-size="medium" className="mb-2">
+                    Submitted Orders
+                  </div>
+                  <ul className="list-disc list-inside space-y-2">
+                    {submittedItems.map((item, index) => (
+                      <li key={index}>
+                        <strong>{item.name}</strong> — Table {item.table} — Order #
+                        {item.orderNumber}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </Card>
+          </Tabs.Panel>
         </Tabs>
       </div>
       <div className="col-span-4 shadow-lg">
         <Sidebar modes={modes} config={configData} functions={functions}/>
       </div>
     </div>
-    
   );
 }
 

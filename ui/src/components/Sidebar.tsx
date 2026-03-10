@@ -5,7 +5,7 @@ import '../styling/sidebar.css'
 
 import cl from 'clsx/lite';
 import { useState } from 'react';
-import { Mode } from "../types/message";
+import { Message, Mode } from "../types/message";
 import { useToolRunner } from "./hooks/useToolRunner";
 import { FunctionRegistry } from "../../../client";
 import * as Brui from "../../../client/index"

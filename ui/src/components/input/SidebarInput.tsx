@@ -21,12 +21,13 @@ export default function SidebarInputRoot({ children, className, onSubmit, modes 
             ) : (
                 <form onSubmit={onSubmit} className="sidebar-input-content">
                     <SidebarInput.ContextMenu modes={modes} />
-                    <div className="sidebar-input-row">
+                    <div className='brui-sidebar-input'>
                         <SidebarInput.InputField/>
-                        <div className="sidebar-input-buttons">
-                            <SidebarInput.Microphone/>
-                            <SidebarInput.Submit/>
-                        </div>
+                        <SidebarInput.Microphone/>
+                        <SidebarInput.Submit/>
+                    </div>
+                    <div className='brui-sidebar-select'>
+                        <SidebarInput.ContextMenu modes={modes}/>
                     </div>
                 </form>
             )}
