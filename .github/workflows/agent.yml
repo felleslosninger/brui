@@ -110,7 +110,7 @@ jobs:
       - if: steps.context.outputs.match == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - if: steps.context.outputs.match == 'true'
         run: npm install --global "${AGENT_PACKAGE}"
