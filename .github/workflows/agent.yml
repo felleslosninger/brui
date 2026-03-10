@@ -23,9 +23,6 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
-    env:
-      PROMPT_PATH: ${{ runner.temp }}/agent-prompt.txt
-      RESPONSE_PATH: ${{ runner.temp }}/agent-response.txt
     steps:
       - id: context
         uses: actions/github-script@v8
@@ -145,6 +142,8 @@ jobs:
         env:
           PROMPT: ${{ steps.context.outputs.prompt }}
           AGENT_AUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          PROMPT_PATH: ${{ runner.temp }}/agent-prompt.txt
+          RESPONSE_PATH: ${{ runner.temp }}/agent-response.txt
         shell: bash
         run: |
           set -euo pipefail
@@ -191,7 +190,7 @@ jobs:
           BRANCH_CREATED: ${{ steps.branch.outputs.created }}
           BRANCH_NAME: ${{ steps.branch.outputs.name }}
           AGENT_NAME: ${{ env.AGENT_NAME }}
-          RESPONSE_PATH: ${{ env.RESPONSE_PATH }}
+          RESPONSE_PATH: ${{ runner.temp }}/agent-response.txt
         with:
           script: |
             const fs = require("fs");
