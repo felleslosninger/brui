@@ -65,17 +65,21 @@ jobs:
 
             if (context.eventName === "issues") {
               const issue = payload.issue;
+              const issueLabels = issue.labels || [];
               number = String(issue.number);
               author = issue.user.login;
-              match = payload.label?.name === agent && (await actorHasWriteAccess());
-              canSuggest = issue.labels?.some((label) => label.name === suggestLabel) ?? false;
+              match = issueLabels.some((label) => label.name === agent) && (await actorHasWriteAccess());
+              canSuggest = issueLabels.some((label) => label.name === suggestLabel);
               prompt = [issue.title, issue.body || ""].filter(Boolean).join("\n\n");
             } else if (context.eventName === "pull_request_target") {
               const pr = payload.pull_request;
+              const prLabels = pr.labels || [];
               number = String(pr.number);
               author = pr.user.login;
-              if (payload.label?.name === agent && pr.head.repo.full_name === repoFullName && (await actorHasWriteAccess())) {
-                match = true;
+              const isSameRepo = pr.head.repo.full_name === repoFullName;
+              match = prLabels.some((label) => label.name === agent) && isSameRepo && (await actorHasWriteAccess());
+              canSuggest = prLabels.some((label) => label.name === suggestLabel);
+              if (match) {
                 ref = pr.head.sha;
                 prompt = [pr.title, pr.body || ""].filter(Boolean).join("\n\n");
               }
