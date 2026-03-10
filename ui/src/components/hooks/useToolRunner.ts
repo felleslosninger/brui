@@ -19,7 +19,6 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
     async function askAI(inputText: string, chosenMode: Mode) {
         const messageId = crypto.randomUUID();
 
-        // Add the user message
         setMessageHistory(prev => [
             ...prev,
             {
