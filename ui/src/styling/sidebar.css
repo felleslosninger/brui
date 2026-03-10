@@ -1,4 +1,5 @@
 .sidebar-content {
+
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -18,21 +19,20 @@
 }
 
 .brui-sidebar-select {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.8rem 0 0 0.8rem;
-}
-
-.brui-sidebar-select button {
-  padding: 0.1rem 0.8rem 0rem 0.8rem;
+    background-color: var(--ds-color-neutral-background-default);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0rem 0 0.8rem 0.8rem;
 }
 
 .brui-sidebar-input {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.8rem;
+    background-color: var(--ds-color-neutral-background-default);
+    border-top: 1px solid var(--ds-color-neutral-border-subtle);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem;
 }
 
 /* Alignment */
@@ -54,11 +54,11 @@
 
 .sidebar-content .chat-bubble {
     border-radius: var(--ds-border-radius-lg);
-    background-color: var(--ds-color-accent-base-default);
+    background-color: cyan;
     color: var(--ds-color-base-contrast-default);
     padding: 1rem 1.4rem;
 }
 
 .icon {
-    font-size: 1.8rem;
+    font-size: 1.7rem;
 }

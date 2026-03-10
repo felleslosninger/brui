@@ -4,7 +4,6 @@ import ChatText from './ChatText';
 import { Skeleton } from '@digdir/designsystemet-react';
 import { Process } from "@navikt/ds-react";
 import { TasklistSendIcon } from "@navikt/aksel-icons";
-import "@navikt/ds-css";
 import { Message } from "../../types/message";
 
 interface SidebarOutputProps {
