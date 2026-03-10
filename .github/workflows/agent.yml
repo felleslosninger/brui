@@ -5,7 +5,7 @@ env:
   AGENT_PACKAGE: "@anthropic-ai/claude-code"
   AGENT_COMMAND: claude
   AGENT_ARGS: --permission-mode acceptEdits --output-format text
-  AGENT_PR_LABEL: agent:suggest
+  AGENT_SUGGEST_LABEL: agent:suggest
 
 on:
   issues:
@@ -24,85 +24,100 @@ jobs:
   run:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
       AGENT_AUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     steps:
-      - id: trigger
-        shell: bash
-        run: |
-          set -euo pipefail
+      - id: context
+        uses: actions/github-script@v8
+        env:
+          AGENT_NAME: ${{ env.AGENT_NAME }}
+          AGENT_SUGGEST_LABEL: ${{ env.AGENT_SUGGEST_LABEL }}
+        with:
+          script: |
+            const agent = process.env.AGENT_NAME;
+            const suggestLabel = process.env.AGENT_SUGGEST_LABEL;
+            const payload = context.payload;
+            const repoFullName = `${context.repo.owner}/${context.repo.repo}`;
 
-          body="$(jq -r '.comment.body // ""' "${GITHUB_EVENT_PATH}")"
-          match=false
-          can_pr=false
-          number=""
-          author=""
+            let match = false;
+            let canSuggest = false;
+            let number = "";
+            let author = "";
+            let ref = context.sha;
+            let prompt = "";
 
-          if [[ "${GITHUB_EVENT_NAME}" == "issues" ]]; then
-            number="$(jq -r '.issue.number' "${GITHUB_EVENT_PATH}")"
-            author="$(jq -r '.issue.user.login' "${GITHUB_EVENT_PATH}")"
-            [[ "$(jq -r '.label.name // ""' "${GITHUB_EVENT_PATH}")" == "${AGENT_NAME}" ]] && match=true
-            jq -e -r --arg label "${AGENT_PR_LABEL}" '[.issue.labels[]?.name == $label] | any' "${GITHUB_EVENT_PATH}" >/dev/null && can_pr=true || true
-          elif [[ "${GITHUB_EVENT_NAME}" == "pull_request_target" ]]; then
-            number="$(jq -r '.pull_request.number' "${GITHUB_EVENT_PATH}")"
-            [[ "$(jq -r '.label.name // ""' "${GITHUB_EVENT_PATH}")" == "${AGENT_NAME}" ]] && match=true
-          elif [[ "${body}" == "/${AGENT_NAME}"* ]] || [[ "${body}" == "@${AGENT_NAME}"* ]] || [[ "${body}" == *" @${AGENT_NAME}"* ]]; then
-            match=true
-            number="$(jq -r '.issue.number' "${GITHUB_EVENT_PATH}")"
-            author="$(jq -r '.issue.user.login' "${GITHUB_EVENT_PATH}")"
-            if ! jq -e '.issue.pull_request' "${GITHUB_EVENT_PATH}" >/dev/null; then
-              jq -e -r --arg label "${AGENT_PR_LABEL}" '[.issue.labels[]?.name == $label] | any' "${GITHUB_EVENT_PATH}" >/dev/null && can_pr=true || true
-            fi
-          fi
+            if (context.eventName === "issues") {
+              const issue = payload.issue;
+              number = String(issue.number);
+              author = issue.user.login;
+              match = payload.label?.name === agent;
+              canSuggest = issue.labels?.some((label) => label.name === suggestLabel) ?? false;
+              prompt = [issue.title, issue.body || ""].filter(Boolean).join("\n\n");
+            } else if (context.eventName === "pull_request_target") {
+              const pr = payload.pull_request;
+              number = String(pr.number);
+              if (payload.label?.name === agent && pr.head.repo.full_name === repoFullName) {
+                match = true;
+                ref = pr.head.sha;
+                prompt = [pr.title, pr.body || ""].filter(Boolean).join("\n\n");
+              }
+            } else if (context.eventName === "issue_comment") {
+              const comment = payload.comment?.body || "";
+              const chatsWithAgent =
+                comment.startsWith(`/${agent}`) ||
+                comment.startsWith(`@${agent}`) ||
+                comment.includes(` @${agent}`);
 
-          echo "match=${match}" >> "${GITHUB_OUTPUT}"
-          echo "can_pr=${can_pr}" >> "${GITHUB_OUTPUT}"
-          echo "number=${number}" >> "${GITHUB_OUTPUT}"
-          echo "author=${author}" >> "${GITHUB_OUTPUT}"
+              if (chatsWithAgent) {
+                match = true;
+                number = String(payload.issue.number);
+                author = payload.issue.user.login;
+                prompt = [payload.issue.title, payload.issue.body || "", comment].filter(Boolean).join("\n\n");
 
-      - if: steps.trigger.outputs.match != 'true'
+                if (payload.issue.pull_request) {
+                  const pr = await github.rest.pulls.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: payload.issue.number,
+                  });
+
+                  if (pr.data.head.repo.full_name !== repoFullName) {
+                    core.setOutput("match", "false");
+                    return;
+                  }
+
+                  ref = pr.data.head.sha;
+                } else {
+                  canSuggest = payload.issue.labels?.some((label) => label.name === suggestLabel) ?? false;
+                }
+              }
+            }
+
+            core.setOutput("match", String(match));
+            core.setOutput("can_suggest", String(canSuggest));
+            core.setOutput("number", number);
+            core.setOutput("author", author);
+            core.setOutput("ref", ref);
+            core.setOutput("prompt", prompt);
+
+      - if: steps.context.outputs.match != 'true'
         run: echo "No matching agent trigger."
 
-      - id: ref
-        if: steps.trigger.outputs.match == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          ref="${GITHUB_SHA}"
-
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request_target" ]]; then
-            if [[ "${{ github.event.pull_request.head.repo.full_name }}" != "${GITHUB_REPOSITORY}" ]]; then
-              echo "Fork pull requests are not supported."
-              exit 1
-            fi
-            ref="${{ github.event.pull_request.head.sha }}"
-          elif jq -e '.issue.pull_request' "${GITHUB_EVENT_PATH}" >/dev/null; then
-            pr="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ github.event.issue.number }}")"
-            if [[ "$(jq -r '.head.repo.full_name' <<< "${pr}")" != "${GITHUB_REPOSITORY}" ]]; then
-              echo "Fork pull requests are not supported."
-              exit 1
-            fi
-            ref="$(jq -r '.head.sha' <<< "${pr}")"
-          fi
-
-          echo "value=${ref}" >> "${GITHUB_OUTPUT}"
-
-      - if: steps.trigger.outputs.match == 'true'
+      - if: steps.context.outputs.match == 'true'
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.ref.outputs.value }}
+          ref: ${{ steps.context.outputs.ref }}
 
-      - if: steps.trigger.outputs.match == 'true'
+      - if: steps.context.outputs.match == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - if: steps.trigger.outputs.match == 'true'
+      - if: steps.context.outputs.match == 'true'
         run: npm install --global "${AGENT_PACKAGE}"
 
-      - id: prompt
-        if: steps.trigger.outputs.match == 'true'
+      - if: steps.context.outputs.match == 'true'
+        env:
+          PROMPT: ${{ steps.context.outputs.prompt }}
         shell: bash
         run: |
           set -euo pipefail
@@ -112,35 +127,13 @@ jobs:
             exit 1
           fi
 
-          if [[ "${GITHUB_EVENT_NAME}" == "issue_comment" ]]; then
-            number="$(jq -r '.issue.number' "${GITHUB_EVENT_PATH}")"
-            title="$(jq -r '.issue.title' "${GITHUB_EVENT_PATH}")"
-            body="$(jq -r '.issue.body // ""' "${GITHUB_EVENT_PATH}")"
-            comment="$(jq -r '.comment.body // ""' "${GITHUB_EVENT_PATH}")"
-            printf '%s\n\n%s\n\n%s\n' "${title}" "${body}" "${comment}" > prompt.txt
-          elif [[ "${GITHUB_EVENT_NAME}" == "pull_request_target" ]]; then
-            number="$(jq -r '.pull_request.number' "${GITHUB_EVENT_PATH}")"
-            title="$(jq -r '.pull_request.title' "${GITHUB_EVENT_PATH}")"
-            body="$(jq -r '.pull_request.body // ""' "${GITHUB_EVENT_PATH}")"
-            printf '%s\n\n%s\n' "${title}" "${body}" > prompt.txt
-          else
-            number="$(jq -r '.issue.number' "${GITHUB_EVENT_PATH}")"
-            title="$(jq -r '.issue.title' "${GITHUB_EVENT_PATH}")"
-            body="$(jq -r '.issue.body // ""' "${GITHUB_EVENT_PATH}")"
-            printf '%s\n\n%s\n' "${title}" "${body}" > prompt.txt
-          fi
-
-          echo "number=${number}" >> "${GITHUB_OUTPUT}"
-
-      - if: steps.trigger.outputs.match == 'true'
-        shell: bash
-        run: |
-          set -o pipefail
+          printf '%s' "${PROMPT}" > prompt.txt
           export CLAUDE_CODE_OAUTH_TOKEN="${AGENT_AUTH_TOKEN}"
+          set -o pipefail
           "${AGENT_COMMAND}" -p "$(cat prompt.txt)" ${AGENT_ARGS} | tee response.txt
 
-      - id: pr
-        if: steps.trigger.outputs.match == 'true' && steps.trigger.outputs.can_pr == 'true'
+      - id: branch
+        if: steps.context.outputs.match == 'true' && steps.context.outputs.can_suggest == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -150,39 +143,58 @@ jobs:
             exit 0
           fi
 
-          branch="agent/${AGENT_NAME}-${{ steps.trigger.outputs.number }}-${GITHUB_RUN_ID}"
+          branch="agent/${AGENT_NAME}-${{ steps.context.outputs.number }}-${GITHUB_RUN_ID}"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "${branch}"
           git add -A
-          git commit -m "agent: address #${{ steps.trigger.outputs.number }}"
+          git commit -m "agent: address #${{ steps.context.outputs.number }}"
           git push --set-upstream origin "${branch}"
 
-          pr_url="$(
-            gh pr create \
-              --title "${AGENT_NAME}: address #${{ steps.trigger.outputs.number }}" \
-              --body $'Closes #${{ steps.trigger.outputs.number }}\n\n@${{ steps.trigger.outputs.author }}' \
-              --base "${{ github.event.repository.default_branch }}" \
-              --head "${branch}"
-          )"
-
           echo "created=true" >> "${GITHUB_OUTPUT}"
-          echo "url=${pr_url}" >> "${GITHUB_OUTPUT}"
+          echo "name=${branch}" >> "${GITHUB_OUTPUT}"
 
-      - if: always() && steps.trigger.outputs.match == 'true'
-        shell: bash
-        run: |
-          {
-            if [[ "${{ steps.pr.outputs.created }}" == "true" ]]; then
-              echo "PR: ${{ steps.pr.outputs.url }}"
-              echo
-            fi
-            if [[ -f response.txt ]]; then
-              cat response.txt
-            else
-              echo "Agent run failed."
-            fi
-          } > comment.txt
+      - if: always() && steps.context.outputs.match == 'true'
+        uses: actions/github-script@v8
+        env:
+          NUMBER: ${{ steps.context.outputs.number }}
+          AUTHOR: ${{ steps.context.outputs.author }}
+          BRANCH_CREATED: ${{ steps.branch.outputs.created }}
+          BRANCH_NAME: ${{ steps.branch.outputs.name }}
+          AGENT_NAME: ${{ env.AGENT_NAME }}
+        with:
+          script: |
+            const fs = require("fs");
 
-          gh issue comment "${{ steps.prompt.outputs.number }}" --body-file comment.txt
+            const number = Number(process.env.NUMBER);
+            const author = process.env.AUTHOR;
+            const branchCreated = process.env.BRANCH_CREATED === "true";
+            const branchName = process.env.BRANCH_NAME;
+            const agent = process.env.AGENT_NAME;
+
+            let prUrl = "";
+            if (branchCreated) {
+              const pr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `${agent}: address #${number}`,
+                head: branchName,
+                base: context.payload.repository.default_branch,
+                body: `Closes #${number}\n\n@${author}`,
+              });
+              prUrl = pr.data.html_url;
+            }
+
+            const response = fs.existsSync("response.txt")
+              ? fs.readFileSync("response.txt", "utf8")
+              : "Agent run failed.";
+
+            const body = prUrl ? `PR: ${prUrl}\n\n${response}` : response;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              body,
+            });
