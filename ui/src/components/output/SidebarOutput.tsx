@@ -47,17 +47,15 @@ export default function SidebarOutputRoot({
 
                             {msg.userMessage.mode === "Act" && (
                                 <Process>
-
                                     {msg.assistantMessages.map((assistantMsg, i) => (
                                         <Process.Event
                                             key={i}
-                                            status="completed"
+                                            status={assistantMsg.status}
                                             title={assistantMsg.text}
                                             timestamp={new Date().toLocaleDateString("nb-NO")}
                                             bullet={<TasklistSendIcon />}
                                         />
                                     ))}
-
                                 </Process>
                             )}
                         </div>

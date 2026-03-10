@@ -2,23 +2,17 @@ import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { Button, Card, Heading, Paragraph, Tabs, Textfield, } from '@digdir/designsystemet-react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index"
-import configData from "./config.json";
+import configDataRaw from "./config.json";
 import { ShoppingBasketIcon } from "@navikt/aksel-icons";
 import type { Mode } from "@brui/ui/src/types/message.ts";
 
 type Theme = "digdir" | "party";
-
-type UserInput = {
-  textInput: string;
-  contextChoice: string;
-};
 
 interface FormEntry {
     name: string;
     table: string;
     orderNumber: string;
 }
-
 
 function App() {
   const [theme, setTheme] = useState<Theme>("digdir");
@@ -29,7 +23,8 @@ function App() {
     orderNumber: '',
   });
 
-    const modes: Mode[] = ["Act", "Info"];
+  const configData = configDataRaw as Brui.Configuration;
+  const modes: Mode[] = ["Act", "Info"];
 
   const [submittedItems, setSubmittedItems] = useState<FormEntry[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -81,26 +76,6 @@ function App() {
     fillFields,
     handleSetActiveTab,
   };
-
-  const processMessage = Brui.Setup(
-    configData as Brui.Configuration,
-    functions
-  );
-
-    const inputHandler = async (userInput: UserInput): Promise<{
-        success: boolean;
-        executionResults?: any[];
-        error?: string;
-    }> => {
-        try {
-            return await processMessage(userInput.textInput);
-        } catch (error) {
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : "Unknown error",
-            };
-        }
-    };
 
   return (
     <div className='grid grid-cols-12 h-screen' data-theme={theme}>
@@ -254,7 +229,7 @@ function App() {
         </Tabs>
       </div>
       <div className="col-span-4 shadow-lg">
-        <Sidebar inputHandler={inputHandler} modes={modes}/>
+        <Sidebar modes={modes} config={configData} functions={functions}/>
       </div>
     </div>
     
