@@ -10,6 +10,21 @@ export interface Decision {
     actions: string[];
 }
 
+interface FunctionParameter {
+    type: string;
+    enum?: string[];
+    properties?: Record<string, FunctionParameter | undefined>;
+    required?: string[];
+}
+
+interface Tool {
+    type: string;
+    function: {
+        name: string;
+        description: string;
+        parameters: FunctionParameter;
+    };
+}
 
 export interface Action {
     name: string;
@@ -26,10 +41,8 @@ export interface Inference extends Resource {
     };
 }
 
-export type Resources = Resource[];
-
 export interface Configuration {
-    tools: any[];
+    tools: Tool[];
     actions: Action[];
     decisions: { tool: string; actions: string[] }[];
     inference?: Inference;

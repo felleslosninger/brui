@@ -2,16 +2,11 @@ import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react';
 import { Button, Card, Heading, Paragraph, Tabs, Textfield } from '@digdir/designsystemet-react';
 import Sidebar from "@brui/ui/src/components/Sidebar.tsx";
 import * as Brui from "../../../client/index";
-import configData from "./config.json";
+import configDataRaw from "./config.json";
 import { ShoppingBasketIcon, MonitorFillIcon, MoonFillIcon, SunFillIcon } from "@navikt/aksel-icons";
 import type { Mode } from "@brui/ui/src/types/message.ts";
 
 type ColorMode = "light" | "dark" | "system";
-
-type UserInput = {
-  textInput: string;
-  contextChoice: string;
-};
 
 interface FormEntry {
   name: string;
@@ -31,7 +26,8 @@ function App() {
     orderNumber: "",
   });
 
-    const modes: Mode[] = ["Act", "Info"];
+  const configData = configDataRaw as Brui.Configuration;
+  const modes: Mode[] = ["Act", "Info"];
 
   const [submittedItems, setSubmittedItems] = useState<FormEntry[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -95,13 +91,13 @@ function App() {
     return { success: true, pizzaName };
   }
 
-  const fillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
-    setFormData(prev => ({
-      ...prev,
-      name: args.name ?? prev.name,
-      table: args.table ?? prev.table,
-      orderNumber: args.orderNumber ?? prev.orderNumber,
-    }));
+    const fillFields = (args: { name?: string; table?: string; orderNumber?: string }) => {
+        setFormData(prev => ({
+            ...prev,
+            name: args.name ?? prev.name,
+            table: args.table ?? prev.table,
+            orderNumber: args.orderNumber ?? prev.orderNumber,
+        }));
 
         setSubmitted(false);
 
@@ -116,26 +112,6 @@ function App() {
     addPizzaToOrder,
     fillFields,
     handleSetActiveTab,
-  };
-
-  const processMessage = Brui.Setup(
-    configData as Brui.Configuration,
-    functions
-  );
-
-  const inputHandler = async (userInput: UserInput): Promise<{
-    success: boolean;
-    executionResults?: any[];
-    error?: string;
-  }> => {
-    try {
-      return await processMessage(userInput.textInput);
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      };
-    }
   };
 
   return (
@@ -283,8 +259,8 @@ function App() {
           </Tabs.Panel>
         </Tabs>
       </div>
-      <div className="col-span-4 shadow-lg h-screen">
-        <Sidebar inputHandler={inputHandler} modes={modes}/>
+      <div className="col-span-4 shadow-lg">
+        <Sidebar modes={modes} config={configData} functions={functions}/>
       </div>
     </div>
   );
