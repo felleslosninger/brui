@@ -3,17 +3,10 @@ import ChatBubble from './ChatBubble';
 import ChatText from './ChatText';
 import ThinkingProcess from './ThinkingProcess';
 import { Skeleton } from '@digdir/designsystemet-react';
-<<<<<<< Updated upstream
-import { Process } from "@navikt/ds-react";
-import { TasklistSendIcon } from "@navikt/aksel-icons";
-import "@navikt/ds-css";
-import { Message } from "../../types/message";
-=======
 import { Process } from '@navikt/ds-react';
 import { TasklistSendIcon } from '@navikt/aksel-icons';
 import { useSidebarContext } from '../SidebarContext';
 import { Message } from '../../types/message';
->>>>>>> Stashed changes
 
 interface SidebarOutputProps {
     children?: React.ReactNode;
@@ -78,11 +71,7 @@ function SidebarOutputRoot({
 const SidebarOutput = Object.assign(SidebarOutputRoot, {
     ChatText: ChatText,
     ChatBubble: ChatBubble,
-<<<<<<< Updated upstream
-});
-=======
     ThinkingProcess: ThinkingProcess,
 });
 
 export default SidebarOutput;
->>>>>>> Stashed changes

@@ -2,15 +2,6 @@ import '../styling/sidebar.css';
 
 import cl from 'clsx/lite';
 import { useState } from 'react';
-<<<<<<< Updated upstream
-import { Message, Mode } from "../types/message";
-import { useToolRunner } from "./hooks/useToolRunner";
-import { FunctionRegistry } from "../../../client";
-import * as Brui from "../../../client/index"
-
-interface SidebarRootProps {
-    children?: React.ReactNode;
-=======
 import { SidebarContext } from './SidebarContext';
 import { Message, Mode } from '../types/message';
 import SidebarOutput from './output/SidebarOutput';
@@ -18,17 +9,17 @@ import SidebarInput from './input/SidebarInput';
 
 interface SidebarProps {
     children: React.ReactNode;
->>>>>>> Stashed changes
     className?: string;
     modes: Mode[];
-    config: Brui.Configuration;
-    functions: FunctionRegistry;
+    inputHandler: (
+        userInput: { textInput: string; contextChoice: string }
+    ) => Promise<{
+        success: boolean;
+        executionResults?: any[];
+        error?: string;
+    }>;
 }
 
-<<<<<<< Updated upstream
-export function SidebarRoot({ children, className, modes, config, functions }: SidebarRootProps) {
-    const { askAI, messageHistory } = useToolRunner(config, functions);
-=======
 function SidebarRoot({ children, className, inputHandler, modes }: SidebarProps) {
     const [messageHistory, setMessageHistory] = useState<Message[]>([]);
     const [questionCounter, setQuestionCounter] = useState(0);
@@ -38,14 +29,6 @@ function SidebarRoot({ children, className, inputHandler, modes }: SidebarProps)
     async function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-<<<<<<< Updated upstream
-        const formData = new FormData(event.currentTarget);
-        const inputText = String(formData.get("chatMessage") || "");
-        const dropdownValue = String(formData.get("contextChoice") || "") as Mode;
-
-        if (!inputText.trim()) return;
-
-=======
         const form = event.currentTarget;
         const formData = new FormData(form);
         const inputText = String(formData.get('chatMessage') || '');
@@ -85,32 +68,11 @@ function SidebarRoot({ children, className, inputHandler, modes }: SidebarProps)
     }
 
     return (
-<<<<<<< Updated upstream
-        <div className={cl("sidebar-content", className)}>
-            {children ? (
-                children
-            ) : (
-                <>
-                    <div className="sidebar-output">
-                        <Sidebar.Output
-                            messageHistory={messageHistory}
-                            isLoadingResponse={isLoadingResponse}
-                        />
-                    </div>
-
-                    <div className="sidebar-input">
-                        <Sidebar.Input onSubmit={handleSubmitChatMessage} modes={modes} />
-                    </div>
-                </>
-            )}
-        </div>
-=======
         <SidebarContext.Provider value={{ messageHistory, isLoadingResponse, handleSubmit: handleSubmitChatMessage, modes }}>
             <div className={cl('brui-sidebar', className)}>
                 {children}
             </div>
         </SidebarContext.Provider>
->>>>>>> Stashed changes
     );
 }
 

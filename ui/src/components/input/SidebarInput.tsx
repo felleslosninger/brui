@@ -4,6 +4,7 @@ import InputSubmitButton from './InputSubmitButton';
 import InputMicrophoneButton from './InputMicrophoneButton';
 import InputContextDropdown from './InputContextDropdown';
 import { useSidebarContext } from '../SidebarContext';
+import { useSidebarContext } from '../SidebarContext';
 
 interface SidebarInputProps {
     children?: React.ReactNode;
@@ -14,21 +15,11 @@ function SidebarInputRoot({ children, className }: SidebarInputProps) {
     const { handleSubmit, modes } = useSidebarContext();
 
     return (
-<<<<<<< Updated upstream
-        <div className={cl('sidebar-input', className)}>
-            {children ? (
-                children
-            ) : (
-                <form onSubmit={onSubmit} className="sidebar-input-content">
-                    <SidebarInput.ContextMenu modes={modes} />
-                    <div className='brui-sidebar-input'>
-=======
         <div className={cl('brui-sidebar-input', className)}>
             {children ?? (
                 <form onSubmit={handleSubmit} className="brui-sidebar-input-content">
                     
                     <div className='brui-sidebar-input-row'>
->>>>>>> Stashed changes
                         <SidebarInput.InputField/>
                     </div>
                     <div className='brui-sidebar-action-row'>
