@@ -1,3 +1,2 @@
-export * from './Sidebar';
-export * from './output/SidebarOutput';
-export * from './input/SidebarInput';
+export { default as Sidebar } from './Sidebar';
+export { useSidebarContext } from './SidebarContext';

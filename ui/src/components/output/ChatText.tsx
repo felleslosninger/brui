@@ -7,8 +7,8 @@ interface ChatTextProps {
 
 export default function ChatText({ children, className }: ChatTextProps) {
     return (
-        <div className="chat-text-wrapper right">
-            <div className={cl('chat-text', className)}>
+        <div className="brui-chat-text-wrapper">
+            <div className={cl('brui-chat-text', className)}>
                 {children}
             </div>
         </div>

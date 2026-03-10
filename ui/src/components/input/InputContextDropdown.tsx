@@ -1,27 +1,35 @@
 import cl from 'clsx/lite';
 
 import { Dropdown, Input } from '@digdir/designsystemet-react';
-import { ChevronUpIcon } from '@navikt/aksel-icons';
+import { ChevronUpIcon, FileTextIcon, GavelIcon } from '@navikt/aksel-icons';
 import { useState } from 'react';
-import { Mode } from "../../types/message";
+import { Mode } from '../../types/message';
+
+const modeIcons: Record<Mode, React.ReactNode> = {
+    Info: <FileTextIcon aria-hidden />,
+    Act: <GavelIcon aria-hidden />,
+};
 
 interface InputContextDropdownProps {
+    children?: React.ReactNode;
     modes: Mode[];
     className?: string;
 }
 
-export default function InputContextDropdown({ modes, className }: InputContextDropdownProps) {
+export default function InputContextDropdown({ children, modes, className }: InputContextDropdownProps) {
     const [selectedContext, setSelectedContext] = useState<string>(modes[0]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     return (
-        <div className={cl('sidebar-context-menu', className)}>
+        <div className={cl('brui-context-menu', className)} data-size={'sm'}>
             <Dropdown.TriggerContext>
                 <Dropdown.Trigger
-                    className="sidebar-context-menu-trigger"
-                    variant='secondary'
+                    className="brui-context-menu-trigger"
+                    variant='tertiary'
+                    data-size='sm'
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
+                    {modeIcons[selectedContext as Mode]}
                     {selectedContext}
                     <ChevronUpIcon title="chevron-up" />
                 </Dropdown.Trigger>
@@ -31,7 +39,7 @@ export default function InputContextDropdown({ modes, className }: InputContextD
                     placement="bottom-end"
                 >
                     <Dropdown.Heading>
-                        Modes
+                        {children ?? 'Modes'}
                     </Dropdown.Heading>
                     <Dropdown.List>
                         {modes.map((page) => (
@@ -41,8 +49,9 @@ export default function InputContextDropdown({ modes, className }: InputContextD
                                         setSelectedContext(page);
                                         setIsDropdownOpen(false);
                                     }}
-                                    className={selectedContext === page ? 'dropdown-item-selected' : ''}
+                                    className={selectedContext === page ? 'brui-dropdown-item-selected' : ''}
                                 >
+                                    {modeIcons[page]}
                                     {page}
                                 </Dropdown.Button>
                             </Dropdown.Item>

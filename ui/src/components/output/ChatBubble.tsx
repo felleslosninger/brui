@@ -8,8 +8,8 @@ interface ChatBubbleProps {
 
 export default function ChatBubble({ children, className }: ChatBubbleProps) {
     return (
-        <div className="chat-bubble-wrapper left">
-            <Card className={cl('chat-bubble', className)}>
+        <div className="brui-chat-bubble-wrapper">
+            <Card className={cl('brui-chat-bubble', className)}>
                 {children}
             </Card>
         </div>

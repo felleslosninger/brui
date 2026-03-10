@@ -3,13 +3,18 @@ import cl from 'clsx/lite';
 import { PaperplaneIcon } from '@navikt/aksel-icons';
 
 interface InputSubmitButtonProps {
+    children?: React.ReactNode;
     className?: string;
 }
 
-export default function InputSubmitButton({ className }: InputSubmitButtonProps) {
+export default function InputSubmitButton({ children, className }: InputSubmitButtonProps) {
     return (
-        <Button variant={'tertiary'} className={cl('input-field', className)} data-size="sm" type={'submit'}>
-            <PaperplaneIcon title="send-chat" className='icon'/>
+        <Button variant={'secondary'} className={cl('brui-input-button', className)} data-size="sm" type={'submit'}>
+            {children ?? 
+                <>
+                    <PaperplaneIcon title="send-chat" className='brui-icon' />
+                    Send
+                </>}
         </Button>
-    )
+    );
 }

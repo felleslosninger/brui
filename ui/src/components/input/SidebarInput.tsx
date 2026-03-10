@@ -3,18 +3,18 @@ import InputField from './InputField';
 import InputSubmitButton from './InputSubmitButton';
 import InputMicrophoneButton from './InputMicrophoneButton';
 import InputContextDropdown from './InputContextDropdown';
-import { FormEvent } from 'react';
-import { Mode } from "../../types/message";
+import { useSidebarContext } from '../SidebarContext';
 
 interface SidebarInputProps {
     children?: React.ReactNode;
     className?: string;
-    onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-    modes: Mode[];
 }
 
-export default function SidebarInputRoot({ children, className, onSubmit, modes }: SidebarInputProps) {
+function SidebarInputRoot({ children, className }: SidebarInputProps) {
+    const { handleSubmit, modes } = useSidebarContext();
+
     return (
+<<<<<<< Updated upstream
         <div className={cl('sidebar-input', className)}>
             {children ? (
                 children
@@ -22,12 +22,18 @@ export default function SidebarInputRoot({ children, className, onSubmit, modes 
                 <form onSubmit={onSubmit} className="sidebar-input-content">
                     <SidebarInput.ContextMenu modes={modes} />
                     <div className='brui-sidebar-input'>
+=======
+        <div className={cl('brui-sidebar-input', className)}>
+            {children ?? (
+                <form onSubmit={handleSubmit} className="brui-sidebar-input-content">
+                    
+                    <div className='brui-sidebar-input-row'>
+>>>>>>> Stashed changes
                         <SidebarInput.InputField/>
-                        <SidebarInput.Microphone/>
-                        <SidebarInput.Submit/>
                     </div>
-                    <div className='brui-sidebar-select'>
+                    <div className='brui-sidebar-action-row'>
                         <SidebarInput.ContextMenu modes={modes}/>
+                        <SidebarInput.Submit/>
                     </div>
                 </form>
             )}
@@ -41,3 +47,5 @@ const SidebarInput = Object.assign(SidebarInputRoot, {
     Microphone: InputMicrophoneButton,
     Submit: InputSubmitButton
 });
+
+export default SidebarInput;
