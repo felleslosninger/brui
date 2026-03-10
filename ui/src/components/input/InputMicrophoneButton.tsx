@@ -7,8 +7,8 @@ interface InputMicrophoneButtonProps {
 
 export default function InputMicrophoneButton({ className }: InputMicrophoneButtonProps) {
     return (
-        <Button className={cl('input-field', className)} data-size="sm">
-            <MicrophoneIcon title="microphone-button" fontSize="1.5rem" />
+        <Button variant={'tertiary'} className={cl('input-field', className)} data-size="sm">
+            <MicrophoneIcon title="microphone-button" className='icon' />
         </Button>
     )
 }

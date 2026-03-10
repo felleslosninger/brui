@@ -19,7 +19,7 @@ export default function InputContextDropdown({ modes, className }: InputContextD
             <Dropdown.TriggerContext>
                 <Dropdown.Trigger
                     className="sidebar-context-menu-trigger"
-                    data-size="sm"
+                    variant='secondary'
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
                     {selectedContext}

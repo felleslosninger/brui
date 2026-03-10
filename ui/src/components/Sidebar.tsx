@@ -5,7 +5,7 @@ import '../styling/sidebar.css'
 
 import cl from 'clsx/lite';
 import { useState } from 'react';
-import { Message, Mode } from "../types/message";
+import { Message, Mode } from '../types/message';
 
 type AIResponseCallback = (executionResults: any, error: any) => void
 
@@ -31,8 +31,8 @@ export function SidebarRoot({ children, className, inputHandler, modes }: Sideba
         event.preventDefault();
 
         const formData = new FormData(event.currentTarget);
-        const inputText = String(formData.get("chatMessage") || "");
-        const dropdownValue = String(formData.get("contextChoice") || "");
+        const inputText = String(formData.get('chatMessage') || '');
+        const dropdownValue = String(formData.get('contextChoice') || '');
 
         if (!inputText.trim()) return;
 
@@ -61,7 +61,7 @@ export function SidebarRoot({ children, className, inputHandler, modes }: Sideba
             });
 
             if (!result.success) {
-                console.error("Chat error:", result.error);
+                console.error('Chat error:', result.error);
 
                 addAssistantMessage(
                     currentQuestionIndex,
@@ -75,7 +75,7 @@ export function SidebarRoot({ children, className, inputHandler, modes }: Sideba
                 if (!r.success || r.error) {
                     addAssistantMessage(
                         currentQuestionIndex,
-                        `Error in ${r.action}: ${r.error || "Unknown error"}`
+                        `Error in ${r.action}: ${r.error || 'Unknown error'}`
                     );
                 } else {
                     addAssistantMessage(
@@ -86,7 +86,7 @@ export function SidebarRoot({ children, className, inputHandler, modes }: Sideba
             }
 
         } catch (err) {
-            console.error("Unexpected error:", err);
+            console.error('Unexpected error:', err);
 
             addAssistantMessage(
                 currentQuestionIndex,
@@ -121,7 +121,7 @@ export function SidebarRoot({ children, className, inputHandler, modes }: Sideba
     }
 
     return (
-        <div className={cl("sidebar-content", className)}>
+        <div className={cl('sidebar-content', className)}>
             {children ? (
                 children
             ) : (
