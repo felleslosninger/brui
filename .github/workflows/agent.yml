@@ -20,10 +20,6 @@ permissions:
   issues: write
   pull-requests: write
 
-concurrency:
-  group: agent-${{ github.event.issue.number || github.event.pull_request.number }}
-  cancel-in-progress: true
-
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -66,22 +62,28 @@ jobs:
             if (context.eventName === "issues") {
               const issue = payload.issue;
               const issueLabels = issue.labels || [];
-              number = String(issue.number);
-              author = issue.user.login;
-              match = issueLabels.some((label) => label.name === agent) && (await actorHasWriteAccess());
-              canSuggest = issueLabels.some((label) => label.name === suggestLabel);
-              prompt = [issue.title, issue.body || ""].filter(Boolean).join("\n\n");
+              const addedLabel = payload.label?.name;
+              if (addedLabel === agent || addedLabel === suggestLabel) {
+                number = String(issue.number);
+                author = issue.user.login;
+                match = issueLabels.some((label) => label.name === agent) && (await actorHasWriteAccess());
+                canSuggest = issueLabels.some((label) => label.name === suggestLabel);
+                prompt = [issue.title, issue.body || ""].filter(Boolean).join("\n\n");
+              }
             } else if (context.eventName === "pull_request_target") {
               const pr = payload.pull_request;
               const prLabels = pr.labels || [];
-              number = String(pr.number);
-              author = pr.user.login;
-              const isSameRepo = pr.head.repo.full_name === repoFullName;
-              match = prLabels.some((label) => label.name === agent) && isSameRepo && (await actorHasWriteAccess());
-              canSuggest = prLabels.some((label) => label.name === suggestLabel);
-              if (match) {
-                ref = pr.head.sha;
-                prompt = [pr.title, pr.body || ""].filter(Boolean).join("\n\n");
+              const addedLabel = payload.label?.name;
+              if (addedLabel === agent || addedLabel === suggestLabel) {
+                number = String(pr.number);
+                author = pr.user.login;
+                const isSameRepo = pr.head.repo.full_name === repoFullName;
+                match = prLabels.some((label) => label.name === agent) && isSameRepo && (await actorHasWriteAccess());
+                canSuggest = prLabels.some((label) => label.name === suggestLabel);
+                if (match) {
+                  ref = pr.head.sha;
+                  prompt = [pr.title, pr.body || ""].filter(Boolean).join("\n\n");
+                }
               }
             } else if (context.eventName === "issue_comment") {
               const comment = payload.comment?.body || "";
@@ -154,13 +156,7 @@ jobs:
 
           printf '%s' "${PROMPT}" > "${PROMPT_PATH}"
           export CLAUDE_CODE_OAUTH_TOKEN="${AGENT_AUTH_TOKEN}"
-          "${AGENT_COMMAND}" -p "$(cat "${PROMPT_PATH}")" ${AGENT_ARGS} > "${RESPONSE_PATH}"
-
-          # Redact the auth token from agent output before it is logged or posted
-          if [[ -n "${AGENT_AUTH_TOKEN}" && -f "${RESPONSE_PATH}" ]]; then
-            sed -i "s|${AGENT_AUTH_TOKEN}|***REDACTED***|g" "${RESPONSE_PATH}"
-          fi
-          cat "${RESPONSE_PATH}"
+          "${AGENT_COMMAND}" -p "$(cat "${PROMPT_PATH}")" ${AGENT_ARGS} | tee "${RESPONSE_PATH}"
 
       - id: branch
         if: steps.context.outputs.match == 'true' && steps.context.outputs.can_suggest == 'true'
@@ -223,26 +219,16 @@ jobs:
               ? fs.readFileSync(process.env.RESPONSE_PATH, "utf8")
               : "Agent run failed.";
 
-            const body = prUrl ? `PR: ${prUrl}\n\n${response}` : response;
+            let body = prUrl ? `PR: ${prUrl}\n\n${response}` : response;
             const maxLength = 60000;
-
-            if (body.length <= maxLength) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: number,
-                body,
-              });
-              return;
+            if (body.length > maxLength) {
+              const logsUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+              body = body.slice(0, maxLength) + `\n\n---\n*Truncated. [Full output](${logsUrl})*`;
             }
 
-            const parts = Math.ceil(body.length / maxLength);
-            for (let i = 0; i < parts; i += 1) {
-              const chunk = body.slice(i * maxLength, (i + 1) * maxLength);
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: number,
-                body: `Part ${i + 1}/${parts}\n\n${chunk}`,
-              });
-            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              body,
+            });
