@@ -4,7 +4,6 @@ import InputSubmitButton from './InputSubmitButton';
 import InputMicrophoneButton from './InputMicrophoneButton';
 import InputContextDropdown from './InputContextDropdown';
 import { useSidebarContext } from '../SidebarContext';
-import { useSidebarContext } from '../SidebarContext';
 
 interface SidebarInputProps {
     children?: React.ReactNode;

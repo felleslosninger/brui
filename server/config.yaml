@@ -5,4 +5,4 @@ inference:
   
   external-nano:
     endpoint: "https://ollama.sandkasse.ai/api/chat"
-    model: "qwen3:0.6b"
+    model: "devstral-small-2:latest"

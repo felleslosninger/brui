@@ -26,7 +26,14 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
             console.log("returning tool calls:", JSON.stringify(toolCalls, null, 2));
 
 
-            if (!toolCalls || toolCalls.length === 0 || typeof toolCalls === 'string') {
+            if (typeof toolCalls === 'string') {
+                return {
+                    success: true,
+                    content: toolCalls
+                };
+            }
+
+            if (!toolCalls || toolCalls.length === 0) {
                 return {
                     success: false,
                     error: 'No tool calls returned from inference.'
@@ -143,6 +150,7 @@ export interface ExecutionResult {
     tool?: string;
     parameters?: Record<string, unknown>;
     executionResults?: ActionResult[];
+    content?: string;
     error?: string;
 }
 
