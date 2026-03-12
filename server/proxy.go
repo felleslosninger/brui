@@ -6,16 +6,29 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
+	"time"
 )
 
 const HttpPort = ":8091"
 
 func proxyHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	origin := strings.TrimSpace(r.Header.Get("Origin"))
+	if origin != "" {
+		if !isAllowedOrigin(origin) {
+			http.Error(w, "Origin not allowed", http.StatusForbidden)
+			return
+		}
+
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+	}
 
 	if r.Method == "OPTIONS" {
 		w.WriteHeader(http.StatusOK)
@@ -57,7 +70,12 @@ func rewrite(proxyReq ProxyRequest) ([]byte, error) {
 		}
 	}
 
-	return json.Marshal(payloadMap)
+	modifiedPayload, err := json.Marshal(payloadMap)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal rewritten payload: %w", err)
+	}
+
+	return modifiedPayload, nil
 }
 
 func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWriter) {
@@ -74,7 +92,7 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 		req.Header.Set(key, value)
 	}
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 60 * time.Second}
 
 	resp, err := client.Do(req)
 
@@ -91,6 +109,19 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 
 	w.WriteHeader(resp.StatusCode)
 	io.Copy(w, resp.Body)
+}
+
+func isAllowedOrigin(origin string) bool {
+	host := origin
+	if parsed, err := url.Parse(origin); err == nil && parsed.Host != "" {
+		host = parsed.Hostname()
+	}
+
+	if ip := net.ParseIP(host); ip != nil {
+		return ip.IsLoopback()
+	}
+
+	return host == "localhost"
 }
 
 func expandHeaders(headers map[string]string, model string) map[string]string {

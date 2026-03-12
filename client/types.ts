@@ -1,4 +1,4 @@
-import type { ChatCompletionTool } from 'openai/resources/chat/completions/completions';
+import type { ChatCompletionTool } from 'openai/resources/chat/completions';
 
 export interface Resource {
     kind: string;

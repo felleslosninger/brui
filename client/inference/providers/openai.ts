@@ -27,33 +27,29 @@ export async function requestOpenAIInference(
         payload,
     };
 
-    try {
-        const response = await fetch(defaultEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(request)
-        });
+    const response = await fetch(defaultEndpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(request)
+    });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Inference error (${response.status}): ${errorText}`);
-        }
-
-        const chat = await response.json() as OpenAIChatCompletionResponse;
-        const message = chat.choices[0]?.message;
-
-        if (!message) {
-            throw new Error('Inference response did not include any choices');
-        }
-
-        const toolCalls = parseToolCalls(message);
-
-        return toolCalls.length > 0
-            ? toolCalls
-            : (message.content || '');
-    } catch (error) {
-        throw error;
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Inference error (${response.status}): ${errorText}`);
     }
+
+    const chat = await response.json() as OpenAIChatCompletionResponse;
+    const message = chat.choices[0]?.message;
+
+    if (!message) {
+        throw new Error('Inference response did not include any choices');
+    }
+
+    const toolCalls = parseToolCalls(message);
+
+    return toolCalls.length > 0
+        ? toolCalls
+        : (message.content || '');
 }

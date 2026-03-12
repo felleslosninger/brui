@@ -3,7 +3,7 @@ import type {
     ChatCompletionCreateParamsNonStreaming,
     ChatCompletionMessage,
     ChatCompletionMessageFunctionToolCall,
-} from 'openai/resources/chat/completions/completions';
+} from 'openai/resources/chat/completions';
 
 export type OpenAIChatCompletionRequest = Omit<ChatCompletionCreateParamsNonStreaming, 'model'>;
 export type OpenAIChatCompletionResponse = ChatCompletion;
