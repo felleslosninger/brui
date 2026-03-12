@@ -1,3 +1,5 @@
+import type { ChatCompletionTool } from 'openai/resources/chat/completions/completions';
+
 export interface Resource {
     kind: string;
     name: string;
@@ -10,21 +12,7 @@ export interface Decision {
     actions: string[];
 }
 
-interface FunctionParameter {
-    type: string;
-    enum?: string[];
-    properties?: Record<string, FunctionParameter | undefined>;
-    required?: string[];
-}
-
-interface Tool {
-    type: string;
-    function: {
-        name: string;
-        description: string;
-        parameters: FunctionParameter;
-    };
-}
+export type ToolDefinition = ChatCompletionTool;
 
 export interface Action {
     name: string;
@@ -33,17 +21,20 @@ export interface Action {
     message?: string;
 }
 
+export interface Option {
+    name: string;
+}
+
 export interface Inference extends Resource {
     kind: 'inference';
     spec: {
         name: string;
-        provider: string;
     };
 }
 
 export interface Configuration {
-    tools: Tool[];
+    tools: ToolDefinition[];
     actions: Action[];
-    decisions: { tool: string; actions: string[] }[];
+    decisions: Decision[];
     inference?: Inference;
 }

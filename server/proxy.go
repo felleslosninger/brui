@@ -7,12 +7,12 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 const HttpPort = ":8091"
 
 func proxyHandler(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
@@ -51,22 +51,27 @@ func rewrite(proxyReq ProxyRequest) ([]byte, error) {
 
 	payloadMap["model"] = target.Model
 
-	modifiedPayload, err := json.Marshal(payloadMap)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling modified payload: %w", err)
+	if _, hasTools := payloadMap["tools"]; hasTools {
+		if _, hasToolChoice := payloadMap["tool_choice"]; !hasToolChoice {
+			payloadMap["tool_choice"] = "auto"
+		}
 	}
 
-	return modifiedPayload, nil
+	return json.Marshal(payloadMap)
 }
 
 func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWriter) {
 	req, err := http.NewRequest(r.Method, string(TargetMap[pr.Target].Endpoint), bytes.NewBuffer(payload))
-
-	fmt.Println("Proxying request to:", pr.Target)
-
 	if err != nil {
 		http.Error(w, "Error creating request", http.StatusInternalServerError)
 		return
+	}
+
+	fmt.Println("Proxying request to:", pr.Target)
+
+	req.Header.Set("Content-Type", "application/json")
+	for key, value := range expandHeaders(TargetMap[pr.Target].Headers, TargetMap[pr.Target].Model) {
+		req.Header.Set(key, value)
 	}
 
 	client := &http.Client{}
@@ -80,7 +85,32 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 
 	defer resp.Body.Close()
 
+	if contentType := resp.Header.Get("Content-Type"); contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	}
+
+	w.WriteHeader(resp.StatusCode)
 	io.Copy(w, resp.Body)
+}
+
+func expandHeaders(headers map[string]string, model string) map[string]string {
+	if len(headers) == 0 {
+		return nil
+	}
+
+	expanded := make(map[string]string, len(headers))
+	for key, value := range headers {
+		expanded[key] = os.Expand(value, func(variable string) string {
+			switch variable {
+			case "MODEL", "TARGET_MODEL":
+				return model
+			default:
+				return os.Getenv(variable)
+			}
+		})
+	}
+
+	return expanded
 }
 
 func Run() {
