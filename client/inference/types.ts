@@ -43,7 +43,12 @@ function parseFunctionArguments(argumentsJson: string): Record<string, unknown> 
     }
 
     try {
-        return JSON.parse(argumentsJson) as Record<string, unknown>;
+        const parsed = JSON.parse(argumentsJson);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            return parsed as Record<string, unknown>;
+        }
+
+        return {};
     } catch {
         return {};
     }
