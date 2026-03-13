@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
@@ -89,7 +90,13 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 	fmt.Println("Proxying request to:", pr.Target)
 
 	req.Header.Set("Content-Type", "application/json")
-	for key, value := range expandHeaders(TargetMap[pr.Target].Headers, TargetMap[pr.Target].Model) {
+	expandedHeaders, err := expandHeaders(TargetMap[pr.Target].Headers, TargetMap[pr.Target].Model)
+	if err != nil {
+		http.Error(w, "Error expanding headers: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for key, value := range expandedHeaders {
 		req.Header.Set(key, value)
 	}
 
@@ -125,24 +132,42 @@ func isAllowedOrigin(origin string) bool {
 	return host == "localhost"
 }
 
-func expandHeaders(headers map[string]string, model string) map[string]string {
+func expandHeaders(headers map[string]string, model string) (map[string]string, error) {
 	if len(headers) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	expanded := make(map[string]string, len(headers))
 	for key, value := range headers {
-		expanded[key] = os.Expand(value, func(variable string) string {
+		missingVars := map[string]struct{}{}
+		expandedValue := os.Expand(value, func(variable string) string {
 			switch variable {
 			case "MODEL", "TARGET_MODEL":
 				return model
 			default:
-				return os.Getenv(variable)
+				if resolved, ok := os.LookupEnv(variable); ok {
+					return resolved
+				}
+
+				missingVars[variable] = struct{}{}
+				return ""
 			}
 		})
+
+		if len(missingVars) > 0 {
+			var names []string
+			for variable := range missingVars {
+				names = append(names, variable)
+			}
+			sort.Strings(names)
+
+			return nil, fmt.Errorf("missing environment variables in header %q: %s", key, strings.Join(names, ", "))
+		}
+
+		expanded[key] = expandedValue
 	}
 
-	return expanded
+	return expanded, nil
 }
 
 func Run() {
