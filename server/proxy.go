@@ -83,7 +83,7 @@ func rewrite(proxyReq ProxyRequest) ([]byte, error) {
 func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWriter) {
 	req, err := http.NewRequestWithContext(r.Context(), r.Method, string(TargetMap[pr.Target].Endpoint), bytes.NewBuffer(payload))
 	if err != nil {
-		http.Error(w, "Error creating request", http.StatusInternalServerError)
+		http.Error(w, "Error creating request: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
