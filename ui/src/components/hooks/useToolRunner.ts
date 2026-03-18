@@ -69,12 +69,12 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
             return [...prev, newMessage];
         });
 
-        function updateAssistantMessage(action: string, patch: { status: ProcessEventProps['status']; text: string }) {
+        function updateAssistantMessage(id: string, patch: { status: ProcessEventProps['status']; text: string }) {
             setMessageHistory(prev => {
                 return updateLastMessage(prev, (lastMessage) => ({
                     ...lastMessage,
                     assistantMessages: lastMessage.assistantMessages.map((assistantMessage) =>
-                        assistantMessage.action === action
+                        assistantMessage.id === id
                             ? { ...assistantMessage, ...patch }
                             : assistantMessage
                     )
@@ -87,11 +87,11 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
                 console.log("Tool calls known:", actions);
                 setMessageHistory(prev => {
                     return updateLastMessage(prev, (lastMessage) => {
-                        const pending = actions.map(action => ({
-                            id: crypto.randomUUID(),
-                            action,
+                        const pending = actions.map((actionEvent) => ({
+                            id: actionEvent.id,
+                            action: actionEvent.action,
                             status: "pending" as ProcessEventProps['status'],
-                            text: `Waiting for ${action}...`,
+                            text: `Waiting for ${actionEvent.action}...`,
                             timestamp: Date.now(),
                             messageIndex: lastMessage.userMessage.messageIndex,
                             mode: lastMessage.userMessage.mode
@@ -105,16 +105,25 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
                 });
             },
 
-            onActionStart: (action) => {
-                updateAssistantMessage(action, { status: "active", text: `Running ${action}...` });
+            onActionStart: (actionEvent) => {
+                updateAssistantMessage(actionEvent.id, {
+                    status: "active",
+                    text: `Running ${actionEvent.action}...`
+                });
             },
 
-            onActionComplete: (action, result) => {
-                updateAssistantMessage(action, { status: "completed", text: result.message || result.result || `${action} completed` });
+            onActionComplete: (actionEvent, result) => {
+                updateAssistantMessage(actionEvent.id, {
+                    status: "completed",
+                    text: result.message || result.result || `${actionEvent.action} completed`
+                });
             },
 
-            onActionError: (action, error) => {
-                updateAssistantMessage(action, { status: "uncompleted", text: error });
+            onActionError: (actionEvent, error) => {
+                updateAssistantMessage(actionEvent.id, {
+                    status: "uncompleted",
+                    text: error
+                });
             }
         });
 
@@ -137,13 +146,13 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
 
         setMessageHistory(prev => {
             return updateLastMessage(prev, (lastMessage) => {
-                const existingActions = new Set(
-                    lastMessage.assistantMessages.map(message => message.action)
+                const existingMessageIds = new Set(
+                    lastMessage.assistantMessages.map(message => message.id)
                 );
                 const fallbackMessages = failedResults
-                    .filter((executionResult) => !executionResult.action || !existingActions.has(executionResult.action))
+                    .filter((executionResult) => !executionResult.id || !existingMessageIds.has(executionResult.id))
                     .map((executionResult) => ({
-                        id: crypto.randomUUID(),
+                        id: executionResult.id || crypto.randomUUID(),
                         action: executionResult.action || "inference",
                         status: "uncompleted" as ProcessEventProps['status'],
                         text: executionResult.error || "Action failed",

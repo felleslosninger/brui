@@ -15,6 +15,7 @@ export async function requestOpenAIInference(
 ): Promise<InferenceResult> {
     const tools: ToolDefinition[] = ctx.config.decisions?.tools || [];
     const target = ctx.config.inference?.name || 'local-nano';
+    const endpoint = ctx.config.inference?.endpoint || defaultEndpoint;
 
     const payload: OpenAIChatCompletionRequest = {
         messages: [{ role: 'user', content }],
@@ -27,7 +28,7 @@ export async function requestOpenAIInference(
         payload,
     };
 
-    const response = await fetch(defaultEndpoint, {
+    const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

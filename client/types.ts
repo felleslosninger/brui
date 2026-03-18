@@ -29,6 +29,7 @@ export interface Inference extends Resource {
     kind: 'inference';
     spec: {
         name: string;
+        endpoint?: string;
     };
 }
 
