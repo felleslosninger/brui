@@ -4,7 +4,7 @@
 
 ### 1. Install Dependencies
 
-> **Note:** Inference is routed through the local Go proxy. The built-in Ollama and Envoy targets now both use OpenAI-compatible `/v1/chat/completions` endpoints. You can switch targets by changing the inference `name` in [`lab/bogwalds_pizza/src/config.json`](lab/bogwalds_pizza/src/config.json) to one of the targets defined in [`server/config.yaml`](server/config.yaml).
+> **Note:** Inference is routed through the local Go proxy. The pizza demo currently defaults to `envoy-default`, so you need to set `ENVOY_API_KEY` before starting the proxy. If you want to use local Ollama instead, change the inference `name` in [`lab/bogwalds_pizza/src/config.json`](lab/bogwalds_pizza/src/config.json) to `local-nano`.
 
 **Ollama** (local LLM inference)
 ```sh
@@ -26,7 +26,7 @@ The proxy target in [`server/config.yaml`](server/config.yaml) sends `Authorizat
 # Download from https://go.dev/dl/
 ```
 
-**Node.js** (v18+)
+**Node.js** (v20.19+)
 ```sh
 # Download from https://nodejs.org/
 ```

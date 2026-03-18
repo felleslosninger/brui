@@ -1,18 +1,20 @@
 import type { Configuration } from './types';
 import type { FunctionRegistry } from './store';
+import type { EventHandlers } from './eventHandlers';
 import { createResourceStore } from './store';
 import { Chat } from './inference';
-import { EventHandlers } from "./eventHandlers";
 
-export function Setup(config: Configuration, functions: FunctionRegistry): (input: string, metadata?: any, events?: EventHandlers) => Promise<ExecutionResult> {
+export function Setup(
+    config: Configuration,
+    functions: FunctionRegistry
+): (input: string, metadata?: unknown, events?: EventHandlers) => Promise<ExecutionResult> {
     const store = createResourceStore(config, functions);
 
     async function processPayload(
         userInput: string,
-        metadata?: any,
+        _metadata?: unknown,
         events?: EventHandlers
     ): Promise<ExecutionResult> {
-
         try {
             const inferenceContext = {
                 config: {
@@ -26,7 +28,14 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
             console.log("returning tool calls:", JSON.stringify(toolCalls, null, 2));
 
 
-            if (!toolCalls || toolCalls.length === 0 || typeof toolCalls === 'string') {
+            if (typeof toolCalls === 'string') {
+                return {
+                    success: false,
+                    error: toolCalls || 'No tool calls returned from inference.'
+                };
+            }
+
+            if (!toolCalls || toolCalls.length === 0) {
                 return {
                     success: false,
                     error: 'No tool calls returned from inference.'
@@ -118,26 +127,6 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
     return processPayload;
 }
 
-function parseToolCall(responseText: string) {
-    try {
-        const data = JSON.parse(responseText);
-        if (
-            typeof data === "object" &&
-            data.function &&
-            typeof data.function.name === "string" &&
-            typeof data.function.arguments === "object"
-        ) {
-            return data;
-        } else {
-            throw new Error("Invalid function call structure");
-        }
-
-    } catch (err) {
-        console.warn("Rejected non-JSON or malformed input:", err.message);
-        throw new Error("Unable to parse tool calls from response");
-    }
-}
-
 export interface ExecutionResult {
     success: boolean;
     tool?: string;
@@ -147,7 +136,7 @@ export interface ExecutionResult {
 }
 
 export interface ActionResult {
-    action: string;
+    action: string | null;
     success: boolean;
     result?: unknown;
     message?: string;

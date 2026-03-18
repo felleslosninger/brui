@@ -3,8 +3,8 @@ import InputField from './InputField';
 import InputSubmitButton from './InputSubmitButton';
 import InputMicrophoneButton from './InputMicrophoneButton';
 import InputContextDropdown from './InputContextDropdown';
-import { FormEvent } from 'react';
-import { Mode } from "../../types/message";
+import type { FormEvent } from 'react';
+import type { Mode } from "../../types/message";
 
 interface SidebarInputProps {
     children?: React.ReactNode;

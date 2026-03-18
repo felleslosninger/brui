@@ -32,12 +32,15 @@ export function parseToolCalls(message: OpenAIChatCompletionMessage): InferenceT
             type: toolCall.type,
             function: {
                 name: toolCall.function.name,
-                arguments: parseFunctionArguments(toolCall.function.arguments),
+                arguments: parseFunctionArguments(toolCall.function.arguments, toolCall.function.name),
             },
         }));
 }
 
-function parseFunctionArguments(argumentsJson: string): Record<string, unknown> {
+function parseFunctionArguments(
+    argumentsJson: string,
+    toolName: string
+): Record<string, unknown> {
     if (!argumentsJson || argumentsJson.trim() === '') {
         return {};
     }
@@ -48,9 +51,13 @@ function parseFunctionArguments(argumentsJson: string): Record<string, unknown> 
             return parsed as Record<string, unknown>;
         }
 
-        return {};
-    } catch {
-        return {};
+        throw new Error(`Tool "${toolName}" arguments must be a JSON object`);
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('must be a JSON object')) {
+            throw error;
+        }
+
+        throw new Error(`Tool "${toolName}" returned invalid JSON arguments`);
     }
 }
 

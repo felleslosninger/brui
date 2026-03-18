@@ -26,5 +26,7 @@ export async function extractParameters(
   if (!toolCalls || toolCalls.length === 0) {
     return {};
   }
-  return toolCalls[0].function.arguments || {};
+
+  const firstFunctionCall = toolCalls.find((call) => call.function);
+  return firstFunctionCall?.function?.arguments || {};
 }
