@@ -8,6 +8,27 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
     const runTools = Setup(config, functions);
     const [messageHistory, setMessageHistory] = useState<Message[]>([]);
 
+    function updateLastMessage(
+        messages: Message[],
+        updater: (message: Message) => Message
+    ): Message[] {
+        if (messages.length === 0) {
+            return messages;
+        }
+
+        const lastIndex = messages.length - 1;
+        const lastMessage = messages[lastIndex];
+        const updatedLastMessage = updater(lastMessage);
+
+        if (updatedLastMessage === lastMessage) {
+            return messages;
+        }
+
+        const copy = [...messages];
+        copy[lastIndex] = updatedLastMessage;
+        return copy;
+    }
+
     function appendAssistantMessage(
         action: string,
         text: string,
@@ -15,22 +36,21 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
         status: ProcessEventProps['status'] = "uncompleted"
     ) {
         setMessageHistory(prev => {
-            const copy = [...prev];
-            const m = copy[copy.length - 1];
-            m.assistantMessages = [
-                ...m.assistantMessages,
-                {
-                    id: crypto.randomUUID(),
-                    action,
-                    status,
-                    text,
-                    timestamp: Date.now(),
-                    messageIndex: m.userMessage.messageIndex,
-                    mode,
-                }
-            ];
-            copy[copy.length - 1] = m;
-            return copy;
+            return updateLastMessage(prev, (lastMessage) => ({
+                ...lastMessage,
+                assistantMessages: [
+                    ...lastMessage.assistantMessages,
+                    {
+                        id: crypto.randomUUID(),
+                        action,
+                        status,
+                        text,
+                        timestamp: Date.now(),
+                        messageIndex: lastMessage.userMessage.messageIndex,
+                        mode,
+                    }
+                ]
+            }));
         });
     }
 
@@ -51,13 +71,14 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
 
         function updateAssistantMessage(action: string, patch: { status: ProcessEventProps['status']; text: string }) {
             setMessageHistory(prev => {
-                const copy = [...prev];
-                const m = copy[copy.length - 1];
-                m.assistantMessages = m.assistantMessages.map(am =>
-                    am.action === action ? { ...am, ...patch } : am
-                );
-                copy[copy.length - 1] = m;
-                return copy;
+                return updateLastMessage(prev, (lastMessage) => ({
+                    ...lastMessage,
+                    assistantMessages: lastMessage.assistantMessages.map((assistantMessage) =>
+                        assistantMessage.action === action
+                            ? { ...assistantMessage, ...patch }
+                            : assistantMessage
+                    )
+                }));
             });
         }
 
@@ -65,20 +86,22 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
             onToolCallsKnown: (actions) => {
                 console.log("Tool calls known:", actions);
                 setMessageHistory(prev => {
-                    const copy = [...prev];
-                    const m = copy[copy.length - 1];
-                    const pending = actions.map(action => ({
-                        id: crypto.randomUUID(),
-                        action,
-                        status: "pending" as ProcessEventProps['status'],
-                        text: `Waiting for ${action}...`,
-                        timestamp: Date.now(),
-                        messageIndex: m.userMessage.messageIndex,
-                        mode: m.userMessage.mode
-                    }));
-                    m.assistantMessages = [...m.assistantMessages, ...pending];
-                    copy[copy.length - 1] = m;
-                    return copy;
+                    return updateLastMessage(prev, (lastMessage) => {
+                        const pending = actions.map(action => ({
+                            id: crypto.randomUUID(),
+                            action,
+                            status: "pending" as ProcessEventProps['status'],
+                            text: `Waiting for ${action}...`,
+                            timestamp: Date.now(),
+                            messageIndex: lastMessage.userMessage.messageIndex,
+                            mode: lastMessage.userMessage.mode
+                        }));
+
+                        return {
+                            ...lastMessage,
+                            assistantMessages: [...lastMessage.assistantMessages, ...pending]
+                        };
+                    });
                 });
             },
 
@@ -113,28 +136,31 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
         }
 
         setMessageHistory(prev => {
-            const copy = [...prev];
-            const m = copy[copy.length - 1];
-            const existingActions = new Set(m.assistantMessages.map(message => message.action));
-            const fallbackMessages = failedResults
-                .filter((executionResult) => !executionResult.action || !existingActions.has(executionResult.action))
-                .map((executionResult) => ({
-                    id: crypto.randomUUID(),
-                    action: executionResult.action || "inference",
-                    status: "uncompleted" as ProcessEventProps['status'],
-                    text: executionResult.error || "Action failed",
-                    timestamp: Date.now(),
-                    messageIndex: m.userMessage.messageIndex,
-                    mode: chosenMode,
-                }));
+            return updateLastMessage(prev, (lastMessage) => {
+                const existingActions = new Set(
+                    lastMessage.assistantMessages.map(message => message.action)
+                );
+                const fallbackMessages = failedResults
+                    .filter((executionResult) => !executionResult.action || !existingActions.has(executionResult.action))
+                    .map((executionResult) => ({
+                        id: crypto.randomUUID(),
+                        action: executionResult.action || "inference",
+                        status: "uncompleted" as ProcessEventProps['status'],
+                        text: executionResult.error || "Action failed",
+                        timestamp: Date.now(),
+                        messageIndex: lastMessage.userMessage.messageIndex,
+                        mode: chosenMode,
+                    }));
 
-            if (fallbackMessages.length === 0) {
-                return prev;
-            }
+                if (fallbackMessages.length === 0) {
+                    return lastMessage;
+                }
 
-            m.assistantMessages = [...m.assistantMessages, ...fallbackMessages];
-            copy[copy.length - 1] = m;
-            return copy;
+                return {
+                    ...lastMessage,
+                    assistantMessages: [...lastMessage.assistantMessages, ...fallbackMessages]
+                };
+            });
         });
     }
 
