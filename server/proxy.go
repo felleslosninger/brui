@@ -116,7 +116,9 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 	}
 
 	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, resp.Body)
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		log.Printf("Error copying response body for target %s: %v", pr.Target, err)
+	}
 }
 
 func isAllowedOrigin(origin string) bool {
