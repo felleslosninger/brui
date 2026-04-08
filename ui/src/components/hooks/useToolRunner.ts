@@ -1,11 +1,58 @@
 import { useState } from "react";
-import { Message, Mode } from "../../types/message";
-import { Configuration, FunctionRegistry, Setup } from "../../../../client";
-import { ProcessEventProps } from "@navikt/ds-react/Process";
+import type { ProcessEventProps } from "@navikt/ds-react/Process";
+import type { Message, Mode } from "../../types/message";
+import { Setup } from "../../../../client";
+import type { Configuration, FunctionRegistry } from "../../../../client";
 
 export function useToolRunner(config: Configuration, functions: FunctionRegistry) {
     const runTools = Setup(config, functions);
     const [messageHistory, setMessageHistory] = useState<Message[]>([]);
+
+    function updateLastMessage(
+        messages: Message[],
+        updater: (message: Message) => Message
+    ): Message[] {
+        if (messages.length === 0) {
+            return messages;
+        }
+
+        const lastIndex = messages.length - 1;
+        const lastMessage = messages[lastIndex];
+        const updatedLastMessage = updater(lastMessage);
+
+        if (updatedLastMessage === lastMessage) {
+            return messages;
+        }
+
+        const copy = [...messages];
+        copy[lastIndex] = updatedLastMessage;
+        return copy;
+    }
+
+    function appendAssistantMessage(
+        action: string,
+        text: string,
+        mode: Mode,
+        status: ProcessEventProps['status'] = "uncompleted"
+    ) {
+        setMessageHistory(prev => {
+            return updateLastMessage(prev, (lastMessage) => ({
+                ...lastMessage,
+                assistantMessages: [
+                    ...lastMessage.assistantMessages,
+                    {
+                        id: crypto.randomUUID(),
+                        action,
+                        status,
+                        text,
+                        timestamp: Date.now(),
+                        messageIndex: lastMessage.userMessage.messageIndex,
+                        mode,
+                    }
+                ]
+            }));
+        });
+    }
 
     async function askAI(inputText: string, chosenMode: Mode) {
         setMessageHistory(prev => {
@@ -22,50 +69,107 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
             return [...prev, newMessage];
         });
 
-        function updateAssistantMessage(action: string, patch: { status: ProcessEventProps['status']; text: string }) {
+        function updateAssistantMessage(id: string, patch: { status: ProcessEventProps['status']; text: string }) {
             setMessageHistory(prev => {
-                const copy = [...prev];
-                const m = copy[copy.length - 1];
-                m.assistantMessages = m.assistantMessages.map(am =>
-                    am.action === action ? { ...am, ...patch } : am
-                );
-                copy[copy.length - 1] = m;
-                return copy;
+                return updateLastMessage(prev, (lastMessage) => ({
+                    ...lastMessage,
+                    assistantMessages: lastMessage.assistantMessages.map((assistantMessage) =>
+                        assistantMessage.id === id
+                            ? { ...assistantMessage, ...patch }
+                            : assistantMessage
+                    )
+                }));
             });
         }
 
-        await runTools(inputText, null, {
+        const result = await runTools(inputText, null, {
             onToolCallsKnown: (actions) => {
                 console.log("Tool calls known:", actions);
                 setMessageHistory(prev => {
-                    const copy = [...prev];
-                    const m = copy[copy.length - 1];
-                    const pending = actions.map(action => ({
-                        id: crypto.randomUUID(),
-                        action,
-                        status: "pending" as ProcessEventProps['status'],
-                        text: `Waiting for ${action}...`,
-                        timestamp: Date.now(),
-                        messageIndex: m.userMessage.messageIndex,
-                        mode: m.userMessage.mode
-                    }));
-                    m.assistantMessages = [...m.assistantMessages, ...pending];
-                    copy[copy.length - 1] = m;
-                    return copy;
+                    return updateLastMessage(prev, (lastMessage) => {
+                        const pending = actions.map((actionEvent) => ({
+                            id: actionEvent.id,
+                            action: actionEvent.action,
+                            status: "pending" as ProcessEventProps['status'],
+                            text: `Waiting for ${actionEvent.action}...`,
+                            timestamp: Date.now(),
+                            messageIndex: lastMessage.userMessage.messageIndex,
+                            mode: lastMessage.userMessage.mode
+                        }));
+
+                        return {
+                            ...lastMessage,
+                            assistantMessages: [...lastMessage.assistantMessages, ...pending]
+                        };
+                    });
                 });
             },
 
-            onActionStart: (action) => {
-                updateAssistantMessage(action, { status: "active", text: `Running ${action}...` });
+            onActionStart: (actionEvent) => {
+                updateAssistantMessage(actionEvent.id, {
+                    status: "active",
+                    text: `Running ${actionEvent.action}...`
+                });
             },
 
-            onActionComplete: (action, result) => {
-                updateAssistantMessage(action, { status: "completed", text: result.message || result.result || `${action} completed` });
+            onActionComplete: (actionEvent, result) => {
+                updateAssistantMessage(actionEvent.id, {
+                    status: "completed",
+                    text: result.message || result.result || `${actionEvent.action} completed`
+                });
             },
 
-            onActionError: (action, error) => {
-                updateAssistantMessage(action, { status: "uncompleted", text: error });
+            onActionError: (actionEvent, error) => {
+                updateAssistantMessage(actionEvent.id, {
+                    status: "uncompleted",
+                    text: error
+                });
             }
+        });
+
+        if (!result.success) {
+            appendAssistantMessage(
+                "inference",
+                result.error || "Inference failed",
+                chosenMode
+            );
+            return;
+        }
+
+        const failedResults = result.executionResults?.filter(
+            (executionResult) => !executionResult.success && executionResult.error
+        ) || [];
+
+        if (failedResults.length === 0) {
+            return;
+        }
+
+        setMessageHistory(prev => {
+            return updateLastMessage(prev, (lastMessage) => {
+                const existingMessageIds = new Set(
+                    lastMessage.assistantMessages.map(message => message.id)
+                );
+                const fallbackMessages = failedResults
+                    .filter((executionResult) => !executionResult.id || !existingMessageIds.has(executionResult.id))
+                    .map((executionResult) => ({
+                        id: executionResult.id || crypto.randomUUID(),
+                        action: executionResult.action || "inference",
+                        status: "uncompleted" as ProcessEventProps['status'],
+                        text: executionResult.error || "Action failed",
+                        timestamp: Date.now(),
+                        messageIndex: lastMessage.userMessage.messageIndex,
+                        mode: chosenMode,
+                    }));
+
+                if (fallbackMessages.length === 0) {
+                    return lastMessage;
+                }
+
+                return {
+                    ...lastMessage,
+                    assistantMessages: [...lastMessage.assistantMessages, ...fallbackMessages]
+                };
+            });
         });
     }
 

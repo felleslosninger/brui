@@ -92,8 +92,7 @@
     "kind": "inference",
     "name": "default",
     "spec": {
-      "name": "local-nano",
-      "provider": "ollama"
+      "name": "envoy-default"
     }
   }
 }

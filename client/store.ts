@@ -67,4 +67,3 @@ export function createResourceStore(
     }
     return store;
 }
-

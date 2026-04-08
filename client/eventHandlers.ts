@@ -1,7 +1,12 @@
+export interface ActionEvent {
+    id: string;
+    action: string;
+}
+
 export interface EventHandlers {
-    onToolCallsKnown?: (actions: string[]) => void;
-    onActionPending?: (action: string) => void;
-    onActionStart?: (action: string) => void;
-    onActionComplete?: (action: string, result: any) => void;
-    onActionError?: (action: string, error: string) => void;
+    onToolCallsKnown?: (actions: ActionEvent[]) => void;
+    onActionPending?: (action: ActionEvent) => void;
+    onActionStart?: (action: ActionEvent) => void;
+    onActionComplete?: (action: ActionEvent, result: any) => void;
+    onActionError?: (action: ActionEvent, error: string) => void;
 }

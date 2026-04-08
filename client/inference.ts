@@ -1,24 +1,21 @@
-import { Request } from './inference/ollama';
-import type { Tool } from 'ollama';
+import { requestOpenAIInference } from './inference/providers/openai';
+import type { ToolDefinition } from './types';
+import type { InferenceToolCall } from './inference/types';
 
 export interface InferenceContext {
     config: {
         inference?: {
             name: string;
-            provider: string;
+            endpoint?: string;
         };
         decisions?: {
-            tools?: Tool[];
+            tools?: ToolDefinition[];
         };
     };
 }
 
-export async function Chat(content: string, ctx: InferenceContext): Promise<any> {
-    const provider = ctx.config.inference?.provider || 'ollama';
-    
-    if (provider === 'ollama') {
-        return await Request(content, ctx);
-    } else {
-        throw new Error(`Unsupported provider: ${provider}`);
-    }
+export type InferenceResult = InferenceToolCall[] | string;
+
+export async function Chat(content: string, ctx: InferenceContext): Promise<InferenceResult> {
+    return requestOpenAIInference(content, ctx);
 }

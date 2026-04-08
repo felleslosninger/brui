@@ -1,4 +1,4 @@
-import { ProcessEventProps } from "@navikt/ds-react/Process";
+import type { ProcessEventProps } from "@navikt/ds-react/Process";
 
 export type Mode = 'Info' | 'Act';
 
@@ -15,6 +15,7 @@ interface UserMessage {
 }
 
 interface AssistantMessage {
+    id: string;
     messageIndex: number;
     timestamp: number;
     text: string;

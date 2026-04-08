@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "ollama": "^0.6.0"
+    "openai": "^6.27.0"
   }
 }

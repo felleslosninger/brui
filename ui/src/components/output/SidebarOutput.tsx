@@ -5,7 +5,7 @@ import { Skeleton } from '@digdir/designsystemet-react';
 import { Process } from "@navikt/ds-react";
 import { TasklistSendIcon } from "@navikt/aksel-icons";
 import "@navikt/ds-css";
-import { Message } from "../../types/message";
+import type { Message } from "../../types/message";
 
 interface SidebarOutputProps {
     children?: React.ReactNode;
@@ -36,8 +36,8 @@ export default function SidebarOutputRoot({
                             </div>
 
                             {msg.userMessage.mode === "Info" && (
-                                msg.assistantMessages.map((assistantMsg, i) => (
-                                    <div className="chat-row" key={i}>
+                                msg.assistantMessages.map((assistantMsg) => (
+                                    <div className="chat-row" key={assistantMsg.id}>
                                         <SidebarOutput.ChatBubble>
                                             {assistantMsg.text}
                                         </SidebarOutput.ChatBubble>
@@ -47,9 +47,9 @@ export default function SidebarOutputRoot({
 
                             {msg.userMessage.mode === "Act" && (
                                 <Process>
-                                    {msg.assistantMessages.map((assistantMsg, i) => (
+                                    {msg.assistantMessages.map((assistantMsg) => (
                                         <Process.Event
-                                            key={i}
+                                            key={assistantMsg.id}
                                             status={assistantMsg.status}
                                             title={assistantMsg.text}
                                             timestamp={new Date().toLocaleDateString("nb-NO")}

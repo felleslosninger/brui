@@ -3,7 +3,7 @@ import cl from 'clsx/lite';
 import { Dropdown, Input } from '@digdir/designsystemet-react';
 import { ChevronUpIcon } from '@navikt/aksel-icons';
 import { useState } from 'react';
-import { Mode } from "../../types/message";
+import type { Mode } from "../../types/message";
 
 interface InputContextDropdownProps {
     modes: Mode[];
