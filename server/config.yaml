@@ -1,14 +1,14 @@
 inference:
-  local-nano:
+  local:
     endpoint: "http://localhost:11434/v1/chat/completions"
     model: "qwen3:0.6b"
   
-  external-nano:
+  aivar:
     endpoint: "https://ollama.sandkasse.ai/v1/chat/completions"
-    model: "qwen3:0.6b"
+    model: "devstral-small-2:latest"
 
-  envoy-default:
-    endpoint: "https://envoy-ai-gateway-envoy-gateway-system.apps.eid-systest.norwayeast.aroapp.io/v1/chat/completions"
+  ai-gateway:
+    endpoint: "https://gw.sandkasse.ai/v1/chat/completions"
     model: "gpt-5"
     headers:
       Authorization: "Bearer ${ENVOY_API_KEY}"
