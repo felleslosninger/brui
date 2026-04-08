@@ -1,18 +1,20 @@
 import type { Configuration } from './types';
 import type { FunctionRegistry } from './store';
+import type { ActionEvent, EventHandlers } from './eventHandlers';
 import { createResourceStore } from './store';
 import { Chat } from './inference';
-import { EventHandlers } from "./eventHandlers";
 
-export function Setup(config: Configuration, functions: FunctionRegistry): (input: string, metadata?: any, events?: EventHandlers) => Promise<ExecutionResult> {
+export function Setup(
+    config: Configuration,
+    functions: FunctionRegistry
+): (input: string, metadata?: unknown, events?: EventHandlers) => Promise<ExecutionResult> {
     const store = createResourceStore(config, functions);
 
     async function processPayload(
         userInput: string,
-        metadata?: any,
+        _metadata?: unknown,
         events?: EventHandlers
     ): Promise<ExecutionResult> {
-
         try {
             const inferenceContext = {
                 config: {
@@ -28,8 +30,8 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
 
             if (typeof toolCalls === 'string') {
                 return {
-                    success: true,
-                    content: toolCalls
+                    success: false,
+                    error: toolCalls || 'No tool calls returned from inference.'
                 };
             }
 
@@ -40,17 +42,8 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
                 };
             }
 
-            if (events?.onToolCallsKnown) {
-                const allActions = toolCalls.flatMap(tc => {
-                    const toolName = tc.function?.name;
-                    return (config.decisions || [])
-                        .filter((d: any) => d.tool === toolName)
-                        .flatMap((d: any) => d.actions);
-                });
-                events.onToolCallsKnown(allActions);
-            }
-
             const allResults: ActionResult[] = [];
+            const plannedActions: PlannedAction[] = [];
             for (const toolCall of toolCalls) {
                 if (!toolCall.function || !toolCall.function.name) {
                     allResults.push({
@@ -77,35 +70,54 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
 
                 const actionNames = decisions.flatMap((d: any) => d.actions);
 
-                for (const actionName of actionNames) {
-                    events?.onActionPending?.(actionName);
-
-                    try {
-                        events?.onActionStart?.(actionName);
-
-                        const { result, message } = await store.executeAction(actionName, parameters);
-
-                        events?.onActionComplete?.(actionName, { result, message });
-
-                        allResults.push({
+                plannedActions.push(
+                    ...actionNames.map((actionName) => ({
+                        event: {
+                            id: crypto.randomUUID(),
                             action: actionName,
-                            success: true,
-                            result,
-                            message
-                        });
+                        },
+                        parameters,
+                    }))
+                );
+            }
 
-                    } catch (error) {
+            if (events?.onToolCallsKnown) {
+                events.onToolCallsKnown(plannedActions.map(({ event }) => event));
+            }
 
-                        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+            for (const plannedAction of plannedActions) {
+                events?.onActionPending?.(plannedAction.event);
 
-                        events?.onActionError?.(actionName, errorMsg);
+                try {
+                    events?.onActionStart?.(plannedAction.event);
 
-                        allResults.push({
-                            action: actionName,
-                            success: false,
-                            error: errorMsg
-                        });
-                    }
+                    const { result, message } = await store.executeAction(
+                        plannedAction.event.action,
+                        plannedAction.parameters
+                    );
+
+                    events?.onActionComplete?.(plannedAction.event, { result, message });
+
+                    allResults.push({
+                        id: plannedAction.event.id,
+                        action: plannedAction.event.action,
+                        success: true,
+                        result,
+                        message
+                    });
+
+                } catch (error) {
+
+                    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+
+                    events?.onActionError?.(plannedAction.event, errorMsg);
+
+                    allResults.push({
+                        id: plannedAction.event.id,
+                        action: plannedAction.event.action,
+                        success: false,
+                        error: errorMsg
+                    });
                 }
             }
 
@@ -125,26 +137,6 @@ export function Setup(config: Configuration, functions: FunctionRegistry): (inpu
     return processPayload;
 }
 
-function parseToolCall(responseText: string) {
-    try {
-        const data = JSON.parse(responseText);
-        if (
-            typeof data === "object" &&
-            data.function &&
-            typeof data.function.name === "string" &&
-            typeof data.function.arguments === "object"
-        ) {
-            return data;
-        } else {
-            throw new Error("Invalid function call structure");
-        }
-
-    } catch (err) {
-        console.warn("Rejected non-JSON or malformed input:", err.message);
-        throw new Error("Unable to parse tool calls from response");
-    }
-}
-
 export interface ExecutionResult {
     success: boolean;
     tool?: string;
@@ -155,9 +147,15 @@ export interface ExecutionResult {
 }
 
 export interface ActionResult {
-    action: string;
+    id?: string;
+    action: string | null;
     success: boolean;
     result?: unknown;
     message?: string;
     error?: string;
+}
+
+interface PlannedAction {
+    event: ActionEvent;
+    parameters: Record<string, unknown>;
 }

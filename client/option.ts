@@ -1,9 +1,9 @@
 import type { Option } from './types';
-import type { ToolCall } from "ollama";
+import type { InferenceToolCall } from './inference/types';
 
 export async function selectOption(
     options: Option[],
-  toolCalls: ToolCall[]
+  toolCalls: InferenceToolCall[]
 ): Promise<Set<Option>> {
   const selectedTools = new Set<Option>();
   for(const call of toolCalls) {
@@ -21,10 +21,12 @@ export async function selectOption(
 }
 
 export async function extractParameters(
-  toolCalls: ToolCall[]
+  toolCalls: InferenceToolCall[]
 ): Promise<Record<string, unknown>> {
   if (!toolCalls || toolCalls.length === 0) {
     return {};
   }
-  return toolCalls[0].function.arguments || {};
+
+  const firstFunctionCall = toolCalls.find((call) => call.function);
+  return firstFunctionCall?.function?.arguments || {};
 }

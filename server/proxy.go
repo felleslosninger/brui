@@ -6,16 +6,31 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
+	"os"
+	"sort"
+	"strings"
+	"time"
 )
 
 const HttpPort = ":8091"
 
 func proxyHandler(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	origin := strings.TrimSpace(r.Header.Get("Origin"))
+	if origin != "" {
+		if !isAllowedOrigin(origin) {
+			http.Error(w, "Origin not allowed", http.StatusForbidden)
+			return
+		}
+
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Add("Vary", "Origin")
+	}
 
 	if r.Method == "OPTIONS" {
 		w.WriteHeader(http.StatusOK)
@@ -51,25 +66,41 @@ func rewrite(proxyReq ProxyRequest) ([]byte, error) {
 
 	payloadMap["model"] = target.Model
 
+	if _, hasTools := payloadMap["tools"]; hasTools {
+		if _, hasToolChoice := payloadMap["tool_choice"]; !hasToolChoice {
+			payloadMap["tool_choice"] = "auto"
+		}
+	}
+
 	modifiedPayload, err := json.Marshal(payloadMap)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling modified payload: %w", err)
+		return nil, fmt.Errorf("failed to marshal rewritten payload: %w", err)
 	}
 
 	return modifiedPayload, nil
 }
 
 func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWriter) {
-	req, err := http.NewRequest(r.Method, string(TargetMap[pr.Target].Endpoint), bytes.NewBuffer(payload))
-
-	fmt.Println("Proxying request to:", pr.Target)
-
+	req, err := http.NewRequestWithContext(r.Context(), r.Method, string(TargetMap[pr.Target].Endpoint), bytes.NewBuffer(payload))
 	if err != nil {
-		http.Error(w, "Error creating request", http.StatusInternalServerError)
+		http.Error(w, "Error creating request: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	client := &http.Client{}
+	fmt.Println("Proxying request to:", pr.Target)
+
+	req.Header.Set("Content-Type", "application/json")
+	expandedHeaders, err := expandHeaders(TargetMap[pr.Target].Headers, TargetMap[pr.Target].Model)
+	if err != nil {
+		http.Error(w, "Error expanding headers: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for key, value := range expandedHeaders {
+		req.Header.Set(key, value)
+	}
+
+	client := &http.Client{Timeout: 60 * time.Second}
 
 	resp, err := client.Do(req)
 
@@ -80,7 +111,65 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 
 	defer resp.Body.Close()
 
-	io.Copy(w, resp.Body)
+	if contentType := resp.Header.Get("Content-Type"); contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	}
+
+	w.WriteHeader(resp.StatusCode)
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		log.Printf("Error copying response body for target %s: %v", pr.Target, err)
+	}
+}
+
+func isAllowedOrigin(origin string) bool {
+	host := origin
+	if parsed, err := url.Parse(origin); err == nil && parsed.Host != "" {
+		host = parsed.Hostname()
+	}
+
+	if ip := net.ParseIP(host); ip != nil {
+		return ip.IsLoopback()
+	}
+
+	return host == "localhost"
+}
+
+func expandHeaders(headers map[string]string, model string) (map[string]string, error) {
+	if len(headers) == 0 {
+		return nil, nil
+	}
+
+	expanded := make(map[string]string, len(headers))
+	for key, value := range headers {
+		missingVars := map[string]struct{}{}
+		expandedValue := os.Expand(value, func(variable string) string {
+			switch variable {
+			case "MODEL", "TARGET_MODEL":
+				return model
+			default:
+				if resolved, ok := os.LookupEnv(variable); ok {
+					return resolved
+				}
+
+				missingVars[variable] = struct{}{}
+				return ""
+			}
+		})
+
+		if len(missingVars) > 0 {
+			var names []string
+			for variable := range missingVars {
+				names = append(names, variable)
+			}
+			sort.Strings(names)
+
+			return nil, fmt.Errorf("missing environment variables in header %q: %s", key, strings.Join(names, ", "))
+		}
+
+		expanded[key] = expandedValue
+	}
+
+	return expanded, nil
 }
 
 func Run() {
