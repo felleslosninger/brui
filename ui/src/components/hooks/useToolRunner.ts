@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Message, Mode } from "../../types/message";
-import { Configuration, FunctionRegistry, Setup } from "../../../../client";
-import { ProcessEventProps } from "@navikt/ds-react/Process";
+import { useState } from 'react';
+import { Message, Mode } from '../../types/message';
+import { Configuration, FunctionRegistry, Setup } from '../../../../client';
+import { ProcessEventProps } from '@navikt/ds-react/Process';
 
 export function useToolRunner(config: Configuration, functions: FunctionRegistry) {
     const runTools = Setup(config, functions);
@@ -25,7 +25,7 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
         function updateAssistantMessage(action: string, patch: { status: ProcessEventProps['status']; text: string }) {
             setMessageHistory(prev => {
                 const copy = [...prev];
-                const m = copy[copy.length - 1];
+                const m = { ...copy[copy.length - 1] };
                 m.assistantMessages = m.assistantMessages.map(am =>
                     am.action === action ? { ...am, ...patch } : am
                 );
@@ -36,14 +36,14 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
 
         const result = await runTools(inputText, null, {
             onToolCallsKnown: (actions) => {
-                console.log("Tool calls known:", actions);
+                console.log('Tool calls known:', actions);
                 setMessageHistory(prev => {
                     const copy = [...prev];
-                    const m = copy[copy.length - 1];
+                    const m = { ...copy[copy.length - 1] };
                     const pending = actions.map(action => ({
                         id: crypto.randomUUID(),
                         action,
-                        status: "pending" as ProcessEventProps['status'],
+                        status: 'pending' as ProcessEventProps['status'],
                         text: `Waiting for ${action}...`,
                         timestamp: Date.now(),
                         messageIndex: m.userMessage.messageIndex,
@@ -56,15 +56,15 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
             },
 
             onActionStart: (action) => {
-                updateAssistantMessage(action, { status: "active", text: `Running ${action}...` });
+                updateAssistantMessage(action, { status: 'active', text: `Running ${action}...` });
             },
 
             onActionComplete: (action, result) => {
-                updateAssistantMessage(action, { status: "completed", text: result.message || result.result || `${action} completed` });
+                updateAssistantMessage(action, { status: 'completed', text: result.message || result.result || `${action} completed` });
             },
 
             onActionError: (action, error) => {
-                updateAssistantMessage(action, { status: "uncompleted", text: error });
+                updateAssistantMessage(action, { status: 'uncompleted', text: error });
             }
         });
 

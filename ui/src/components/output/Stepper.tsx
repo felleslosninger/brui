@@ -6,16 +6,16 @@ import {
     CheckmarkCircleIcon,
 } from '@navikt/aksel-icons';
 
-export interface ThinkingStep {
+export interface StepperStep {
     label: string;
     status: 'completed' | 'active' | 'pending';
 }
 
-interface ThinkingProcessProps {
+interface StepperProps {
     children?: React.ReactNode;
     className?: string;
     steps?: string[];
-    controlledSteps?: ThinkingStep[];
+    controlledSteps?: StepperStep[];
 }
 
 const defaultSteps = [
@@ -25,9 +25,9 @@ const defaultSteps = [
     'Formulating a response',
 ];
 
-export default function ThinkingProcess({ children, className, steps, controlledSteps }: ThinkingProcessProps) {
+export default function Stepper({ children, className, steps, controlledSteps }: StepperProps) {
     const stepLabels = steps ?? defaultSteps;
-    const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>(
+    const [thinkingSteps, setThinkingSteps] = useState<StepperStep[]>(
         stepLabels.map((label, i) => ({
             label,
             status: i === 0 ? 'active' : 'pending',
@@ -67,19 +67,19 @@ export default function ThinkingProcess({ children, className, steps, controlled
     const displaySteps = controlledSteps ?? thinkingSteps;
 
     return (
-        <div className={cl('brui-thinking-process', className)} data-size="sm">
-            <ol className="brui-thinking-steps">
+        <div className={cl('brui-stepper', className)} data-size="sm">
+            <ol className="brui-stepper-steps">
                 {displaySteps.map((step, i) => (
                     <li
                         key={i}
-                        className={cl('brui-thinking-step', `brui-thinking-step--${step.status}`)}
+                        className={cl('brui-stepper-step', `brui-stepper-step--${step.status}`)}
                     >
-                        <span className="brui-thinking-step-icon">
+                        <span className="brui-stepper-step-icon">
                             {step.status === 'completed' && <CheckmarkCircleIcon aria-hidden />}
                             {step.status === 'active' && <HourglassTopFilledIcon aria-hidden />}
                             {step.status === 'pending' && <CircleIcon aria-hidden />}
                         </span>
-                        <span className="brui-thinking-step-label">{step.label}</span>
+                        <span className="brui-stepper-step-label">{step.label}</span>
                     </li>
                 ))}
             </ol>

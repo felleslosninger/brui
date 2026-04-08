@@ -1,7 +1,7 @@
 import cl from 'clsx/lite';
 import ChatBubble from './ChatBubble';
 import ChatText from './ChatText';
-import ThinkingProcess from './ThinkingProcess';
+import Stepper from './Stepper';
 import { Skeleton } from '@digdir/designsystemet-react';
 import { useSidebarContext } from '../SidebarContext';
 import { Message } from '../../types/message';
@@ -36,7 +36,7 @@ function SidebarOutputRoot({
                             )}
 
                             {msg.userMessage.mode === 'Act' && msg.assistantMessages.length > 0 && (
-                                <SidebarOutput.ThinkingProcess
+                                <SidebarOutput.Stepper
                                     controlledSteps={msg.assistantMessages.map(am => ({
                                         label: am.text,
                                         status: am.status === 'uncompleted' ? 'pending' as const
@@ -67,7 +67,7 @@ function SidebarOutputRoot({
 const SidebarOutput = Object.assign(SidebarOutputRoot, {
     ChatText: ChatText,
     ChatBubble: ChatBubble,
-    ThinkingProcess: ThinkingProcess,
+    Stepper: Stepper,
 });
 
 export default SidebarOutput;
