@@ -1,7 +1,7 @@
 import type { Configuration, ContextValue } from './types';
 import type { FunctionRegistry } from './store';
 import type { ActionEvent, EventHandlers, ReferenceContextUsage } from './eventHandlers';
-import type { ConversationMessage, InferenceContext, InteractionMode } from './inference';
+import type { ConversationMessage, InferenceContext, InteractionMode, StreamCallbacks } from './inference';
 import { createResourceStore } from './store';
 import { Chat, Respond } from './inference';
 import { appendReferenceSources, prepareReferenceContext } from './inference/referenceContext';
@@ -101,7 +101,12 @@ export function Setup(
                 });
             }
 
-            const toolCalls = await Chat(userInput, inferenceContext);
+            const streamCallbacks: StreamCallbacks = {
+                onThinking: events?.onThinking ? (text) => events.onThinking!(text) : undefined,
+                onContentStream: events?.onContentStream ? (text) => events.onContentStream!(text) : undefined,
+            };
+
+            const toolCalls = await Chat(userInput, inferenceContext, streamCallbacks);
 
             console.log("returning tool calls:", JSON.stringify(toolCalls, null, 2));
 

@@ -16,6 +16,8 @@ export interface ReferenceContextUsage {
 }
 
 export interface EventHandlers {
+    onThinking?: (text: string) => void;
+    onContentStream?: (text: string) => void;
     onReferenceContextUsed?: (referenceContext: ReferenceContextUsage) => void;
     onToolCallsKnown?: (actions: ActionEvent[]) => void;
     onActionPending?: (action: ActionEvent) => void;

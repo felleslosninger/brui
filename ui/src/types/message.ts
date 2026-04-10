@@ -6,6 +6,8 @@ export interface Message {
     userMessage: UserMessage;
     assistantMessages: AssistantMessage[];
     finalResponse?: string;
+    thinkingText?: string;
+    streamingContent?: string;
     referenceContext?: ReferenceContextUsage;
 }
 

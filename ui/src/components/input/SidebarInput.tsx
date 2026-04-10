@@ -13,7 +13,7 @@ interface SidebarInputProps {
 }
 
 function SidebarInputRoot({ children, className }: SidebarInputProps) {
-    const { handleSubmit } = useSidebarContext();
+    const { handleSubmit, showThinking, setShowThinking } = useSidebarContext();
     const [actMode, setActMode] = useState(false);
     const currentMode: Mode = actMode ? 'Act' : 'Info';
 
@@ -32,6 +32,12 @@ function SidebarInputRoot({ children, className }: SidebarInputProps) {
                                 data-size="sm"
                                 checked={actMode}
                                 onChange={(e) => setActMode(e.target.checked)}
+                            />
+                            <Checkbox
+                                label="Show reasoning"
+                                data-size="sm"
+                                checked={showThinking}
+                                onChange={(e) => setShowThinking(e.target.checked)}
                             />
                         </div>
                         <Input hidden value={currentMode} readOnly name="contextChoice" />

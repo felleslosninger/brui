@@ -109,8 +109,11 @@
 .brui-chat-bubble,
 .brui-chat-text {
     margin-block: var(--ds-spacing-3);
-    padding: 0.8rem;
-    margin-bottom: 0.8rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.2rem;
 }
 
 .brui-sidebar .brui-chat-bubble {
@@ -118,6 +121,11 @@
     color: var(--ds-color-accent-text-default);
     background-color: var(--ds-color-neutral-background-default);
     border-color: var(--ds-color-neutral-background-default);
+}
+
+.brui-sidebar .brui-chat-text {
+    border-radius: var(--ds-border-radius-md);
+    background-color: var(--ds-color-accent-surface-active);
 }
 
 .brui-icon {
@@ -190,4 +198,19 @@
     z-index: 1;
     background-color: var(--ds-color-accent-surface-tinted);
     color: var(--ds-color-neutral-text-default);
+}
+
+.brui-stepper-thinking {
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--ds-border-radius-md, 0.5rem);
+    overflow-y: auto;
+}
+
+.brui-stepper-thinking-text {
+    font-size: var(--ds-font-size-sm, 0.875rem);
+    color: var(--ds-color-neutral-text-subtle, #666);
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
 }

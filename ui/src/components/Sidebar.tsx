@@ -21,6 +21,7 @@ interface SidebarProps {
 function SidebarRoot({ children, className, config, functions, context }: SidebarProps) {
     const { askAI, messageHistory } = useToolRunner(config, functions, context);
     const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+    const [showThinking, setShowThinking] = useState(false);
 
     async function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -48,6 +49,8 @@ function SidebarRoot({ children, className, config, functions, context }: Sideba
             value={{
                 messageHistory,
                 isLoadingResponse,
+                showThinking,
+                setShowThinking,
                 handleSubmit: handleSubmitChatMessage,
             }}
         >

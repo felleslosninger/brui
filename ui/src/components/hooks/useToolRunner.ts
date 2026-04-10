@@ -195,6 +195,24 @@ export function useToolRunner(
         }
 
         const result = await runTools(inputText, metadata, {
+            onThinking: (text) => {
+                setMessageHistory(prev => {
+                    return updateLastMessage(prev, (lastMessage) => ({
+                        ...lastMessage,
+                        thinkingText: text,
+                    }));
+                });
+            },
+
+            onContentStream: (text) => {
+                setMessageHistory(prev => {
+                    return updateLastMessage(prev, (lastMessage) => ({
+                        ...lastMessage,
+                        streamingContent: text,
+                    }));
+                });
+            },
+
             onReferenceContextUsed: (referenceContext) => {
                 setReferenceContext(referenceContext);
             },

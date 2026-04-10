@@ -1,7 +1,10 @@
 import { requestOpenAIInference, requestOpenAITextResponse } from './inference/providers/openai';
+import type { StreamCallbacks } from './inference/providers/openai';
 import type { ContextValue, ToolDefinition } from './types';
 import type { InferenceToolCall } from './inference/types';
 import type { PreparedReferenceContext } from './inference/referenceContext';
+
+export type { StreamCallbacks } from './inference/providers/openai';
 
 export interface ConversationMessage {
     role: 'user' | 'assistant';
@@ -28,8 +31,8 @@ export interface InferenceContext {
 
 export type InferenceResult = InferenceToolCall[] | string;
 
-export async function Chat(content: string, ctx: InferenceContext): Promise<InferenceResult> {
-    return requestOpenAIInference(content, ctx);
+export async function Chat(content: string, ctx: InferenceContext, callbacks?: StreamCallbacks): Promise<InferenceResult> {
+    return requestOpenAIInference(content, ctx, callbacks);
 }
 
 export async function Respond(

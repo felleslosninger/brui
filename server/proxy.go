@@ -80,6 +80,14 @@ func rewrite(proxyReq ProxyRequest) ([]byte, error) {
 	return modifiedPayload, nil
 }
 
+func isStreamingRequest(payload []byte) bool {
+	var peek struct {
+		Stream bool `json:"stream"`
+	}
+	_ = json.Unmarshal(payload, &peek)
+	return peek.Stream
+}
+
 func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWriter) {
 	req, err := http.NewRequestWithContext(r.Context(), r.Method, string(TargetMap[pr.Target].Endpoint), bytes.NewBuffer(payload))
 	if err != nil {
@@ -103,7 +111,7 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 		req.Header.Set(key, value)
 	}
 
-	client := &http.Client{Timeout: 60 * time.Second}
+	client := &http.Client{Timeout: 120 * time.Second}
 
 	resp, err := client.Do(req)
 
@@ -113,6 +121,11 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 	}
 
 	defer resp.Body.Close()
+
+	if isStreamingRequest(payload) {
+		sendStreaming(resp, pr, w)
+		return
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -131,6 +144,39 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 	w.WriteHeader(resp.StatusCode)
 	if _, err := w.Write(body); err != nil {
 		log.Printf("Error writing response body for target %s: %v", pr.Target, err)
+	}
+}
+
+func sendStreaming(resp *http.Response, pr ProxyRequest, w http.ResponseWriter) {
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming not supported", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("─── Streaming response from %s (HTTP %d) ───", pr.Target, resp.StatusCode)
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.WriteHeader(resp.StatusCode)
+
+	buf := make([]byte, 4096)
+	for {
+		n, err := resp.Body.Read(buf)
+		if n > 0 {
+			if _, writeErr := w.Write(buf[:n]); writeErr != nil {
+				log.Printf("Error writing streaming chunk for target %s: %v", pr.Target, writeErr)
+				return
+			}
+			flusher.Flush()
+		}
+		if err != nil {
+			if err != io.EOF {
+				log.Printf("Error reading streaming response from %s: %v", pr.Target, err)
+			}
+			return
+		}
 	}
 }
 

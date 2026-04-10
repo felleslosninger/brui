@@ -17,7 +17,7 @@ function SidebarOutputRoot({
     children,
     className,
 }: SidebarOutputProps) {
-    const { messageHistory, isLoadingResponse } = useSidebarContext();
+    const { messageHistory, isLoadingResponse, showThinking } = useSidebarContext();
     const lastMessageIndex = messageHistory.length - 1;
     const outputRef = useRef<HTMLDivElement | null>(null);
     const shouldStickToBottomRef = useRef(true);
@@ -86,19 +86,22 @@ function SidebarOutputRoot({
                                     am => !am.action || am.action === 'inference'
                                 );
                                 const isLatestLoadingMessage = isLoadingResponse && index === lastMessageIndex;
+                                const hasStreamStarted = Boolean(msg.streamingContent || msg.thinkingText);
                                 const isWaitingForSummary = isLatestLoadingMessage
                                     && actionSteps.length > 0
                                     && areActionStepsFinished(actionSteps)
                                     && !msg.finalResponse;
                                 const loadingSteps = isLatestLoadingMessage
                                     ? actionSteps.length === 0
-                                        ? [
-                                            ...referenceSteps,
-                                            {
-                                                label: 'Waiting for model response',
-                                                status: 'active' as const,
-                                            },
-                                        ]
+                                        ? hasStreamStarted
+                                            ? referenceSteps
+                                            : [
+                                                ...referenceSteps,
+                                                {
+                                                    label: 'Waiting for model response',
+                                                    status: 'active' as const,
+                                                },
+                                            ]
                                         : [
                                             {
                                                 label: 'Analyzing request',
@@ -133,7 +136,14 @@ function SidebarOutputRoot({
                                         {loadingSteps.length > 0 && (
                                             <SidebarOutput.Stepper
                                                 controlledSteps={loadingSteps}
+                                                thinkingText={isLatestLoadingMessage ? msg.thinkingText : undefined}
                                             />
+                                        )}
+
+                                        {!isLatestLoadingMessage && showThinking && msg.thinkingText && (
+                                            <div className="brui-stepper-thinking">
+                                                <span className="brui-stepper-thinking-text">{msg.thinkingText}</span>
+                                            </div>
                                         )}
 
                                         {chatMessages.map((assistantMsg, i) => (
@@ -141,6 +151,12 @@ function SidebarOutputRoot({
                                                 {assistantMsg.text}
                                             </SidebarOutput.ChatBubble>
                                         ))}
+
+                                        {isLatestLoadingMessage && msg.streamingContent && !msg.finalResponse && (
+                                            <SidebarOutput.ChatBubble>
+                                                {msg.streamingContent}
+                                            </SidebarOutput.ChatBubble>
+                                        )}
 
                                         {msg.finalResponse && (
                                             <SidebarOutput.ChatBubble>

@@ -4,6 +4,8 @@ import type { Message } from '../types/message';
 export interface SidebarContextValue {
     messageHistory: Message[];
     isLoadingResponse: boolean;
+    showThinking: boolean;
+    setShowThinking: (value: boolean) => void;
     handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 

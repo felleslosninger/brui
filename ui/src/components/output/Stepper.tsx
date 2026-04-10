@@ -17,6 +17,7 @@ interface StepperProps {
     className?: string;
     steps?: string[];
     controlledSteps?: StepperStep[];
+    thinkingText?: string;
 }
 
 const defaultSteps = [
@@ -26,7 +27,7 @@ const defaultSteps = [
     'Formulating a response',
 ];
 
-export default function Stepper({ children, className, steps, controlledSteps }: StepperProps) {
+export default function Stepper({ children, className, steps, controlledSteps, thinkingText }: StepperProps) {
     const stepLabels = steps ?? defaultSteps;
     const [thinkingSteps, setThinkingSteps] = useState<StepperStep[]>(
         stepLabels.map((label, i) => ({
@@ -85,6 +86,11 @@ export default function Stepper({ children, className, steps, controlledSteps }:
                     </li>
                 ))}
             </ol>
+            {thinkingText && (
+                <div className="brui-stepper-thinking">
+                    <span className="brui-stepper-thinking-text">{thinkingText}</span>
+                </div>
+            )}
             {children}
         </div>
     );
