@@ -1,8 +1,5 @@
 {
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["vite/client"],
@@ -17,9 +14,14 @@
     "allowJs": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
     "baseUrl": ".",
-
-    // Vite takes care of building everything, not tsc.
-    "noEmit": true
+    "paths": {
+      "@brui/ui": ["../ui/src"],
+      "@brui/client": ["../client"],
+      "@ksvedal/docs/search-index": ["./node_modules/@ksvedal/docs/dist/search-index.json"],
+      "openai": ["./node_modules/openai"],
+      "openai/*": ["./node_modules/openai/*"]
+    }
   }
 }

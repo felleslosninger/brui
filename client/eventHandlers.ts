@@ -3,7 +3,20 @@ export interface ActionEvent {
     action: string;
 }
 
+export interface ReferenceSource {
+    title: string;
+    path?: string;
+    lang?: string;
+}
+
+export interface ReferenceContextUsage {
+    used: boolean;
+    label: string;
+    sources: ReferenceSource[];
+}
+
 export interface EventHandlers {
+    onReferenceContextUsed?: (referenceContext: ReferenceContextUsage) => void;
     onToolCallsKnown?: (actions: ActionEvent[]) => void;
     onActionPending?: (action: ActionEvent) => void;
     onActionStart?: (action: ActionEvent) => void;

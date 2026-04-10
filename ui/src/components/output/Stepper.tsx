@@ -4,11 +4,12 @@ import {
     HourglassTopFilledIcon,
     CircleIcon,
     CheckmarkCircleIcon,
+    ExclamationmarkTriangleFillIcon,
 } from '@navikt/aksel-icons';
 
 export interface StepperStep {
     label: string;
-    status: 'completed' | 'active' | 'pending';
+    status: 'completed' | 'active' | 'pending' | 'error';
 }
 
 interface StepperProps {
@@ -78,6 +79,7 @@ export default function Stepper({ children, className, steps, controlledSteps }:
                             {step.status === 'completed' && <CheckmarkCircleIcon aria-hidden />}
                             {step.status === 'active' && <HourglassTopFilledIcon aria-hidden />}
                             {step.status === 'pending' && <CircleIcon aria-hidden />}
+                            {step.status === 'error' && <ExclamationmarkTriangleFillIcon aria-hidden />}
                         </span>
                         <span className="brui-stepper-step-label">{step.label}</span>
                     </li>

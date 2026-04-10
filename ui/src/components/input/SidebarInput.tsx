@@ -1,9 +1,11 @@
 import cl from 'clsx/lite';
+import { useState } from 'react';
+import { Checkbox, Input } from '@digdir/designsystemet-react';
 import InputField from './InputField';
 import InputSubmitButton from './InputSubmitButton';
 import InputMicrophoneButton from './InputMicrophoneButton';
-import InputContextDropdown from './InputContextDropdown';
 import { useSidebarContext } from '../SidebarContext';
+import type { Mode } from '../../types/message';
 
 interface SidebarInputProps {
     children?: React.ReactNode;
@@ -11,7 +13,9 @@ interface SidebarInputProps {
 }
 
 function SidebarInputRoot({ children, className }: SidebarInputProps) {
-    const { handleSubmit, modes } = useSidebarContext();
+    const { handleSubmit } = useSidebarContext();
+    const [actMode, setActMode] = useState(false);
+    const currentMode: Mode = actMode ? 'Act' : 'Info';
 
     return (
         <div className={cl('brui-sidebar-input', className)}>
@@ -22,7 +26,15 @@ function SidebarInputRoot({ children, className }: SidebarInputProps) {
                         <SidebarInput.InputField/>
                     </div>
                     <div className='brui-sidebar-action-row'>
-                        <SidebarInput.ContextMenu modes={modes}/>
+                        <div className='brui-sidebar-toggles'>
+                            <Checkbox
+                                label="Act"
+                                data-size="sm"
+                                checked={actMode}
+                                onChange={(e) => setActMode(e.target.checked)}
+                            />
+                        </div>
+                        <Input hidden value={currentMode} readOnly name="contextChoice" />
                         <SidebarInput.Submit/>
                     </div>
                 </form>
@@ -32,7 +44,6 @@ function SidebarInputRoot({ children, className }: SidebarInputProps) {
 }
 
 const SidebarInput = Object.assign(SidebarInputRoot, {
-    ContextMenu: InputContextDropdown,
     InputField: InputField,
     Microphone: InputMicrophoneButton,
     Submit: InputSubmitButton

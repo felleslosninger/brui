@@ -1,8 +1,8 @@
+import { useEffect, useRef } from 'react';
 import cl from 'clsx/lite';
 import ChatBubble from './ChatBubble';
 import ChatText from './ChatText';
 import Stepper from './Stepper';
-import { Skeleton } from '@digdir/designsystemet-react';
 import { useSidebarContext } from '../SidebarContext';
 import { Message } from '../../types/message';
 
@@ -11,57 +11,156 @@ interface SidebarOutputProps {
     className?: string;
 }
 
+const autoScrollThreshold = 48;
+
 function SidebarOutputRoot({
     children,
     className,
 }: SidebarOutputProps) {
     const { messageHistory, isLoadingResponse } = useSidebarContext();
+    const lastMessageIndex = messageHistory.length - 1;
+    const outputRef = useRef<HTMLDivElement | null>(null);
+    const shouldStickToBottomRef = useRef(true);
+
+    function areActionStepsFinished(actionSteps: Message['assistantMessages']) {
+        return actionSteps.every((actionStep) =>
+            actionStep.status === 'completed' || actionStep.status === 'uncompleted'
+        );
+    }
+
+    function mapActionStatus(status: Message['assistantMessages'][number]['status']) {
+        if (status === 'completed') {
+            return 'completed' as const;
+        }
+
+        if (status === 'active') {
+            return 'active' as const;
+        }
+
+        if (status === 'uncompleted') {
+            return 'error' as const;
+        }
+
+        return 'pending' as const;
+    }
+
+    useEffect(() => {
+        const output = outputRef.current;
+        if (!output || !shouldStickToBottomRef.current) {
+            return;
+        }
+
+        output.scrollTop = output.scrollHeight;
+    }, [messageHistory, isLoadingResponse]);
+
+    function handleScroll() {
+        const output = outputRef.current;
+        if (!output) {
+            return;
+        }
+
+        shouldStickToBottomRef.current = isNearBottom(output);
+    }
+
     return (
-        <div className={cl('brui-sidebar-output', className)}>
+        <div
+            ref={outputRef}
+            className={cl('brui-sidebar-output', className)}
+            onScroll={handleScroll}
+        >
             {children ?? (
                 <>
                     {messageHistory.map((msg: Message, index) => (
                         <div key={index}>
+                            {(() => {
+                                const referenceSteps = msg.referenceContext
+                                    ? [{
+                                        label: msg.referenceContext.label,
+                                        status: 'completed' as const,
+                                    }]
+                                    : [];
+                                const actionSteps = msg.assistantMessages.filter(
+                                    am => am.action && am.action !== 'inference'
+                                );
+                                const chatMessages = msg.assistantMessages.filter(
+                                    am => !am.action || am.action === 'inference'
+                                );
+                                const isLatestLoadingMessage = isLoadingResponse && index === lastMessageIndex;
+                                const isWaitingForSummary = isLatestLoadingMessage
+                                    && actionSteps.length > 0
+                                    && areActionStepsFinished(actionSteps)
+                                    && !msg.finalResponse;
+                                const loadingSteps = isLatestLoadingMessage
+                                    ? actionSteps.length === 0
+                                        ? [
+                                            ...referenceSteps,
+                                            {
+                                                label: 'Waiting for model response',
+                                                status: 'active' as const,
+                                            },
+                                        ]
+                                        : [
+                                            {
+                                                label: 'Analyzing request',
+                                                status: 'completed' as const,
+                                            },
+                                            ...referenceSteps,
+                                            ...actionSteps.map((assistantMessage) => ({
+                                                label: assistantMessage.text,
+                                                status: mapActionStatus(assistantMessage.status),
+                                            })),
+                                            ...(isWaitingForSummary ? [{
+                                                label: 'Preparing response',
+                                                status: 'active' as const,
+                                            }] : []),
+                                        ]
+                                    : actionSteps.length > 0 || referenceSteps.length > 0
+                                        ? [
+                                            ...referenceSteps,
+                                            ...actionSteps.map((assistantMessage) => ({
+                                            label: assistantMessage.text,
+                                            status: mapActionStatus(assistantMessage.status),
+                                            })),
+                                        ]
+                                        : [];
 
-                            <SidebarOutput.ChatText>
-                                {msg.userMessage.text}
-                            </SidebarOutput.ChatText>
+                                return (
+                                    <>
+                                        <SidebarOutput.ChatText>
+                                            {msg.userMessage.text}
+                                        </SidebarOutput.ChatText>
 
-                            {msg.userMessage.mode === 'Info' && (
-                                msg.assistantMessages.map((assistantMsg, i) => (
-                                    <SidebarOutput.ChatBubble key={i}>
-                                        {assistantMsg.text}
-                                    </SidebarOutput.ChatBubble>
-                                ))
-                            )}
+                                        {loadingSteps.length > 0 && (
+                                            <SidebarOutput.Stepper
+                                                controlledSteps={loadingSteps}
+                                            />
+                                        )}
 
-                            {msg.userMessage.mode === 'Act' && msg.assistantMessages.length > 0 && (
-                                <SidebarOutput.Stepper
-                                    controlledSteps={msg.assistantMessages.map(am => ({
-                                        label: am.text,
-                                        status: am.status === 'uncompleted' ? 'pending' as const
-                                            : (am.status as 'completed' | 'active' | 'pending'),
-                                    }))}
-                                />
-                            )}
+                                        {chatMessages.map((assistantMsg, i) => (
+                                            <SidebarOutput.ChatBubble key={`chat-${i}`}>
+                                                {assistantMsg.text}
+                                            </SidebarOutput.ChatBubble>
+                                        ))}
 
-                            {msg.finalResponse && (
-                                <SidebarOutput.ChatBubble>
-                                    {msg.finalResponse}
-                                </SidebarOutput.ChatBubble>
-                            )}
+                                        {msg.finalResponse && (
+                                            <SidebarOutput.ChatBubble>
+                                                {msg.finalResponse}
+                                            </SidebarOutput.ChatBubble>
+                                        )}
+                                    </>
+                                );
+                            })()}
                         </div>
                     ))}
-
-                    {isLoadingResponse && (
-                        <div className="brui-chat-bubble-skeleton" key="isLoadingResponse">
-                            <Skeleton variant="rectangle" width="200px" height="80px" />
-                        </div>
-                    )}
                 </>
             )}
         </div>
     );
+}
+
+function isNearBottom(element: HTMLDivElement): boolean {
+    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+    return distanceFromBottom <= autoScrollThreshold;
 }
 
 const SidebarOutput = Object.assign(SidebarOutputRoot, {

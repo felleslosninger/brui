@@ -87,7 +87,10 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 		return
 	}
 
-	fmt.Println("Proxying request to:", pr.Target)
+	log.Printf("─── Request to %s ───", pr.Target)
+	log.Printf("  Endpoint: %s", TargetMap[pr.Target].Endpoint)
+	log.Printf("  Model:    %s", TargetMap[pr.Target].Model)
+	log.Printf("  Payload:  %s", string(payload))
 
 	req.Header.Set("Content-Type", "application/json")
 	expandedHeaders, err := expandHeaders(TargetMap[pr.Target].Headers, TargetMap[pr.Target].Model)
@@ -111,13 +114,23 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 
 	defer resp.Body.Close()
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("  Error reading response body: %v", err)
+		http.Error(w, "Error reading upstream response", http.StatusBadGateway)
+		return
+	}
+
+	log.Printf("─── Response from %s (HTTP %d) ───", pr.Target, resp.StatusCode)
+	log.Printf("  Body: %s", string(body))
+
 	if contentType := resp.Header.Get("Content-Type"); contentType != "" {
 		w.Header().Set("Content-Type", contentType)
 	}
 
 	w.WriteHeader(resp.StatusCode)
-	if _, err := io.Copy(w, resp.Body); err != nil {
-		log.Printf("Error copying response body for target %s: %v", pr.Target, err)
+	if _, err := w.Write(body); err != nil {
+		log.Printf("Error writing response body for target %s: %v", pr.Target, err)
 	}
 }
 

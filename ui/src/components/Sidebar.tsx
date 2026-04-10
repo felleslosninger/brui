@@ -13,13 +13,13 @@ import { FunctionRegistry } from '../../../client/index';
 interface SidebarProps {
     children?: React.ReactNode;
     className?: string;
-    modes: Mode[];
     config: Brui.Configuration;
     functions: FunctionRegistry;
+    context?: Brui.ContextValue;
 }
 
-function SidebarRoot({ children, className, modes, config, functions }: SidebarProps) {
-    const { askAI, messageHistory } = useToolRunner(config, functions);
+function SidebarRoot({ children, className, config, functions, context }: SidebarProps) {
+    const { askAI, messageHistory } = useToolRunner(config, functions, context);
     const [isLoadingResponse, setIsLoadingResponse] = useState(false);
 
     async function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
@@ -32,6 +32,7 @@ function SidebarRoot({ children, className, modes, config, functions }: SidebarP
 
         if (!inputText.trim()) return;
 
+        form.reset();
         setIsLoadingResponse(true);
 
         try {
@@ -43,9 +44,20 @@ function SidebarRoot({ children, className, modes, config, functions }: SidebarP
     }
 
     return (
-        <SidebarContext.Provider value={{ messageHistory, isLoadingResponse, handleSubmit: handleSubmitChatMessage, modes }}>
+        <SidebarContext.Provider
+            value={{
+                messageHistory,
+                isLoadingResponse,
+                handleSubmit: handleSubmitChatMessage,
+            }}
+        >
             <div className={cl('brui-sidebar', className)}>
-                {children}
+                {children ?? (
+                    <>
+                        <SidebarOutput />
+                        <SidebarInput />
+                    </>
+                )}
             </div>
         </SidebarContext.Provider>
     );

@@ -1,27 +1,105 @@
-import type { Configuration } from './types';
+import type { Configuration, ContextValue } from './types';
 import type { FunctionRegistry } from './store';
-import type { ActionEvent, EventHandlers } from './eventHandlers';
+import type { ActionEvent, EventHandlers, ReferenceContextUsage } from './eventHandlers';
+import type { ConversationMessage, InferenceContext, InteractionMode } from './inference';
 import { createResourceStore } from './store';
-import { Chat } from './inference';
+import { Chat, Respond } from './inference';
+import { appendReferenceSources, prepareReferenceContext } from './inference/referenceContext';
+
+const postActionSystemPrompt = 'You are a helpful assistant that controls a web application. The relevant actions have already been executed. Reply to the user with a concise, user-facing update about what happened. Mention any failures clearly. Do not ask to repeat the action, and do not call tools.';
+
+function formatUnknown(value: unknown): string | null {
+    if (value == null) {
+        return null;
+    }
+
+    if (typeof value === 'string') {
+        return value;
+    }
+
+    try {
+        return JSON.stringify(value);
+    } catch {
+        return String(value);
+    }
+}
+
+function formatActionResult(actionResult: ActionResult): string {
+    const actionName = actionResult.action || 'unknown action';
+
+    if (actionResult.success) {
+        const detail = actionResult.message
+            || formatUnknown(actionResult.result)
+            || 'Completed successfully.';
+        return `- ${actionName}: succeeded. ${detail}`;
+    }
+
+    return `- ${actionName}: failed. ${actionResult.error || 'Failed.'}`;
+}
+
+function buildActionSummaryRequest(
+    userInput: string,
+    actionResults: ActionResult[]
+): ConversationMessage[] {
+    const formattedResults = actionResults.map(formatActionResult).join('\n');
+
+    return [
+        {
+            role: 'user',
+            content: [
+                `The user's latest request was: ${userInput}`,
+                'The requested actions have already been executed.',
+                'Action results:',
+                formattedResults,
+                'Write a short response to the user summarizing the outcome.',
+            ].join('\n\n'),
+        },
+    ];
+}
+
+function buildFallbackAssistantResponse(actionResults: ActionResult[]): string {
+    const successfulMessages = actionResults
+        .filter((actionResult) => actionResult.success)
+        .map((actionResult) => actionResult.message || `${actionResult.action || 'Action'} completed.`);
+
+    const failedMessages = actionResults
+        .filter((actionResult) => !actionResult.success)
+        .map((actionResult) => actionResult.error || `${actionResult.action || 'Action'} failed.`);
+
+    return [...successfulMessages, ...failedMessages].join(' ').trim() || 'Done.';
+}
 
 export function Setup(
     config: Configuration,
     functions: FunctionRegistry
-): (input: string, metadata?: unknown, events?: EventHandlers) => Promise<ExecutionResult> {
+): (input: string, metadata?: ExecutionMetadata, events?: EventHandlers) => Promise<ExecutionResult> {
     const store = createResourceStore(config, functions);
 
     async function processPayload(
         userInput: string,
-        _metadata?: unknown,
+        metadata?: ExecutionMetadata,
         events?: EventHandlers
     ): Promise<ExecutionResult> {
         try {
-            const inferenceContext = {
+            const referenceContext = prepareReferenceContext(metadata?.context, userInput);
+            const inferenceContext: InferenceContext = {
                 config: {
                     inference: config.inference?.spec,
                     decisions: { tools: config.tools }
-                }
+                },
+                conversationHistory: metadata?.conversationHistory,
+                interactionMode: metadata?.interactionMode,
+                context: metadata?.context,
+                referenceContext,
             };
+
+            if (referenceContext) {
+                events?.onReferenceContextUsed?.({
+                    used: referenceContext.used,
+                    label: referenceContext.label,
+                    sources: referenceContext.sources,
+                });
+            }
 
             const toolCalls = await Chat(userInput, inferenceContext);
 
@@ -29,9 +107,19 @@ export function Setup(
 
 
             if (typeof toolCalls === 'string') {
+                const content = toolCalls.trim();
+
+                if (!content) {
+                    return {
+                        success: false,
+                        error: 'Inference returned no response.'
+                    };
+                }
+
                 return {
-                    success: false,
-                    error: toolCalls || 'No tool calls returned from inference.'
+                    success: true,
+                    content: appendReferenceSources(content, referenceContext),
+                    referenceContext: toReferenceContextUsage(referenceContext),
                 };
             }
 
@@ -121,9 +209,27 @@ export function Setup(
                 }
             }
 
+            let content = buildFallbackAssistantResponse(allResults);
+
+            try {
+                const summary = await Respond(
+                    buildActionSummaryRequest(userInput, allResults),
+                    inferenceContext,
+                    postActionSystemPrompt
+                );
+
+                if (summary.trim()) {
+                    content = summary.trim();
+                }
+            } catch (error) {
+                console.warn('Post-action summary failed:', error);
+            }
+
             return {
                 success: true,
-                executionResults: allResults
+                executionResults: allResults,
+                content,
+                referenceContext: toReferenceContextUsage(referenceContext),
             };
 
         } catch (error) {
@@ -144,6 +250,7 @@ export interface ExecutionResult {
     executionResults?: ActionResult[];
     content?: string;
     error?: string;
+    referenceContext?: ReferenceContextUsage;
 }
 
 export interface ActionResult {
@@ -158,4 +265,24 @@ export interface ActionResult {
 interface PlannedAction {
     event: ActionEvent;
     parameters: Record<string, unknown>;
+}
+
+export interface ExecutionMetadata {
+    conversationHistory?: ConversationMessage[];
+    interactionMode?: InteractionMode;
+    context?: ContextValue;
+}
+
+function toReferenceContextUsage(
+    referenceContext: ReturnType<typeof prepareReferenceContext>
+): ReferenceContextUsage | undefined {
+    if (!referenceContext) {
+        return undefined;
+    }
+
+    return {
+        used: referenceContext.used,
+        label: referenceContext.label,
+        sources: referenceContext.sources,
+    };
 }

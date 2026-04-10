@@ -91,6 +91,13 @@
     padding: 0 0.8rem 0.8rem 0.8rem;
 }
 
+.brui-sidebar-toggles {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
 .brui-context-menu {
     margin-left: auto;
 }
@@ -150,6 +157,14 @@
 
 .brui-stepper-step--completed {
     color: var(--ds-color-neutral-text-subtle, #1a8a3f);
+}
+
+.brui-stepper-step--error:not(:last-child)::after {
+    background-color: var(--ds-color-danger-border-subtle, #b3261e);
+}
+
+.brui-stepper-step--error {
+    color: var(--ds-color-danger-text-default, #b3261e);
 }
 
 .brui-stepper-step--active {

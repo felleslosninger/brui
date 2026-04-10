@@ -1,11 +1,10 @@
 import { createContext, useContext, type FormEvent } from 'react';
-import type { Message, Mode } from '../types/message';
+import type { Message } from '../types/message';
 
 export interface SidebarContextValue {
     messageHistory: Message[];
     isLoadingResponse: boolean;
     handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
-    modes: Mode[];
 }
 
 export const SidebarContext = createContext<SidebarContextValue | null>(null);

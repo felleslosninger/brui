@@ -1,5 +1,14 @@
 import type { ChatCompletionTool } from 'openai/resources/chat/completions';
 
+export type JsonPrimitive = string | number | boolean | null;
+
+export interface JsonObject {
+    [key: string]: JsonValue;
+}
+
+export type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
+export type ContextValue = JsonValue;
+
 export interface Resource {
     kind: string;
     name: string;
