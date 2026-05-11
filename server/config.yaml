@@ -1,9 +1,9 @@
 inference:
-  local-nano:
+  local:
     endpoint: "http://localhost:11434/v1/chat/completions"
     model: "gemma4:26b"
   
-  external-nano:
+  aivar:
     endpoint: "https://ollama.sandkasse.ai/v1/chat/completions"
     model: "gemma4:26b"
 
