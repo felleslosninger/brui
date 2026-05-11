@@ -188,27 +188,6 @@ const result = await run('Do something', { interactionMode: 'Act' }, {
 ## License
 
 See individual packages for details.
-# brui
-
-`brui` has three main parts:
-
-- [`server/`](server) is a Go proxy for OpenAI-compatible chat completion requests.
-- [`client/`](client) maps model tool calls to local application actions.
-- [`ui/`](ui) provides a ready-made React sidebar UI on top of the client.
-
-The demo app in [`lab/`](lab) shows how those pieces fit together.
-
-## How The Integration Works
-
-1. Your app defines `tools`, `actions`, `decisions`, and `inference` in a `config.ts` file.
-2. Your app provides a function registry that implements the configured actions.
-3. The client sends the selected inference target and OpenAI-style payload to the Go proxy.
-4. The proxy rewrites the request with the configured upstream `model` and optional headers.
-5. The model returns tool calls, and the client executes the mapped local actions in your app.
-
-The important connection point is this:
-
-- `config.ts -> inference.spec.name` must match a target name in [`server/config.yaml`](server/config.yaml).
 
 ## Repo Layout
 

@@ -12,20 +12,18 @@ npm install @brui/ui
 
 ```tsx
 import { Sidebar } from '@brui/ui';
-import { Setup } from 'brui-client';
-import { createConfig } from './config';
+import { Configuration, FunctionRegistry } from 'brui-client';
 
-const config = createConfig();
-const functions = { /* your function registry */ };
-const run = Setup(config, functions);
+const config: Configuration = { /* your config */ };
+const functions: FunctionRegistry = { /* your function registry */ };
 
 function App() {
   return (
     <Sidebar
-      onSubmit={async (input) => {
-        const result = await run(input, { interactionMode: 'Act' });
-        return result;
-      }}
+      config={config}
+      functions={functions}
+      context={{ key: 'value' }}   // optional extra context
+      includePageContext            // optional: send visible page text to the model
     />
   );
 }

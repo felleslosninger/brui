@@ -98,7 +98,6 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 	log.Printf("─── Request to %s ───", pr.Target)
 	log.Printf("  Endpoint: %s", TargetMap[pr.Target].Endpoint)
 	log.Printf("  Model:    %s", TargetMap[pr.Target].Model)
-	log.Printf("  Payload:  %s", string(payload))
 
 	req.Header.Set("Content-Type", "application/json")
 	expandedHeaders, err := expandHeaders(TargetMap[pr.Target].Headers, TargetMap[pr.Target].Model)
@@ -135,7 +134,6 @@ func send(payload []byte, pr ProxyRequest, r *http.Request, w http.ResponseWrite
 	}
 
 	log.Printf("─── Response from %s (HTTP %d) ───", pr.Target, resp.StatusCode)
-	log.Printf("  Body: %s", string(body))
 
 	if contentType := resp.Header.Get("Content-Type"); contentType != "" {
 		w.Header().Set("Content-Type", contentType)
