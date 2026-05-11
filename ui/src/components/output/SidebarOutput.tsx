@@ -3,6 +3,7 @@ import cl from 'clsx/lite';
 import ChatBubble from './ChatBubble';
 import ChatText from './ChatText';
 import Stepper from './Stepper';
+import ConfirmActionCard from './ConfirmActionCard';
 import { useSidebarContext } from '../SidebarContext';
 import { Message } from '../../types/message';
 
@@ -17,7 +18,7 @@ function SidebarOutputRoot({
     children,
     className,
 }: SidebarOutputProps) {
-    const { messageHistory, isLoadingResponse, showThinking } = useSidebarContext();
+    const { messageHistory, isLoadingResponse, showThinking, pendingConfirmation, confirmActions, rejectActions } = useSidebarContext();
     const lastMessageIndex = messageHistory.length - 1;
     const outputRef = useRef<HTMLDivElement | null>(null);
     const shouldStickToBottomRef = useRef(true);
@@ -137,6 +138,14 @@ function SidebarOutputRoot({
                                             <SidebarOutput.Stepper
                                                 controlledSteps={loadingSteps}
                                                 thinkingText={isLatestLoadingMessage ? msg.thinkingText : undefined}
+                                            />
+                                        )}
+
+                                        {isLatestLoadingMessage && pendingConfirmation && (
+                                            <ConfirmActionCard
+                                                actions={pendingConfirmation.actions}
+                                                onConfirm={confirmActions}
+                                                onCancel={rejectActions}
                                             />
                                         )}
 

@@ -27,7 +27,9 @@ export interface Action {
     name: string;
     type: 'function' | 'event';
     args: string[];
+    label?: string;
     message?: string;
+    skipConfirmation?: boolean;
 }
 
 export interface Option {

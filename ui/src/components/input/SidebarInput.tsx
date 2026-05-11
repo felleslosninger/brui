@@ -13,9 +13,16 @@ interface SidebarInputProps {
 }
 
 function SidebarInputRoot({ children, className }: SidebarInputProps) {
-    const { handleSubmit, showThinking, setShowThinking } = useSidebarContext();
+    const { handleSubmit, showThinking, setShowThinking, setAutoConfirm, includePageContext, pageContextActive, setPageContextActive } = useSidebarContext();
     const [actMode, setActMode] = useState(false);
+    const [autoConfirm, setAutoConfirmLocal] = useState(false);
     const currentMode: Mode = actMode ? 'Act' : 'Info';
+
+    function handleAutoConfirmChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const checked = e.target.checked;
+        setAutoConfirmLocal(checked);
+        setAutoConfirm(checked);
+    }
 
     return (
         <div className={cl('brui-sidebar-input', className)}>
@@ -39,6 +46,20 @@ function SidebarInputRoot({ children, className }: SidebarInputProps) {
                                 checked={showThinking}
                                 onChange={(e) => setShowThinking(e.target.checked)}
                             />
+                            <Checkbox
+                                label="Auto confirm"
+                                data-size="sm"
+                                checked={autoConfirm}
+                                onChange={handleAutoConfirmChange}
+                            />
+                            {includePageContext && (
+                                <Checkbox
+                                    label="Page context"
+                                    data-size="sm"
+                                    checked={pageContextActive}
+                                    onChange={(e) => setPageContextActive(e.target.checked)}
+                                />
+                            )}
                         </div>
                         <Input hidden value={currentMode} readOnly name="contextChoice" />
                         <SidebarInput.Submit/>

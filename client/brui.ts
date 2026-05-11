@@ -4,7 +4,7 @@ import type { ActionEvent, EventHandlers, ReferenceContextUsage } from './eventH
 import type { ConversationMessage, InferenceContext, InteractionMode, StreamCallbacks } from './inference';
 import { createResourceStore } from './store';
 import { Chat, Respond } from './inference';
-import { appendReferenceSources, prepareReferenceContext } from './inference/referenceContext';
+import { appendReferenceSources, mergeReferenceContexts, preparePageReferenceContext, prepareReferenceContext } from './inference/referenceContext';
 
 const postActionSystemPrompt = 'You are a helpful assistant that controls a web application. The relevant actions have already been executed. Reply to the user with a concise, user-facing update about what happened. Mention any failures clearly. Do not ask to repeat the action, and do not call tools.';
 
@@ -81,7 +81,9 @@ export function Setup(
         events?: EventHandlers
     ): Promise<ExecutionResult> {
         try {
-            const referenceContext = prepareReferenceContext(metadata?.context, userInput);
+            const docContext = prepareReferenceContext(metadata?.context, userInput);
+            const pageContext = preparePageReferenceContext(metadata?.pageContext, userInput);
+            const referenceContext = mergeReferenceContexts(docContext, pageContext);
             const inferenceContext: InferenceContext = {
                 config: {
                     inference: config.inference?.spec,
@@ -164,18 +166,47 @@ export function Setup(
                 const actionNames = decisions.flatMap((d: any) => d.actions);
 
                 plannedActions.push(
-                    ...actionNames.map((actionName) => ({
-                        event: {
-                            id: crypto.randomUUID(),
-                            action: actionName,
-                        },
-                        parameters,
-                    }))
+                    ...actionNames.map((actionName) => {
+                        const actionDef = (config.actions || []).find((a) => a.name === actionName);
+
+                        return {
+                            event: {
+                                id: crypto.randomUUID(),
+                                action: actionName,
+                                label: actionDef?.label,
+                                skipConfirmation: actionDef?.skipConfirmation,
+                            },
+                            parameters,
+                        };
+                    })
                 );
             }
 
             if (events?.onToolCallsKnown) {
                 events.onToolCallsKnown(plannedActions.map(({ event }) => event));
+            }
+
+            if (events?.onConfirmActions) {
+                const actionsForConfirmation = plannedActions
+                    .filter(({ event }) => !event.skipConfirmation)
+                    .map(({ event, parameters }) => ({ ...event, parameters }));
+
+                if (actionsForConfirmation.length > 0) {
+                    const result = await events.onConfirmActions(actionsForConfirmation);
+                    if (!result) {
+                        return {
+                            success: false,
+                            error: 'Actions were cancelled by the user.'
+                        };
+                    }
+                    for (let i = 0; i < result.length; i++) {
+                        const edited = result[i];
+                        const planned = plannedActions.find((p) => p.event.id === edited.id);
+                        if (planned && edited.parameters) {
+                            planned.parameters = edited.parameters;
+                        }
+                    }
+                }
             }
 
             for (const plannedAction of plannedActions) {
@@ -276,6 +307,7 @@ export interface ExecutionMetadata {
     conversationHistory?: ConversationMessage[];
     interactionMode?: InteractionMode;
     context?: ContextValue;
+    pageContext?: string;
 }
 
 function toReferenceContextUsage(

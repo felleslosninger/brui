@@ -300,7 +300,7 @@ export function PlaygroundApp() {
 
       {/* ─── Sidebar ─── */}
       <aside className="pg-sidebar" style={{ width: sidebarWidth }}>
-        <Sidebar config={config} functions={functions} />
+        <Sidebar config={config} functions={functions} includePageContext />
       </aside>
     </div>
   );

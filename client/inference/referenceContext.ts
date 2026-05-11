@@ -118,6 +118,50 @@ export function prepareReferenceContext(
     };
 }
 
+export function preparePageReferenceContext(
+    pageContext: string | undefined,
+    _query: string
+): PreparedReferenceContext | null {
+    if (!pageContext || !pageContext.trim()) {
+        return null;
+    }
+
+    const prompt = truncateText(pageContext, maxReferenceContextChars);
+    if (!prompt) {
+        return null;
+    }
+
+    return {
+        used: true,
+        label: 'Consulted current page',
+        sources: [{ title: 'Current page' }],
+        prompt,
+    };
+}
+
+export function mergeReferenceContexts(
+    ...contexts: (PreparedReferenceContext | null | undefined)[]
+): PreparedReferenceContext | null {
+    const valid = contexts.filter(
+        (ctx): ctx is PreparedReferenceContext => ctx != null && ctx.used
+    );
+
+    if (valid.length === 0) {
+        return null;
+    }
+
+    if (valid.length === 1) {
+        return valid[0];
+    }
+
+    return {
+        used: true,
+        label: valid.map((ctx) => ctx.label).join(' · '),
+        sources: valid.flatMap((ctx) => ctx.sources),
+        prompt: valid.map((ctx) => ctx.prompt).join('\n\n---\n\n'),
+    };
+}
+
 export function appendReferenceSources(
     content: string,
     referenceContext?: ReferenceContextUsage | null

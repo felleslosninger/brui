@@ -1,6 +1,12 @@
 export interface ActionEvent {
     id: string;
     action: string;
+    skipConfirmation?: boolean;
+}
+
+export interface PlannedActionEvent extends ActionEvent {
+    label?: string;
+    parameters: Record<string, unknown>;
 }
 
 export interface ReferenceSource {
@@ -20,6 +26,7 @@ export interface EventHandlers {
     onContentStream?: (text: string) => void;
     onReferenceContextUsed?: (referenceContext: ReferenceContextUsage) => void;
     onToolCallsKnown?: (actions: ActionEvent[]) => void;
+    onConfirmActions?: (actions: PlannedActionEvent[]) => Promise<PlannedActionEvent[] | false>;
     onActionPending?: (action: ActionEvent) => void;
     onActionStart?: (action: ActionEvent) => void;
     onActionComplete?: (action: ActionEvent, result: any) => void;

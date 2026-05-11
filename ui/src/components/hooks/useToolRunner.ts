@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { ProcessEventProps } from '@navikt/ds-react/Process';
 import type { Message, Mode } from '../../types/message';
 import { Setup } from '../../../../client';
@@ -10,6 +10,7 @@ import type {
     FunctionRegistry,
     ReferenceContextUsage,
 } from '../../../../client';
+import type { PlannedActionEvent } from '../../../../client/eventHandlers';
 
 function buildConversationHistory(messages: Message[]): ConversationMessage[] {
     return messages.flatMap((message) => {
@@ -81,13 +82,21 @@ function buildAssistantContext(message: Message): string | null {
     return uniqueAssistantLines.join('\n');
 }
 
+export interface PendingConfirmation {
+    actions: PlannedActionEvent[];
+    resolve: (result: PlannedActionEvent[] | false) => void;
+}
+
 export function useToolRunner(
     config: Configuration,
     functions: FunctionRegistry,
-    context?: ContextValue
+    context?: ContextValue,
+    getPageContext?: () => string | undefined
 ) {
     const runTools = Setup(config, functions);
     const [messageHistory, setMessageHistory] = useState<Message[]>([]);
+    const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
+    const autoConfirmRef = useRef(false);
 
     function updateLastMessage(
         messages: Message[],
@@ -161,10 +170,13 @@ export function useToolRunner(
     }
 
     async function askAI(inputText: string, chosenMode: Mode) {
+        const pageContextText = getPageContext?.();
+
         const metadata: ExecutionMetadata = {
             conversationHistory: buildConversationHistory(messageHistory),
             interactionMode: chosenMode,
             context,
+            pageContext: pageContextText,
         };
 
         setMessageHistory(prev => {
@@ -236,6 +248,15 @@ export function useToolRunner(
                             assistantMessages: [...lastMessage.assistantMessages, ...pending]
                         };
                     });
+                });
+            },
+
+            onConfirmActions: (actions) => {
+                if (autoConfirmRef.current) {
+                    return Promise.resolve(actions);
+                }
+                return new Promise<PlannedActionEvent[] | false>((resolve) => {
+                    setPendingConfirmation({ actions, resolve });
                 });
             },
 
@@ -311,5 +332,23 @@ export function useToolRunner(
         });
     }
 
-    return { askAI, messageHistory };
+    function confirmActions(editedActions?: PlannedActionEvent[]) {
+        if (pendingConfirmation) {
+            pendingConfirmation.resolve(editedActions || pendingConfirmation.actions);
+            setPendingConfirmation(null);
+        }
+    }
+
+    function rejectActions() {
+        if (pendingConfirmation) {
+            pendingConfirmation.resolve(false);
+            setPendingConfirmation(null);
+        }
+    }
+
+    function setAutoConfirm(value: boolean) {
+        autoConfirmRef.current = value;
+    }
+
+    return { askAI, messageHistory, pendingConfirmation, confirmActions, rejectActions, setAutoConfirm };
 }
