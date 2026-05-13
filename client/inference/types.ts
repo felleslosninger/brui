@@ -1,12 +1,16 @@
 import type {
     ChatCompletion,
     ChatCompletionCreateParamsNonStreaming,
+    ChatCompletionCreateParamsStreaming,
     ChatCompletionMessage,
     ChatCompletionMessageFunctionToolCall,
+    ChatCompletionChunk,
 } from 'openai/resources/chat/completions';
 
 export type OpenAIChatCompletionRequest = Omit<ChatCompletionCreateParamsNonStreaming, 'model'>;
+export type OpenAIChatCompletionStreamingRequest = Omit<ChatCompletionCreateParamsStreaming, 'model'>;
 export type OpenAIChatCompletionResponse = ChatCompletion;
+export type OpenAIChatCompletionChunk = ChatCompletionChunk;
 export type OpenAIChatCompletionMessage = ChatCompletionMessage;
 export type OpenAIChatCompletionToolCall = ChatCompletionMessageFunctionToolCall;
 

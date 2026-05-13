@@ -1,12 +1,102 @@
-import { useState } from "react";
-import type { ProcessEventProps } from "@navikt/ds-react/Process";
-import type { Message, Mode } from "../../types/message";
-import { Setup } from "../../../../client";
-import type { Configuration, FunctionRegistry } from "../../../../client";
+import { useState, useRef } from 'react';
+import type { ProcessEventProps } from '@navikt/ds-react/Process';
+import type { Message, Mode } from '../../types/message';
+import { Setup } from '../../../../client';
+import type {
+    Configuration,
+    ConversationMessage,
+    ContextValue,
+    ExecutionMetadata,
+    FunctionRegistry,
+    ReferenceContextUsage,
+} from '../../../../client';
+import type { PlannedActionEvent } from '../../../../client/eventHandlers';
 
-export function useToolRunner(config: Configuration, functions: FunctionRegistry) {
+function buildConversationHistory(messages: Message[]): ConversationMessage[] {
+    return messages.flatMap((message) => {
+        const history: ConversationMessage[] = [];
+        const userContent = message.userMessage.text.trim();
+        const assistantContent = buildAssistantContext(message);
+
+        if (userContent) {
+            history.push({
+                role: 'user',
+                content: userContent,
+            });
+        }
+
+        if (assistantContent) {
+            history.push({
+                role: 'assistant',
+                content: assistantContent,
+            });
+        }
+
+        return history;
+    });
+}
+
+function buildAssistantContext(message: Message): string | null {
+    const assistantLines = message.assistantMessages
+        .map((assistantMessage) => {
+            const text = assistantMessage.text.trim();
+
+            if (!text) {
+                return null;
+            }
+
+            if (text.startsWith('Waiting for ') || text.startsWith('Running ')) {
+                return null;
+            }
+
+            if (assistantMessage.action === 'inference' && assistantMessage.status === 'uncompleted') {
+                return null;
+            }
+
+            if (assistantMessage.action && assistantMessage.action !== 'inference') {
+                if (assistantMessage.status === 'completed') {
+                    return `Action result: ${text}`;
+                }
+
+                if (assistantMessage.status === 'uncompleted') {
+                    return `Action error: ${text}`;
+                }
+            }
+
+            return text;
+        })
+        .filter((line): line is string => Boolean(line));
+
+    const finalResponse = message.finalResponse?.trim();
+
+    if (finalResponse) {
+        assistantLines.push(finalResponse);
+    }
+
+    const uniqueAssistantLines = [...new Set(assistantLines)];
+
+    if (uniqueAssistantLines.length === 0) {
+        return null;
+    }
+
+    return uniqueAssistantLines.join('\n');
+}
+
+export interface PendingConfirmation {
+    actions: PlannedActionEvent[];
+    resolve: (result: PlannedActionEvent[] | false) => void;
+}
+
+export function useToolRunner(
+    config: Configuration,
+    functions: FunctionRegistry,
+    context?: ContextValue,
+    getPageContext?: () => string | undefined
+) {
     const runTools = Setup(config, functions);
     const [messageHistory, setMessageHistory] = useState<Message[]>([]);
+    const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
+    const autoConfirmRef = useRef(false);
 
     function updateLastMessage(
         messages: Message[],
@@ -33,7 +123,7 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
         action: string,
         text: string,
         mode: Mode,
-        status: ProcessEventProps['status'] = "uncompleted"
+        status: ProcessEventProps['status'] = 'uncompleted'
     ) {
         setMessageHistory(prev => {
             return updateLastMessage(prev, (lastMessage) => ({
@@ -54,7 +144,41 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
         });
     }
 
+    function setFinalResponse(text: string) {
+        setMessageHistory(prev => {
+            return updateLastMessage(prev, (lastMessage) => ({
+                ...lastMessage,
+                finalResponse: text,
+            }));
+        });
+    }
+
+    function setReferenceContext(referenceContext: ReferenceContextUsage) {
+        setMessageHistory(prev => {
+            return updateLastMessage(prev, (lastMessage) => ({
+                ...lastMessage,
+                referenceContext: {
+                    label: referenceContext.label,
+                    sources: referenceContext.sources.map((source) => ({
+                        title: source.title,
+                        ...(source.path ? { path: source.path } : {}),
+                        ...(source.lang ? { lang: source.lang } : {}),
+                    })),
+                },
+            }));
+        });
+    }
+
     async function askAI(inputText: string, chosenMode: Mode) {
+        const pageContextText = getPageContext?.();
+
+        const metadata: ExecutionMetadata = {
+            conversationHistory: buildConversationHistory(messageHistory),
+            interactionMode: chosenMode,
+            context,
+            pageContext: pageContextText,
+        };
+
         setMessageHistory(prev => {
             const index = prev.length;
             const newMessage: Message = {
@@ -82,15 +206,37 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
             });
         }
 
-        const result = await runTools(inputText, null, {
+        const result = await runTools(inputText, metadata, {
+            onThinking: (text) => {
+                setMessageHistory(prev => {
+                    return updateLastMessage(prev, (lastMessage) => ({
+                        ...lastMessage,
+                        thinkingText: text,
+                    }));
+                });
+            },
+
+            onContentStream: (text) => {
+                setMessageHistory(prev => {
+                    return updateLastMessage(prev, (lastMessage) => ({
+                        ...lastMessage,
+                        streamingContent: text,
+                    }));
+                });
+            },
+
+            onReferenceContextUsed: (referenceContext) => {
+                setReferenceContext(referenceContext);
+            },
+
             onToolCallsKnown: (actions) => {
-                console.log("Tool calls known:", actions);
+                console.log('Tool calls known:', actions);
                 setMessageHistory(prev => {
                     return updateLastMessage(prev, (lastMessage) => {
                         const pending = actions.map((actionEvent) => ({
                             id: actionEvent.id,
                             action: actionEvent.action,
-                            status: "pending" as ProcessEventProps['status'],
+                            status: 'pending' as ProcessEventProps['status'],
                             text: `Waiting for ${actionEvent.action}...`,
                             timestamp: Date.now(),
                             messageIndex: lastMessage.userMessage.messageIndex,
@@ -105,23 +251,32 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
                 });
             },
 
+            onConfirmActions: (actions) => {
+                if (autoConfirmRef.current) {
+                    return Promise.resolve(actions);
+                }
+                return new Promise<PlannedActionEvent[] | false>((resolve) => {
+                    setPendingConfirmation({ actions, resolve });
+                });
+            },
+
             onActionStart: (actionEvent) => {
                 updateAssistantMessage(actionEvent.id, {
-                    status: "active",
+                    status: 'active',
                     text: `Running ${actionEvent.action}...`
                 });
             },
 
             onActionComplete: (actionEvent, result) => {
                 updateAssistantMessage(actionEvent.id, {
-                    status: "completed",
+                    status: 'completed',
                     text: result.message || result.result || `${actionEvent.action} completed`
                 });
             },
 
             onActionError: (actionEvent, error) => {
                 updateAssistantMessage(actionEvent.id, {
-                    status: "uncompleted",
+                    status: 'uncompleted',
                     text: error
                 });
             }
@@ -129,11 +284,15 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
 
         if (!result.success) {
             appendAssistantMessage(
-                "inference",
-                result.error || "Inference failed",
+                'inference',
+                result.error || 'Inference failed',
                 chosenMode
             );
             return;
+        }
+
+        if (result.content?.trim()) {
+            setFinalResponse(result.content.trim());
         }
 
         const failedResults = result.executionResults?.filter(
@@ -153,9 +312,9 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
                     .filter((executionResult) => !executionResult.id || !existingMessageIds.has(executionResult.id))
                     .map((executionResult) => ({
                         id: executionResult.id || crypto.randomUUID(),
-                        action: executionResult.action || "inference",
-                        status: "uncompleted" as ProcessEventProps['status'],
-                        text: executionResult.error || "Action failed",
+                        action: executionResult.action || 'inference',
+                        status: 'uncompleted' as ProcessEventProps['status'],
+                        text: executionResult.error || 'Action failed',
                         timestamp: Date.now(),
                         messageIndex: lastMessage.userMessage.messageIndex,
                         mode: chosenMode,
@@ -173,5 +332,23 @@ export function useToolRunner(config: Configuration, functions: FunctionRegistry
         });
     }
 
-    return { askAI, messageHistory };
+    function confirmActions(editedActions?: PlannedActionEvent[]) {
+        if (pendingConfirmation) {
+            pendingConfirmation.resolve(editedActions || pendingConfirmation.actions);
+            setPendingConfirmation(null);
+        }
+    }
+
+    function rejectActions() {
+        if (pendingConfirmation) {
+            pendingConfirmation.resolve(false);
+            setPendingConfirmation(null);
+        }
+    }
+
+    function setAutoConfirm(value: boolean) {
+        autoConfirmRef.current = value;
+    }
+
+    return { askAI, messageHistory, pendingConfirmation, confirmActions, rejectActions, setAutoConfirm };
 }

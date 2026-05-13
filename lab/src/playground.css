@@ -1,0 +1,134 @@
+/* =============================================
+   Playground layout
+   ============================================= */
+body {
+    margin: 0;
+    
+    min-height: 100vh;
+    background: var(--ds-color-neutral-background-tinted);
+    color: var(--ds-color-neutral-text-default);
+}
+
+html,
+    body,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    a,
+    p,
+    span,
+    table,
+    button {
+        font-family: "Times New Roman", sans-serif;
+        font-feature-settings: "cv05", "cv08", "cv09";
+        text-decoration: none;
+    }
+
+
+#root {
+    min-height: 100vh;
+}
+.pg-root {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--ds-color-neutral-background-subtle);
+}
+
+/* ─── Controls sidebar (left) ─── */
+.pg-controls {
+  width: 280px;
+  flex-shrink: 0;
+  padding: 1rem;
+  overflow-y: auto;
+  border-right: 1px solid var(--ds-color-neutral-border-subtle);
+  background-color: var(--ds-color-neutral-background-default);
+}
+
+.pg-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.pg-toggle-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pg-range {
+  width: 100%;
+  accent-color: var(--ds-color-accent-base-default);
+}
+
+.pg-meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ─── Main content (center) ─── */
+.pg-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.pg-tabs {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--ds-color-neutral-border-subtle);
+  background-color: var(--ds-color-neutral-background-default);
+}
+
+.pg-page {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.pg-alert {
+  margin-bottom: 1rem;
+}
+
+.pg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  max-width: 480px;
+}
+
+.pg-form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ─── Resize handle ─── */
+.pg-resize-handle {
+  width: 5px;
+  cursor: col-resize;
+  background-color: var(--ds-color-neutral-border-subtle);
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.pg-resize-handle:hover {
+  background-color: var(--ds-color-accent-base-default);
+}
+
+/* ─── Sidebar (right) ─── */
+.pg-sidebar {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--ds-color-neutral-border-subtle);
+  background-color: var(--ds-color-neutral-background-default);
+  overflow: hidden;
+}

@@ -1,10 +1,14 @@
-import type { ProcessEventProps } from "@navikt/ds-react/Process";
+import type { ProcessEventProps } from '@navikt/ds-react/Process';
 
 export type Mode = 'Info' | 'Act';
 
 export interface Message {
     userMessage: UserMessage;
     assistantMessages: AssistantMessage[];
+    finalResponse?: string;
+    thinkingText?: string;
+    streamingContent?: string;
+    referenceContext?: ReferenceContextUsage;
 }
 
 interface UserMessage {
@@ -22,4 +26,15 @@ interface AssistantMessage {
     mode: Mode;
     status: ProcessEventProps['status'];
     action: string;
+}
+
+interface ReferenceSource {
+    title: string;
+    path?: string;
+    lang?: string;
+}
+
+interface ReferenceContextUsage {
+    label: string;
+    sources: ReferenceSource[];
 }
