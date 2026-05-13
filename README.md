@@ -141,7 +141,7 @@ Create `server/config.yaml` to define LLM targets:
 
 ```yaml
 inference:
-  local-nano:
+  local:
     endpoint: "http://localhost:11434/v1/chat/completions"
     model: "qwen3:0.6b"
 
@@ -192,9 +192,7 @@ See individual packages for details.
 ## Repo Layout
 
 - [`README.md`](README.md): top-level integration guide
-- [`server/config.yaml`](server/config.yaml): live proxy target config used by the repo
-- [`examples/server/config.yaml`](examples/server/config.yaml): copyable server example
-- [`examples/client/config.ts`](examples/client/config.ts): copyable client `config.ts` example
+- [`server/config.example.yaml`](server/config.example.yaml): copyable proxy target config (copy to `server/config.yaml`)
 - [`lab/src/config.ts`](lab/src/config.ts): fuller real app example
 - [`lab/src/App.tsx`](lab/src/App.tsx): demo UI wiring
 
@@ -251,11 +249,11 @@ The Go server accepts a request shaped like this:
 
 You usually do not construct that request by hand because the client does it for you, but the target name still matters because it selects which upstream model config the proxy should use.
 
-Start from [`examples/server/config.yaml`](examples/server/config.yaml):
+Start from [`server/config.example.yaml`](server/config.example.yaml):
 
 ```yaml
 inference:
-  local-nano:
+  local:
     endpoint: "http://localhost:11434/v1/chat/completions"
     model: "qwen3:0.6b"
 

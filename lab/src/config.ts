@@ -220,6 +220,7 @@ export function createPlaygroundConfig(): Configuration {
       name: 'default',
       spec: {
         name: 'aivar',
+        endpoint: 'http://localhost:8091',
       },
     },
   };

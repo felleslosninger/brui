@@ -1,3 +1,18 @@
 .idea/
+.vscode/
+.DS_Store
 
 node_modules/
+dist/
+build/
+
+# Env / secrets
+.env
+.env.*
+*.local
+
+# Local server config (use config.example.yaml as template)
+server/config.yaml
+
+# Built Go binary
+server/main

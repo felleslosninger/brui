@@ -1,6 +1,16 @@
 import type { Action, Decision } from './types';
 
-export type FunctionRegistry = Record<string, Function>;
+export type ActionFunction = (
+    args: Record<string, unknown>
+) => unknown | Promise<unknown>;
+
+export type FunctionRegistry = Record<string, ActionFunction>;
+
+export interface ExecuteActionResult {
+    result: unknown;
+    message?: string;
+    args?: Record<string, unknown>;
+}
 
 export interface StoreInterface {
     getAction(name: string): Action | undefined;
@@ -8,62 +18,43 @@ export interface StoreInterface {
     executeAction(
         actionName: string,
         args: Record<string, unknown>
-    ): Promise<{ result: any; message?: string; args?: Record<string, unknown> }>;
-    eventTarget?: EventTarget;
+    ): Promise<ExecuteActionResult>;
 }
 
 export function createResourceStore(
-    config: { actions: Action[], decisions: Decision[], useEventTarget?: boolean },
+    config: { actions: Action[]; decisions: Decision[] },
     functions: FunctionRegistry = {}
 ): StoreInterface {
-    const actionsMap = new Map(config.actions.map((a: Action) => [a.name, a]));
-    const decisionsMap = new Map(config.decisions.map((d: Decision) => [d.tool, d]));
-    const store: StoreInterface = {
-        getAction(name: string) {
+    const actionsMap = new Map(config.actions.map((a) => [a.name, a]));
+    const decisionsMap = new Map(config.decisions.map((d) => [d.tool, d]));
+
+    return {
+        getAction(name) {
             return actionsMap.get(name);
         },
-        getDecisionByTool(toolName: string) {
+        getDecisionByTool(toolName) {
             return decisionsMap.get(toolName);
         },
-        async executeAction(actionName: string, args: Record<string, unknown>) {
+        async executeAction(actionName, args) {
             const action = actionsMap.get(actionName);
             if (!action) throw new Error(`Action not found: ${actionName}`);
             const fn = functions[actionName];
             if (!fn) throw new Error(`Function not found for action: ${actionName}`);
 
-            return new Promise(async (resolve, reject) => {
-                setTimeout(async () => {
-                    try {
-                        console.log(`[Store] Executing action: ${actionName}`);
-                        console.log('[Store] Args passed to function:', JSON.stringify(args, null, 2));
+            const extracted: Record<string, unknown> = Array.isArray(action.args)
+                ? Object.fromEntries(action.args.map((key) => [key, args[key]]))
+                : args;
 
-                        let extracted: Record<string, unknown> = args;
-                        if (action.args && Array.isArray(action.args)) {
-                            extracted = {};
-                            for (const key of action.args) extracted[key] = args[key];
-                            console.log('[Store] Extracted args for function:', JSON.stringify(extracted, null, 2));
-                        }
+            const result = await fn(extracted);
 
-                        const result = await fn(extracted);
+            const message = action.message
+                ? action.message.replace(/\{(\w+)}/g, (_, key) => {
+                    const val = extracted[key];
+                    return val !== undefined ? String(val) : `{${key}}`;
+                })
+                : '';
 
-                        let message = action.message || '';
-                        if (message) {
-                            message = message.replace(/\{(\w+)}/g, (_, key) => {
-                                const val = extracted[key];
-                                return val !== undefined ? String(val) : `{${key}}`;
-                            });
-                        }
-
-                        resolve({ result, message, args: extracted });
-                    } catch (err) {
-                        reject(err);
-                    }
-                }, 0);
-            });
-        }
+            return { result, message, args: extracted };
+        },
     };
-    if (config.useEventTarget) {
-        store.eventTarget = new EventTarget();
-    }
-    return store;
 }

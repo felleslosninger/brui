@@ -15,8 +15,17 @@ export interface StreamCallbacks {
     onContentStream?: (text: string) => void;
 }
 
-const defaultEndpoint = 'http://localhost:8091';
 const nonEmptyResponseInstruction = 'Never return an empty response. You must either call a tool or send a brief user-facing reply.';
+
+function resolveTarget(ctx: InferenceContext): { target: string; endpoint: string } {
+    const inference = ctx.config.inference;
+    if (!inference) {
+        throw new Error(
+            'Inference target is not configured. Set `inference.spec.name` and `inference.spec.endpoint` in your Configuration.'
+        );
+    }
+    return { target: inference.name, endpoint: inference.endpoint };
+}
 
 function buildSystemPrompt(
     interactionMode?: InteractionMode,
@@ -86,8 +95,7 @@ async function requestOpenAICompletion(
         includeReferenceContext?: boolean;
     }
 ): Promise<OpenAIChatCompletionMessage> {
-    const target = ctx.config.inference?.name || 'local-nano';
-    const endpoint = ctx.config.inference?.endpoint || defaultEndpoint;
+    const { target, endpoint } = resolveTarget(ctx);
 
     const request: InferenceRequest = {
         target,
@@ -127,8 +135,7 @@ async function requestOpenAIStreamingCompletion(
     },
     callbacks?: StreamCallbacks
 ): Promise<OpenAIChatCompletionMessage> {
-    const target = ctx.config.inference?.name || 'local-nano';
-    const endpoint = ctx.config.inference?.endpoint || defaultEndpoint;
+    const { target, endpoint } = resolveTarget(ctx);
 
     const payload = buildPayload(ctx, messages, options);
     const streamingPayload = { ...payload, stream: true as const };

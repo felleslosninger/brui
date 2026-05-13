@@ -18,7 +18,7 @@ Create a `config.yaml` in the server directory:
 ```yaml
 inference:
   # Local Ollama instance
-  local-nano:
+  local:
     endpoint: "http://localhost:11434/v1/chat/completions"
     model: "qwen3:0.6b"
 

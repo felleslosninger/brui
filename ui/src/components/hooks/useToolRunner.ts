@@ -268,9 +268,12 @@ export function useToolRunner(
             },
 
             onActionComplete: (actionEvent, result) => {
+                const text = result.message
+                    || (typeof result.result === 'string' ? result.result : undefined)
+                    || `${actionEvent.action} completed`;
                 updateAssistantMessage(actionEvent.id, {
                     status: 'completed',
-                    text: result.message || result.result || `${actionEvent.action} completed`
+                    text,
                 });
             },
 
