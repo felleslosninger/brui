@@ -17,7 +17,7 @@ export interface InferenceContext {
     config: {
         inference?: {
             name: string;
-            endpoint?: string;
+            endpoint: string;
         };
         decisions?: {
             tools?: ToolDefinition[];

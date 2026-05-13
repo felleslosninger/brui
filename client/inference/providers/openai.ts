@@ -18,14 +18,13 @@ export interface StreamCallbacks {
 const nonEmptyResponseInstruction = 'Never return an empty response. You must either call a tool or send a brief user-facing reply.';
 
 function resolveTarget(ctx: InferenceContext): { target: string; endpoint: string } {
-    const target = ctx.config.inference?.name;
-    const endpoint = ctx.config.inference?.endpoint;
-    if (!target || !endpoint) {
+    const inference = ctx.config.inference;
+    if (!inference) {
         throw new Error(
             'Inference target is not configured. Set `inference.spec.name` and `inference.spec.endpoint` in your Configuration.'
         );
     }
-    return { target, endpoint };
+    return { target: inference.name, endpoint: inference.endpoint };
 }
 
 function buildSystemPrompt(
