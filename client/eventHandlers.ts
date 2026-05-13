@@ -1,3 +1,6 @@
+export type { ReferenceSource, ReferenceContextUsage } from './inference/referenceContext';
+import type { ReferenceContextUsage } from './inference/referenceContext';
+
 export interface ActionEvent {
     id: string;
     action: string;
@@ -9,16 +12,9 @@ export interface PlannedActionEvent extends ActionEvent {
     parameters: Record<string, unknown>;
 }
 
-export interface ReferenceSource {
-    title: string;
-    path?: string;
-    lang?: string;
-}
-
-export interface ReferenceContextUsage {
-    used: boolean;
-    label: string;
-    sources: ReferenceSource[];
+export interface ActionCompletionResult {
+    result: unknown;
+    message?: string;
 }
 
 export interface EventHandlers {
@@ -29,6 +25,6 @@ export interface EventHandlers {
     onConfirmActions?: (actions: PlannedActionEvent[]) => Promise<PlannedActionEvent[] | false>;
     onActionPending?: (action: ActionEvent) => void;
     onActionStart?: (action: ActionEvent) => void;
-    onActionComplete?: (action: ActionEvent, result: any) => void;
+    onActionComplete?: (action: ActionEvent, result: ActionCompletionResult) => void;
     onActionError?: (action: ActionEvent, error: string) => void;
 }

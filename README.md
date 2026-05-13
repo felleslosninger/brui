@@ -192,9 +192,7 @@ See individual packages for details.
 ## Repo Layout
 
 - [`README.md`](README.md): top-level integration guide
-- [`server/config.yaml`](server/config.yaml): live proxy target config used by the repo
-- [`examples/server/config.yaml`](examples/server/config.yaml): copyable server example
-- [`examples/client/config.ts`](examples/client/config.ts): copyable client `config.ts` example
+- [`server/config.example.yaml`](server/config.example.yaml): copyable proxy target config (copy to `server/config.yaml`)
 - [`lab/src/config.ts`](lab/src/config.ts): fuller real app example
 - [`lab/src/App.tsx`](lab/src/App.tsx): demo UI wiring
 

@@ -22,6 +22,7 @@ function SidebarOutputRoot({
     const lastMessageIndex = messageHistory.length - 1;
     const outputRef = useRef<HTMLDivElement | null>(null);
     const shouldStickToBottomRef = useRef(true);
+    const programmaticScrollRef = useRef(false);
 
     function areActionStepsFinished(actionSteps: Message['assistantMessages']) {
         return actionSteps.every((actionStep) =>
@@ -51,12 +52,18 @@ function SidebarOutputRoot({
             return;
         }
 
+        programmaticScrollRef.current = true;
         output.scrollTop = output.scrollHeight;
     }, [messageHistory, isLoadingResponse]);
 
     function handleScroll() {
         const output = outputRef.current;
         if (!output) {
+            return;
+        }
+
+        if (programmaticScrollRef.current) {
+            programmaticScrollRef.current = false;
             return;
         }
 
@@ -122,8 +129,8 @@ function SidebarOutputRoot({
                                         ? [
                                             ...referenceSteps,
                                             ...actionSteps.map((assistantMessage) => ({
-                                            label: assistantMessage.text,
-                                            status: mapActionStatus(assistantMessage.status),
+                                                label: assistantMessage.text,
+                                                status: mapActionStatus(assistantMessage.status),
                                             })),
                                         ]
                                         : [];
