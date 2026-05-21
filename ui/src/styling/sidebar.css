@@ -150,9 +150,6 @@
 .brui-mode-select {
     width: auto;
     min-width: 0;
-}
-
-.brui-mode-select {
     border-color: var(--ds-color-border-strong) !important;
 }
 
