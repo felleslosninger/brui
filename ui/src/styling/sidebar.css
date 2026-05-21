@@ -152,9 +152,13 @@
     min-width: 0;
 }
 
+.brui-mode-select {
+    border-color: var(--ds-color-border-strong) !important;
+}
+
 .brui-settings-trigger {
-    padding: 0.8rem !important;
     background-color: transparent !important;
+    border-color: var(--ds-color-border-strong) !important;
 }
 
 .brui-settings-items {
@@ -176,6 +180,11 @@
 
 .brui-mic-button {
     background-color: transparent !important;
+    border-color: var(--ds-color-border-strong) !important;
+}
+
+.brui-settings-trigger {
+    border-color: var(--ds-color-border-strong) !important;
 }
 
 .brui-mic-button--recording {
@@ -194,6 +203,10 @@
 
 .brui-input-field-wrap {
     width: 100%;
+}
+
+.brui-input-field-wrap textarea {
+    border-color: var(--ds-color-border-strong) !important;
 }
 
 .brui-submit-label {

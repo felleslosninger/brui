@@ -192,6 +192,9 @@ export function useMicSession({
     const dismissError = useCallback(() => setError(null), []);
 
     useEffect(() => {
+        // Reset on (re-)mount — React Strict Mode runs mount→cleanup→mount in dev,
+        // which would otherwise leave this ref permanently true and break toggle()
+        cleanedUpRef.current = false;
         return () => {
             cleanedUpRef.current = true;
             const session = sessionRef.current;
