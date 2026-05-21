@@ -180,10 +180,6 @@
     border-color: var(--ds-color-border-strong) !important;
 }
 
-.brui-settings-trigger {
-    border-color: var(--ds-color-border-strong) !important;
-}
-
 .brui-mic-button--recording {
     border-color: var(--ds-color-danger-base-default, #c2333d) !important;
     color: var(--ds-color-danger-base-default, #c2333d) !important;
