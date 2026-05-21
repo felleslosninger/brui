@@ -132,7 +132,36 @@ interface Configuration {
   actions: Action[];
   decisions: Decision[];
   inference?: Inference;
+  transcribe?: TranscribeEndpoint; // optional Whisper-compatible STT endpoint
 }
+```
+
+### Voice / STT
+
+If you set `transcribe`, the UI sidebar enables a microphone button that posts recorded audio to any Whisper-compatible endpoint:
+
+```ts
+transcribe: {
+  endpoint: 'https://your-whisper-endpoint/v1/audio/transcriptions',
+  // optional:
+  // headers, model, language, responseFormat,
+  // silenceThreshold, silenceAutoFlushMs, minUtteranceMs, requestTimeoutMs,
+}
+```
+
+You can also drive transcription directly without the UI:
+
+```ts
+import { startTranscribe } from 'brui-client';
+
+const session = await startTranscribe({
+  endpoint: '…',
+  onSegment: (text) => console.log(text),
+  onState:   (s)    => console.log(s), // 'idle' | 'listening' | 'speaking' | 'processing'
+  onRms:     (rms)  => { /* live audio level 0..1 */ },
+  onError:   (e)    => console.error(e),
+});
+// later: await session.stop();
 ```
 
 ## How it works

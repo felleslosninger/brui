@@ -219,9 +219,12 @@ export function createPlaygroundConfig(): Configuration {
       kind: 'inference',
       name: 'default',
       spec: {
-        name: 'aivar',
+        name: 'envoy-default',
         endpoint: 'http://localhost:8091',
       },
+    },
+    transcribe: {
+      endpoint: 'https://whisper.sandkasse.ai/v1/audio/transcriptions',
     },
   };
 }

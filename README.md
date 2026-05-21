@@ -171,6 +171,32 @@ A `FunctionRegistry` is a plain object mapping action names to functions. Each f
 ### Inference
 Configured via the `inference` field pointing at a target defined in the server's `config.yaml`. The client sends requests to the proxy server, which forwards them to the actual LLM endpoint.
 
+## Voice input (optional)
+
+The sidebar UI ships with optional voice input that sends recorded audio to any Whisper-compatible HTTP endpoint (OpenAI `/audio/transcriptions`, `whisper.cpp`, self-hosted servers, etc.).
+
+Enable it by adding `transcribe` to your `Configuration`:
+
+```ts
+const config: Configuration = {
+  // ...tools, actions, decisions, inference...
+  transcribe: {
+    endpoint: 'https://your-whisper-endpoint.example.com/v1/audio/transcriptions',
+    // Optional:
+    // headers: { Authorization: 'Bearer ...' },
+    // model: 'whisper-1',
+    // language: 'nb',
+    // responseFormat: 'json',         // 'json' | 'verbose_json' | 'text'
+    // silenceThreshold: 0.04,         // RMS threshold for silence detection
+    // silenceAutoFlushMs: 900,        // ms of silence before flushing an utterance
+    // minUtteranceMs: 250,            // ignore utterances shorter than this
+    // requestTimeoutMs: 30000,        // per-utterance fetch timeout
+  },
+};
+```
+
+The mic button appears automatically when `transcribe` is configured and the browser supports `MediaRecorder` + `getUserMedia` (HTTPS or localhost required). Audio is captured per utterance — recording restarts after each silence flush, so each POST is a clean, self-contained blob. RMS-driven animation in the Send button gives live visual feedback while you speak.
+
 ## Event handlers
 
 The `run` function accepts optional event handlers for observability:

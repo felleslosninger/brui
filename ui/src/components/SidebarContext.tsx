@@ -1,7 +1,8 @@
-import { createContext, useContext, type FormEvent } from 'react';
+import { createContext, useContext, type FormEvent, type RefObject } from 'react';
 import type { Message } from '../types/message';
 import type { PendingConfirmation } from './hooks/useToolRunner';
 import type { PlannedActionEvent } from '../../../client/eventHandlers';
+import type { MicSession } from './hooks/useMicSession';
 
 export interface SidebarContextValue {
     messageHistory: Message[];
@@ -16,6 +17,10 @@ export interface SidebarContextValue {
     includePageContext?: boolean;
     pageContextActive: boolean;
     setPageContextActive: (value: boolean) => void;
+    inputValue: string;
+    setInputValue: (value: string) => void;
+    textareaRef: RefObject<HTMLTextAreaElement | null>;
+    mic: MicSession;
 }
 
 export const SidebarContext = createContext<SidebarContextValue | null>(null);

@@ -9,7 +9,7 @@ inference:
 
   envoy-default:
     endpoint: "https://gw.sandkasse.ai/v1/chat/completions"
-    model: "telenor-default"
+    model: "telenor:gemma4"
     headers:
       Authorization: "Bearer ${ENVOY_API_KEY}"
       x-ai-eg-model: "${MODEL}"

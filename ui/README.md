@@ -29,4 +29,6 @@ function App() {
 }
 ```
 
+When `config.transcribe` is set, a microphone button appears in the input row and lets users dictate messages via any Whisper-compatible endpoint. Animation, error handling, and accessibility live regions are built in. Requires HTTPS (or `localhost`) for `getUserMedia`.
+
 See the root [README](../README.md) for full integration details.

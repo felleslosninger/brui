@@ -84,10 +84,21 @@ export function PlaygroundApp() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [submitted, setSubmitted] = useState(false);
   const [counter, setCounter] = useState(0);
+  const [silenceThreshold, setSilenceThreshold] = useState(0.04);
+  const [silenceAutoFlushMs, setSilenceAutoFlushMs] = useState(900);
 
   const isResizing = useRef(false);
 
-  const config = useMemo(() => createPlaygroundConfig(), []);
+  const baseConfig = useMemo(() => createPlaygroundConfig(), []);
+  const config = useMemo(
+    () => ({
+      ...baseConfig,
+      transcribe: baseConfig.transcribe
+        ? { ...baseConfig.transcribe, silenceThreshold, silenceAutoFlushMs }
+        : undefined,
+    }),
+    [baseConfig, silenceThreshold, silenceAutoFlushMs],
+  );
   const functions = useMemo(
     () => createPlaygroundFunctions(
       setForm,
@@ -174,6 +185,39 @@ export function PlaygroundApp() {
                   max={MAX_SIDEBAR_WIDTH}
                   value={sidebarWidth}
                   onChange={(e) => setSidebarWidth(clampSidebarWidth(Number(e.target.value)))}
+                  className="pg-range"
+                />
+              </div>
+            </Fieldset>
+
+            <Heading level={3} data-size="2xs">Transcribe</Heading>
+            <Fieldset className="pg-fieldset">
+              <div className="pg-toggle-row">
+                <Paragraph data-size="sm">
+                  Mic threshold: {silenceThreshold.toFixed(3)}
+                </Paragraph>
+                <input
+                  type="range"
+                  min={0.005}
+                  max={0.15}
+                  step={0.005}
+                  value={silenceThreshold}
+                  onChange={(e) => setSilenceThreshold(Number(e.target.value))}
+                  className="pg-range"
+                />
+              </div>
+
+              <div className="pg-toggle-row">
+                <Paragraph data-size="sm">
+                  Silence flush: {silenceAutoFlushMs} ms
+                </Paragraph>
+                <input
+                  type="range"
+                  min={200}
+                  max={2000}
+                  step={50}
+                  value={silenceAutoFlushMs}
+                  onChange={(e) => setSilenceAutoFlushMs(Number(e.target.value))}
                   className="pg-range"
                 />
               </div>
