@@ -227,12 +227,29 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
         }
 
         const timeoutMs = cfg.requestTimeoutMs ?? DEFAULTS.requestTimeoutMs;
-        const res = await fetch(cfg.endpoint, {
-            method: 'POST',
-            headers: cfg.headers,
-            body: form,
-            signal: AbortSignal.timeout(timeoutMs),
-        });
+        const canUseAbortSignalTimeout =
+            typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function';
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        let controller: AbortController | undefined;
+        const signal = canUseAbortSignalTimeout
+            ? AbortSignal.timeout(timeoutMs)
+            : (() => {
+                  controller = new AbortController();
+                  timeoutId = setTimeout(() => controller?.abort(), timeoutMs);
+                  return controller.signal;
+              })();
+
+        let res: Response;
+        try {
+            res = await fetch(cfg.endpoint, {
+                method: 'POST',
+                headers: cfg.headers,
+                body: form,
+                signal,
+            });
+        } finally {
+            if (timeoutId !== undefined) clearTimeout(timeoutId);
+        }
         if (!res.ok) {
             const body = await res.text().catch(() => '');
             throw new TranscribeError(
