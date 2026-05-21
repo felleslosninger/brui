@@ -186,6 +186,7 @@ export function PlaygroundApp() {
                   value={sidebarWidth}
                   onChange={(e) => setSidebarWidth(clampSidebarWidth(Number(e.target.value)))}
                   className="pg-range"
+                  aria-label={t.sidebarWidth}
                 />
               </div>
             </Fieldset>
@@ -204,6 +205,7 @@ export function PlaygroundApp() {
                   value={silenceThreshold}
                   onChange={(e) => setSilenceThreshold(Number(e.target.value))}
                   className="pg-range"
+                  aria-label="Mic silence threshold"
                 />
               </div>
 
@@ -219,6 +221,7 @@ export function PlaygroundApp() {
                   value={silenceAutoFlushMs}
                   onChange={(e) => setSilenceAutoFlushMs(Number(e.target.value))}
                   className="pg-range"
+                  aria-label="Silence auto-flush duration"
                 />
               </div>
             </Fieldset>
