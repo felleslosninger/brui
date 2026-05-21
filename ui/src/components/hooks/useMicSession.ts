@@ -56,8 +56,8 @@ export function useMicSession({
     const [recording, setRecording] = useState(false);
     const [state, setState] = useState<TranscribeState>('idle');
     const [error, setError] = useState<MicError | null>(null);
-    const [busy, setBusy] = useState(false);
 
+    const busyRef = useRef(false);
     const sessionRef = useRef<TranscribeSession | null>(null);
     const cleanedUpRef = useRef(false);
     const configRef = useRef(config);
@@ -140,8 +140,8 @@ export function useMicSession({
     }, [publishRms]);
 
     const toggle = useCallback(async () => {
-        if (busy) return;
-        setBusy(true);
+        if (busyRef.current) return;
+        busyRef.current = true;
         setError(null);
         try {
             if (sessionRef.current) {
@@ -185,9 +185,9 @@ export function useMicSession({
             setRecording(false);
             setState('idle');
         } finally {
-            setBusy(false);
+            busyRef.current = false;
         }
-    }, [busy, insertSegment, publishRms, reportError, stop]);
+    }, [insertSegment, publishRms, reportError, stop]);
 
     const dismissError = useCallback(() => setError(null), []);
 

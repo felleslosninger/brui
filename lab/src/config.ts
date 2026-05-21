@@ -223,9 +223,9 @@ export function createPlaygroundConfig(): Configuration {
         endpoint: 'http://localhost:8091',
       },
     },
-    transcribe: {
-      endpoint: 'https://whisper.sandkasse.ai/v1/audio/transcriptions',
-    },
+    transcribe: import.meta.env.VITE_TRANSCRIBE_ENDPOINT
+      ? { endpoint: import.meta.env.VITE_TRANSCRIBE_ENDPOINT as string }
+      : undefined,
   };
 }
 

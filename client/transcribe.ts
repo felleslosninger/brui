@@ -141,6 +141,9 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
         throw new TranscribeError('not-supported', 'Audio capture is not supported in this environment.');
     }
+    if (typeof MediaRecorder === 'undefined') {
+        throw new TranscribeError('not-supported', 'MediaRecorder is not supported in this environment.');
+    }
 
     let stream: MediaStream;
     try {
