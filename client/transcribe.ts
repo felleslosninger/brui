@@ -1,5 +1,4 @@
 export type TranscribeState =
-    | 'idle'
     | 'starting'
     | 'listening'
     | 'speaking'
