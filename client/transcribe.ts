@@ -314,7 +314,7 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
         }
     }
 
-    const vadInterval = window.setInterval(() => {
+    const vadInterval = setInterval(() => {
         if (stopped || processing) return;
 
         analyser.getByteTimeDomainData(timeBuf);
@@ -346,7 +346,7 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
 
     async function stop(): Promise<void> {
         if (stopped) return;
-        window.clearInterval(vadInterval);
+        clearInterval(vadInterval);
 
         // Flush any buffered audio before tearing down, so the user does not lose
         // an utterance recorded between the last silence-flush and the stop click.
