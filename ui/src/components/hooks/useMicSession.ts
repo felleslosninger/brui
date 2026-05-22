@@ -134,9 +134,12 @@ export function useMicSession({
         const session = sessionRef.current;
         sessionRef.current = null;
         setRecording(false);
-        setState('idle');
         publishRms(0);
-        if (session) await session.stop();
+        if (!session) {
+            setState('idle');
+            return;
+        }
+        await session.stop();
     }, [publishRms]);
 
     const toggle = useCallback(async () => {
