@@ -195,7 +195,7 @@ const config: Configuration = {
 };
 ```
 
-The mic button appears automatically when `transcribe` is configured and the browser supports `MediaRecorder` + `getUserMedia` (HTTPS or localhost required). Audio is captured per utterance — recording restarts after each silence flush, so each POST is a clean, self-contained blob. RMS-driven animation in the Send button gives live visual feedback while you speak.
+Configuring `transcribe` enables the mic button in the sidebar. Using voice input requires browser support for `MediaRecorder` + `getUserMedia` (HTTPS or localhost required). Audio is captured per utterance — recording restarts after each silence flush, so each POST is a clean, self-contained blob. RMS-driven animation in the Send button gives live visual feedback while you speak.
 
 ## Event handlers
 
