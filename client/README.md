@@ -157,7 +157,7 @@ import { startTranscribe } from 'brui-client';
 const session = await startTranscribe({
   endpoint: '…',
   onSegment: (text) => console.log(text),
-  onState:   (s)    => console.log(s), // 'starting' | 'idle' | 'listening' | 'speaking' | 'processing' | 'stopped'
+  onState:   (s)    => console.log(s), // 'starting' | 'listening' | 'speaking' | 'processing' | 'stopped'
   onRms:     (rms)  => { /* live audio level 0..1 */ },
   onError:   (e)    => console.error(e),
 });
