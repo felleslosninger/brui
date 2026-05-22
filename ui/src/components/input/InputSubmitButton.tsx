@@ -1,7 +1,7 @@
 import { Button } from '@digdir/designsystemet-react';
 import cl from 'clsx/lite';
 import { PaperplaneIcon } from '@navikt/aksel-icons';
-import { useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useSidebarContext } from '../SidebarContext';
 
 interface InputSubmitButtonProps {
@@ -17,12 +17,28 @@ function rmsBarScale(rms: number, weight: number): number {
     return Math.min(RMS_MAX_SCALE, 0.2 + rms * RMS_AMPLIFY * weight);
 }
 
+function usePrefersReducedMotion(): boolean {
+    const [reduced, setReduced] = useState(() =>
+        typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    );
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const handler = () => setReduced(mq.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
+    return reduced;
+}
+
 export default function InputSubmitButton({ children, className }: InputSubmitButtonProps) {
     const { mic } = useSidebarContext();
     const rms = useSyncExternalStore(mic.subscribeRms, mic.getRms, () => 0);
+    const reducedMotion = usePrefersReducedMotion();
 
     const isProcessing = mic.state === 'processing';
     const isSpeaking = mic.state === 'speaking';
+    const animateBars = isSpeaking && !reducedMotion;
 
     return (
         <Button
@@ -61,7 +77,7 @@ export default function InputSubmitButton({ children, className }: InputSubmitBu
                                     <span
                                         key={i}
                                         className="brui-voice-bar"
-                                        style={isSpeaking ? { transform: `scaleY(${rmsBarScale(rms, w)})` } : undefined}
+                                        style={animateBars ? { transform: `scaleY(${rmsBarScale(rms, w)})` } : undefined}
                                     />
                                 ))
                             )}

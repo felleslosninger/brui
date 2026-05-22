@@ -283,10 +283,10 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
                 : typeof payload?.text === 'string' ? payload.text : '';
 
         const text = sanitizeWhisperText(raw);
-        if (text) cfg.onSegment(text);
+        if (text && !stopped) cfg.onSegment(text);
     }
 
-    async function flushUtterance(): Promise<void> {
+    async function flushUtterance(opts: { final?: boolean } = {}): Promise<void> {
         if (processing || stopped) return;
         processing = true;
         emitState('processing');
@@ -303,7 +303,7 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
             speaking = false;
             consecutiveSpeechPolls = 0;
             silenceSinceMs = null;
-            if (!stopped) {
+            if (!stopped && !opts.final) {
                 try {
                     startRecorder();
                     emitState('listening');
@@ -346,9 +346,17 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
 
     async function stop(): Promise<void> {
         if (stopped) return;
+        window.clearInterval(vadInterval);
+
+        // Flush any buffered audio before tearing down, so the user does not lose
+        // an utterance recorded between the last silence-flush and the stop click.
+        // Skipped if a flush is already in flight (processing=true).
+        if (!processing && recorder.state === 'recording') {
+            try { await flushUtterance({ final: true }); } catch { /* swallow; teardown next */ }
+        }
+
         stopped = true;
         sessionAbortController.abort();
-        window.clearInterval(vadInterval);
 
         await stopRecorder();
         stream.getTracks().forEach((t) => t.stop());

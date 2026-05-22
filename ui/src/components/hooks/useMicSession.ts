@@ -55,7 +55,7 @@ export function useMicSession({
     setInputValue,
 }: UseMicSessionParams): MicSession {
     const [recording, setRecording] = useState(false);
-    const [state, setState] = useState<TranscribeState>('idle');
+    const [state, setState] = useState<TranscribeState>('stopped');
     const [error, setError] = useState<MicError | null>(null);
     const [supported, setSupported] = useState(false);
 
@@ -139,7 +139,7 @@ export function useMicSession({
         setRecording(false);
         publishRms(0);
         if (!session) {
-            setState('idle');
+            setState('stopped');
             return;
         }
         await session.stop();
@@ -189,7 +189,7 @@ export function useMicSession({
                 : new TranscribeError('unknown', e instanceof Error ? e.message : String(e));
             reportError(err);
             setRecording(false);
-            setState('idle');
+            setState('stopped');
         } finally {
             busyRef.current = false;
         }
