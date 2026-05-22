@@ -10,7 +10,7 @@ export type {
     ReferenceContextUsage,
     ReferenceSource,
 } from './eventHandlers';
-export { startTranscribe, TranscribeError } from './transcribe';
+export { isTranscribeSupported, startTranscribe, TranscribeError } from './transcribe';
 export type {
     TranscribeConfig,
     TranscribeErrorCode,

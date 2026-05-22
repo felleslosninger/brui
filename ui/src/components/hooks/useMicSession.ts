@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import {
+    isTranscribeSupported,
     startTranscribe,
     TranscribeError,
     type TranscribeEndpoint,
@@ -56,6 +57,7 @@ export function useMicSession({
     const [recording, setRecording] = useState(false);
     const [state, setState] = useState<TranscribeState>('idle');
     const [error, setError] = useState<MicError | null>(null);
+    const [supported, setSupported] = useState(false);
 
     const busyRef = useRef(false);
     const sessionRef = useRef<TranscribeSession | null>(null);
@@ -65,6 +67,7 @@ export function useMicSession({
 
     useEffect(() => { configRef.current = config; }, [config]);
     useEffect(() => { inputValueRef.current = inputValue; }, [inputValue]);
+    useEffect(() => { setSupported(isTranscribeSupported()); }, []);
 
     // External store for RMS so only subscribers re-render on each tick.
     const rmsRef = useRef(0);
@@ -207,7 +210,7 @@ export function useMicSession({
     }, []);
 
     return {
-        available: !!config,
+        available: !!config && supported,
         recording,
         state,
         error,

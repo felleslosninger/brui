@@ -73,6 +73,14 @@ const PREFERRED_MIME_TYPES = [
 const WHISPER_NOISE_TAGS_RE =
     /\[(?:BLANK_AUDIO|MUSIC|SILENCE|INAUDIBLE|NOISE|APPLAUSE|LAUGHTER|SOUND|BACKGROUND)\]/gi;
 
+function hasGetUserMedia(): boolean {
+    return typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
+}
+
+export function isTranscribeSupported(): boolean {
+    return hasGetUserMedia() && typeof MediaRecorder !== 'undefined';
+}
+
 function pickAudioFormat(): { mimeType?: string; ext: string } {
     if (typeof MediaRecorder !== 'undefined') {
         for (const [mime, ext] of PREFERRED_MIME_TYPES) {
@@ -137,7 +145,7 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
 
     emitState('starting');
 
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+    if (!hasGetUserMedia()) {
         throw new TranscribeError('not-supported', 'Audio capture is not supported in this environment.');
     }
     if (typeof MediaRecorder === 'undefined') {
@@ -178,6 +186,7 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
     let silenceSinceMs: number | null = null;
     let stopped = false;
     let processing = false;
+    const sessionAbortController = new AbortController();
 
     function attachRecorderHandlers(r: MediaRecorder) {
         r.ondataavailable = (event) => {
@@ -226,17 +235,22 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
         }
 
         const timeoutMs = cfg.requestTimeoutMs ?? DEFAULTS.requestTimeoutMs;
-        const canUseAbortSignalTimeout =
-            typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function';
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-        let controller: AbortController | undefined;
-        const signal = canUseAbortSignalTimeout
-            ? AbortSignal.timeout(timeoutMs)
-            : (() => {
-                  controller = new AbortController();
-                  timeoutId = setTimeout(() => controller?.abort(), timeoutMs);
-                  return controller.signal;
-              })();
+        const requestAbortController = new AbortController();
+        const abortForStop = () => requestAbortController.abort();
+        const abortForTimeout = () => {
+            try {
+                requestAbortController.abort(new DOMException('Transcription request timed out.', 'TimeoutError'));
+            } catch {
+                requestAbortController.abort();
+            }
+        };
+        const timeoutId = setTimeout(abortForTimeout, timeoutMs);
+
+        if (sessionAbortController.signal.aborted) {
+            abortForStop();
+        } else {
+            sessionAbortController.signal.addEventListener('abort', abortForStop, { once: true });
+        }
 
         let res: Response;
         try {
@@ -244,10 +258,11 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
                 method: 'POST',
                 headers: cfg.headers,
                 body: form,
-                signal,
+                signal: requestAbortController.signal,
             });
         } finally {
-            if (timeoutId !== undefined) clearTimeout(timeoutId);
+            clearTimeout(timeoutId);
+            sessionAbortController.signal.removeEventListener('abort', abortForStop);
         }
         if (!res.ok) {
             const body = await res.text().catch(() => '');
@@ -332,6 +347,7 @@ export async function startTranscribe(cfg: TranscribeConfig): Promise<Transcribe
     async function stop(): Promise<void> {
         if (stopped) return;
         stopped = true;
+        sessionAbortController.abort();
         window.clearInterval(vadInterval);
 
         await stopRecorder();

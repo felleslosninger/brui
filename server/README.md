@@ -13,7 +13,13 @@ The server starts on port **8091** by default.
 
 ## Configuration
 
-Create a `config.yaml` in the server directory:
+Create a local `config.yaml` from the example template:
+
+```bash
+cp config.example.yaml config.yaml
+```
+
+Then edit `config.yaml` for your environment:
 
 ```yaml
 inference:
@@ -32,6 +38,8 @@ inference:
 ```
 
 Each key under `inference` is a **target name** that the client references via `config.inference.spec.name`.
+
+`config.yaml` is intentionally ignored by Git because it is environment-specific. Update `config.example.yaml` when shared defaults or examples need to change.
 
 ### Environment variable expansion
 

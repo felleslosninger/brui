@@ -11,6 +11,8 @@ build/
 .env
 .env.*
 *.local
+!**/.env.example
+!**/.env.*.example
 
 # Local server config (use config.example.yaml as template)
 server/config.yaml
