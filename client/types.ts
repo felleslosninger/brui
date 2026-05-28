@@ -44,9 +44,27 @@ export interface Inference extends Resource {
     };
 }
 
+export interface TranscribeEndpoint {
+    endpoint: string;
+    headers?: Record<string, string>;
+    model?: string;
+    language?: string;
+    prompt?: string;
+    responseFormat?: 'json' | 'verbose_json' | 'text';
+    silenceThreshold?: number;
+    silenceAutoFlushMs?: number;
+    minUtteranceMs?: number;
+    requestTimeoutMs?: number;
+    request?: {
+        formFields?: Record<string, string>;
+        fileFieldName?: string;
+    };
+}
+
 export interface Configuration {
     tools: ToolDefinition[];
     actions: Action[];
     decisions: Decision[];
     inference?: Inference;
+    transcribe?: TranscribeEndpoint;
 }

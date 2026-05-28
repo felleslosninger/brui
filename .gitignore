@@ -5,11 +5,14 @@
 node_modules/
 dist/
 build/
+*.tsbuildinfo
 
 # Env / secrets
 .env
 .env.*
 *.local
+!**/.env.example
+!**/.env.*.example
 
 # Local server config (use config.example.yaml as template)
 server/config.yaml

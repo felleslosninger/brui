@@ -144,7 +144,7 @@ function SidebarOutputRoot({
                                         {loadingSteps.length > 0 && (
                                             <SidebarOutput.Stepper
                                                 controlledSteps={loadingSteps}
-                                                thinkingText={isLatestLoadingMessage ? msg.thinkingText : undefined}
+                                                thinkingText={isLatestLoadingMessage && showThinking ? msg.thinkingText : undefined}
                                             />
                                         )}
 

@@ -219,10 +219,13 @@ export function createPlaygroundConfig(): Configuration {
       kind: 'inference',
       name: 'default',
       spec: {
-        name: 'aivar',
+        name: 'envoy-default',
         endpoint: 'http://localhost:8091',
       },
     },
+    transcribe: import.meta.env.VITE_TRANSCRIBE_ENDPOINT
+      ? { endpoint: import.meta.env.VITE_TRANSCRIBE_ENDPOINT as string }
+      : undefined,
   };
 }
 

@@ -3,12 +3,13 @@ import '../styling/sidebar.css';
 import cl from 'clsx/lite';
 import { useCallback, useRef, useState } from 'react';
 import { SidebarContext } from './SidebarContext';
-import { Mode } from '../types/message';
+import type { Mode } from '../types/message';
 import SidebarOutput from './output/SidebarOutput';
 import SidebarInput from './input/SidebarInput';
 import { useToolRunner } from './hooks/useToolRunner';
+import { useMicSession } from './hooks/useMicSession';
 import * as Brui from '../../../client/index';
-import { FunctionRegistry } from '../../../client/index';
+import type { FunctionRegistry } from '../../../client/index';
 
 function getPageTextContent(excludeElement: HTMLElement): string {
     const walker = document.createTreeWalker(
@@ -42,7 +43,9 @@ interface SidebarProps {
 
 function SidebarRoot({ children, className, config, functions, context, includePageContext }: SidebarProps) {
     const sidebarRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [pageContextActive, setPageContextActive] = useState(false);
+    const [inputValue, setInputValue] = useState('');
 
     const getPageContext = useCallback(() => {
         if (!includePageContext || !pageContextActive) return undefined;
@@ -55,7 +58,14 @@ function SidebarRoot({ children, className, config, functions, context, includeP
     const [isLoadingResponse, setIsLoadingResponse] = useState(false);
     const [showThinking, setShowThinking] = useState(false);
 
-    async function handleSubmitChatMessage(event: React.FormEvent<HTMLFormElement>) {
+    const mic = useMicSession({
+        config: config.transcribe,
+        textareaRef,
+        inputValue,
+        setInputValue,
+    });
+
+    const handleSubmitChatMessage = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         const form = event.currentTarget;
@@ -65,16 +75,16 @@ function SidebarRoot({ children, className, config, functions, context, includeP
 
         if (!inputText.trim()) return;
 
-        form.reset();
+        setInputValue('');
+        mic.clearBuffer(); // sync the ref immediately so in-flight onSegment sees an empty field
         setIsLoadingResponse(true);
 
         try {
             await askAI(inputText, dropdownValue);
-
         } finally {
             setIsLoadingResponse(false);
         }
-    }
+    }, [askAI, mic]);
 
     return (
         <SidebarContext.Provider
@@ -91,6 +101,10 @@ function SidebarRoot({ children, className, config, functions, context, includeP
                 includePageContext,
                 pageContextActive,
                 setPageContextActive,
+                inputValue,
+                setInputValue,
+                textareaRef,
+                mic,
             }}
         >
             <div ref={sidebarRef} className={cl('brui-sidebar', className)}>

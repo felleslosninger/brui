@@ -137,7 +137,13 @@ console.log(result);
 
 ### 5. Server configuration
 
-Create `server/config.yaml` to define LLM targets:
+Create `server/config.yaml` from the example template to define your local LLM targets:
+
+```bash
+cp server/config.example.yaml server/config.yaml
+```
+
+Then edit `server/config.yaml` for your environment:
 
 ```yaml
 inference:
@@ -152,7 +158,7 @@ inference:
       Authorization: "Bearer ${ENVOY_API_KEY}"
 ```
 
-Environment variables in header values (e.g. `${ENVOY_API_KEY}`) are expanded at runtime.
+Environment variables in header values (e.g. `${ENVOY_API_KEY}`) are expanded at runtime. `server/config.yaml` is intentionally gitignored; commit changes to `server/config.example.yaml` when defaults or documented examples should change for everyone.
 
 ## Concepts
 
@@ -170,6 +176,44 @@ A `FunctionRegistry` is a plain object mapping action names to functions. Each f
 
 ### Inference
 Configured via the `inference` field pointing at a target defined in the server's `config.yaml`. The client sends requests to the proxy server, which forwards them to the actual LLM endpoint.
+
+## Voice input (optional)
+
+The sidebar UI ships with optional voice input that sends recorded audio to any Whisper-compatible HTTP endpoint (OpenAI `/audio/transcriptions`, `whisper.cpp`, self-hosted servers, etc.).
+
+Enable it by adding `transcribe` to your `Configuration`:
+
+```ts
+const config: Configuration = {
+  // ...tools, actions, decisions, inference...
+  transcribe: {
+    endpoint: 'https://your-whisper-endpoint.example.com/v1/audio/transcriptions',
+    // Optional:
+    // headers: { Authorization: 'Bearer ...' },
+    // model: 'whisper-1',
+    // language: 'nb',
+    // responseFormat: 'json',         // 'json' | 'verbose_json' | 'text'
+    // silenceThreshold: 0.04,         // RMS threshold for silence detection
+    // silenceAutoFlushMs: 900,        // ms of silence before flushing an utterance
+    // minUtteranceMs: 250,            // ignore utterances shorter than this
+    // requestTimeoutMs: 30000,        // per-utterance fetch timeout
+  },
+};
+```
+
+Configuring `transcribe` enables the mic button in the sidebar. Using voice input requires browser support for `MediaRecorder` + `getUserMedia` (HTTPS or localhost required). Audio is captured per utterance — recording restarts after each silence flush, so each POST is a clean, self-contained blob. RMS-driven animation in the Send button gives live visual feedback while you speak.
+
+For the lab app, copy the env example and set your transcription endpoint locally:
+
+```bash
+cp lab/.env.example lab/.env.local
+```
+
+```env
+VITE_TRANSCRIBE_ENDPOINT=https://your-whisper-endpoint.example.com/v1/audio/transcriptions
+```
+
+Restart `npm run dev` after changing Vite env files. `lab/.env.local` stays untracked; `lab/.env.example` is the committed template.
 
 ## Event handlers
 

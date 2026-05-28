@@ -1,6 +1,7 @@
 import { Textarea } from '@digdir/designsystemet-react';
 import cl from 'clsx/lite';
-import { useCallback, type KeyboardEvent } from 'react';
+import { useCallback, type ChangeEvent, type KeyboardEvent } from 'react';
+import { useSidebarContext } from '../SidebarContext';
 
 interface InputFieldProps {
     children?: string;
@@ -8,6 +9,8 @@ interface InputFieldProps {
 }
 
 export default function InputField({ children, className }: InputFieldProps) {
+    const { inputValue, setInputValue, textareaRef, mic } = useSidebarContext();
+
     const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -16,13 +19,25 @@ export default function InputField({ children, className }: InputFieldProps) {
         }
     }, []);
 
+    const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+        setInputValue(e.target.value);
+    }, [setInputValue]);
+
+    const isProcessing = mic.state === 'processing';
+
     return (
-        <Textarea
-            name={'chatMessage'}
-            className={cl('brui-input-field', className)}
-            placeholder={children ?? 'How can I help you'}
-            rows={1}
-            onKeyDown={handleKeyDown}
-        />
+        <div className="brui-input-field-wrap">
+            <Textarea
+                ref={textareaRef}
+                name={'chatMessage'}
+                className={cl('brui-input-field', className)}
+                placeholder={children ?? 'How can I help you'}
+                rows={1}
+                value={inputValue}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                aria-busy={isProcessing}
+            />
+        </div>
     );
 }
