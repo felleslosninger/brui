@@ -1,4 +1,11 @@
-# brui server
+# brui server (reference-only)
+
+> **This Go proxy is a reference implementation, kept for local development and the `lab/` demo.**
+> Real frontends should not point at this server. Instead, the application's own backend
+> should expose an equivalent `POST` endpoint that speaks the same `{ target, payload }`
+> contract. See the top-level [`README.md`](../README.md#backend-integration) and the
+> `selvbetjening-api` implementation at
+> `POST /external/api/v1/brui/inference`.
 
 Go proxy server that forwards OpenAI-compatible chat completion requests to configured LLM endpoints. It handles model injection, header expansion, and streaming.
 

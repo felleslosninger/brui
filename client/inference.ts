@@ -18,6 +18,10 @@ export interface InferenceContext {
         inference?: {
             name: string;
             endpoint: string;
+            getHeaders?: () => Record<string, string>;
+            spec?: {
+                getHeaders?: () => Record<string, string>;
+            };
         };
         decisions?: {
             tools?: ToolDefinition[];

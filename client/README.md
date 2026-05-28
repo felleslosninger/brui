@@ -138,7 +138,7 @@ interface Configuration {
 ## How it works
 
 1. `Setup` creates a resource store from your config and functions.
-2. When called, it sends the user input + tool definitions to the proxy server.
+2. When called, it sends the user input + tool definitions to the configured inference endpoint (your backend, or the reference Go proxy).
 3. The LLM either responds with text or tool calls.
 4. Tool calls are mapped via decisions to actions, which execute your registered functions.
 5. A summary response is generated and returned.

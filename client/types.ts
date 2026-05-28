@@ -41,6 +41,7 @@ export interface Inference extends Resource {
     spec: {
         name: string;
         endpoint: string;
+        getHeaders?: () => Record<string, string>;
     };
 }
 
