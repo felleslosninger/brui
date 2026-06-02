@@ -11,28 +11,28 @@
         border-width: 0;
     }
 
-    .brui-sidebar {
+    .brui-chat {
         display: flex;
         flex-direction: column;
         height: 100%;
     }
 
-    .brui-sidebar-output {
+    .brui-chat-output {
         flex: 1;
         overflow-y: auto;
     }
 
-    .brui-sidebar-input-content {
+    .brui-chat-input-content {
         display: flex;
         flex-direction: column;
     }
 
-    .brui-sidebar-input-row {
+    .brui-chat-input-row {
         display: flex;
         align-items: center;
     }
 
-    .brui-sidebar-action-row {
+    .brui-chat-action-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -81,12 +81,12 @@
    Theming — Designsystemet variables only
    ============================================ */
 
-.brui-sidebar-output {
+.brui-chat-output {
     padding: 1rem;
 
 }
 
-.brui-sidebar-input-row {
+.brui-chat-input-row {
     background-color: var(--ds-color-neutral-background-default);
     border-top: 1px solid var(--ds-color-neutral-border-subtle);
     gap: 0.8rem;
@@ -284,13 +284,13 @@
     }
 }
 
-.brui-sidebar-action-row {
+.brui-chat-action-row {
     background-color: var(--ds-color-neutral-background-default);
     gap: 0.4rem;
     padding: 0 0.8rem 0.8rem 0.8rem;
 }
 
-.brui-sidebar-toggles {
+.brui-chat-toggles {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -315,14 +315,14 @@
     margin-bottom: 1.2rem;
 }
 
-.brui-sidebar .brui-chat-bubble {
+.brui-chat .brui-chat-bubble {
     border-radius: var(--ds-border-radius-lg);
     color: var(--ds-color-accent-text-default);
     background-color: transparent;
     border: none;
 }
 
-.brui-sidebar .brui-chat-text {
+.brui-chat .brui-chat-text {
     border-radius: var(--ds-border-radius-md);
     background-color: var(--ds-color-accent-surface-active);
 }

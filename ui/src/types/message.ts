@@ -1,4 +1,4 @@
-import type { ProcessEventProps } from '@navikt/ds-react/Process';
+export type ProcessStatus = 'active' | 'completed' | 'uncompleted';
 
 export type Mode = 'Info' | 'Act';
 
@@ -24,7 +24,7 @@ interface AssistantMessage {
     timestamp: number;
     text: string;
     mode: Mode;
-    status: ProcessEventProps['status'];
+    status: ProcessStatus;
     action: string;
 }
 

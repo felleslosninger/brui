@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
-import type { ProcessEventProps } from '@navikt/ds-react/Process';
-import type { Message, Mode } from '../../types/message';
+import type { Message, Mode, ProcessStatus } from '../../types/message';
 import { Setup } from '../../../../client';
 import type {
     Configuration,
@@ -123,7 +122,7 @@ export function useToolRunner(
         action: string,
         text: string,
         mode: Mode,
-        status: ProcessEventProps['status'] = 'uncompleted'
+        status: ProcessStatus = 'uncompleted'
     ) {
         setMessageHistory(prev => {
             return updateLastMessage(prev, (lastMessage) => ({
@@ -193,7 +192,7 @@ export function useToolRunner(
             return [...prev, newMessage];
         });
 
-        function updateAssistantMessage(id: string, patch: { status: ProcessEventProps['status']; text: string }) {
+        function updateAssistantMessage(id: string, patch: { status: ProcessStatus; text: string }) {
             setMessageHistory(prev => {
                 return updateLastMessage(prev, (lastMessage) => ({
                     ...lastMessage,
@@ -236,7 +235,7 @@ export function useToolRunner(
                         const pending = actions.map((actionEvent) => ({
                             id: actionEvent.id,
                             action: actionEvent.action,
-                            status: 'pending' as ProcessEventProps['status'],
+                            status: 'pending' as ProcessStatus,
                             text: `Waiting for ${actionEvent.action}...`,
                             timestamp: Date.now(),
                             messageIndex: lastMessage.userMessage.messageIndex,
@@ -316,7 +315,7 @@ export function useToolRunner(
                     .map((executionResult) => ({
                         id: executionResult.id || crypto.randomUUID(),
                         action: executionResult.action || 'inference',
-                        status: 'uncompleted' as ProcessEventProps['status'],
+                        status: 'uncompleted' as ProcessStatus,
                         text: executionResult.error || 'Action failed',
                         timestamp: Date.now(),
                         messageIndex: lastMessage.userMessage.messageIndex,

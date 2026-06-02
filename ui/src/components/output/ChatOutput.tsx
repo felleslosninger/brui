@@ -4,21 +4,21 @@ import ChatBubble from './ChatBubble';
 import ChatText from './ChatText';
 import Stepper from './Stepper';
 import ConfirmActionCard from './ConfirmActionCard';
-import { useSidebarContext } from '../SidebarContext';
+import { useChatContext } from '../ChatContext';
 import { Message } from '../../types/message';
 
-interface SidebarOutputProps {
+export interface ChatOutputProps {
     children?: React.ReactNode;
     className?: string;
 }
 
 const autoScrollThreshold = 48;
 
-function SidebarOutputRoot({
+function ChatOutputRoot({
     children,
     className,
-}: SidebarOutputProps) {
-    const { messageHistory, isLoadingResponse, showThinking, pendingConfirmation, confirmActions, rejectActions } = useSidebarContext();
+}: ChatOutputProps) {
+    const { messageHistory, isLoadingResponse, showThinking, pendingConfirmation, confirmActions, rejectActions } = useChatContext();
     const lastMessageIndex = messageHistory.length - 1;
     const outputRef = useRef<HTMLDivElement | null>(null);
     const shouldStickToBottomRef = useRef(true);
@@ -73,7 +73,7 @@ function SidebarOutputRoot({
     return (
         <div
             ref={outputRef}
-            className={cl('brui-sidebar-output', className)}
+            className={cl('brui-chat-output', className)}
             onScroll={handleScroll}
         >
             {children ?? (
@@ -137,12 +137,12 @@ function SidebarOutputRoot({
 
                                 return (
                                     <>
-                                        <SidebarOutput.ChatText>
+                                        <ChatOutput.ChatText>
                                             {msg.userMessage.text}
-                                        </SidebarOutput.ChatText>
+                                        </ChatOutput.ChatText>
 
                                         {loadingSteps.length > 0 && (
-                                            <SidebarOutput.Stepper
+                                            <ChatOutput.Stepper
                                                 controlledSteps={loadingSteps}
                                                 thinkingText={isLatestLoadingMessage && showThinking ? msg.thinkingText : undefined}
                                             />
@@ -163,21 +163,21 @@ function SidebarOutputRoot({
                                         )}
 
                                         {chatMessages.map((assistantMsg, i) => (
-                                            <SidebarOutput.ChatBubble key={`chat-${i}`}>
+                                            <ChatOutput.ChatBubble key={`chat-${i}`}>
                                                 {assistantMsg.text}
-                                            </SidebarOutput.ChatBubble>
+                                            </ChatOutput.ChatBubble>
                                         ))}
 
                                         {isLatestLoadingMessage && msg.streamingContent && !msg.finalResponse && (
-                                            <SidebarOutput.ChatBubble>
+                                            <ChatOutput.ChatBubble>
                                                 {msg.streamingContent}
-                                            </SidebarOutput.ChatBubble>
+                                            </ChatOutput.ChatBubble>
                                         )}
 
                                         {msg.finalResponse && (
-                                            <SidebarOutput.ChatBubble>
+                                            <ChatOutput.ChatBubble>
                                                 {msg.finalResponse}
-                                            </SidebarOutput.ChatBubble>
+                                            </ChatOutput.ChatBubble>
                                         )}
                                     </>
                                 );
@@ -195,10 +195,10 @@ function isNearBottom(element: HTMLDivElement): boolean {
     return distanceFromBottom <= autoScrollThreshold;
 }
 
-const SidebarOutput = Object.assign(SidebarOutputRoot, {
+const ChatOutput = Object.assign(ChatOutputRoot, {
     ChatText: ChatText,
     ChatBubble: ChatBubble,
     Stepper: Stepper,
 });
 
-export default SidebarOutput;
+export default ChatOutput;

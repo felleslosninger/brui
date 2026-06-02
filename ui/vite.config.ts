@@ -9,6 +9,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
     define: { 'process.env': {} },
     plugins: [react()],
+    build: {
+        lib: {
+            entry: path.resolve(__dirname, 'src/index.ts'),
+            formats: ['es'],
+            fileName: 'index',
+        },
+        rollupOptions: {
+            external: ['react', 'react-dom', 'react/jsx-runtime'],
+        },
+        cssFileName: 'style',
+    },
     server: {
         watch: {
             usePolling: true,

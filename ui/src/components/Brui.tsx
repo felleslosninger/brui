@@ -1,11 +1,11 @@
-import '../styling/sidebar.css';
+import '../styling/chat.css';
 
 import cl from 'clsx/lite';
 import { useCallback, useRef, useState } from 'react';
-import { SidebarContext } from './SidebarContext';
+import { ChatContext } from './ChatContext';
 import type { Mode } from '../types/message';
-import SidebarOutput from './output/SidebarOutput';
-import SidebarInput from './input/SidebarInput';
+import ChatOutput from './output/ChatOutput';
+import ChatInput from './input/ChatInput';
 import { useToolRunner } from './hooks/useToolRunner';
 import { useMicSession } from './hooks/useMicSession';
 import * as Brui from '../../../client/index';
@@ -32,7 +32,7 @@ function getPageTextContent(excludeElement: HTMLElement): string {
     return parts.join('\n');
 }
 
-interface SidebarProps {
+interface BruiProps {
     children?: React.ReactNode;
     className?: string;
     config: Brui.Configuration;
@@ -41,15 +41,15 @@ interface SidebarProps {
     includePageContext?: boolean;
 }
 
-function SidebarRoot({ children, className, config, functions, context, includePageContext }: SidebarProps) {
-    const sidebarRef = useRef<HTMLDivElement>(null);
+function BruiRoot({ children, className, config, functions, context, includePageContext }: BruiProps) {
+    const chatRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [pageContextActive, setPageContextActive] = useState(false);
     const [inputValue, setInputValue] = useState('');
 
     const getPageContext = useCallback(() => {
         if (!includePageContext || !pageContextActive) return undefined;
-        const el = sidebarRef.current;
+        const el = chatRef.current;
         if (!el) return undefined;
         return `Current page content:\n${getPageTextContent(el)}`;
     }, [includePageContext, pageContextActive]);
@@ -87,7 +87,7 @@ function SidebarRoot({ children, className, config, functions, context, includeP
     }, [askAI, mic]);
 
     return (
-        <SidebarContext.Provider
+        <ChatContext.Provider
             value={{
                 messageHistory,
                 isLoadingResponse,
@@ -107,21 +107,21 @@ function SidebarRoot({ children, className, config, functions, context, includeP
                 mic,
             }}
         >
-            <div ref={sidebarRef} className={cl('brui-sidebar', className)}>
+            <div ref={chatRef} className={cl('brui-chat', className)}>
                 {children ?? (
                     <>
-                        <SidebarOutput />
-                        <SidebarInput />
+                        <ChatOutput />
+                        <ChatInput />
                     </>
                 )}
             </div>
-        </SidebarContext.Provider>
+        </ChatContext.Provider>
     );
 }
 
-const Sidebar = Object.assign(SidebarRoot, {
-    Output: SidebarOutput,
-    Input: SidebarInput,
+const BruiChat = Object.assign(BruiRoot, {
+    Output: ChatOutput,
+    Input: ChatInput,
 });
 
-export default Sidebar;
+export default BruiChat;
