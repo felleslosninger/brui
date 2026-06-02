@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import type { Message, Mode, ProcessStatus } from '../../types/message';
-import { Setup } from '../../../../client';
+import { Setup } from '@digdir/brui-client';
 import type {
     Configuration,
     ConversationMessage,
@@ -8,8 +8,8 @@ import type {
     ExecutionMetadata,
     FunctionRegistry,
     ReferenceContextUsage,
-} from '../../../../client';
-import type { PlannedActionEvent } from '../../../../client/eventHandlers';
+} from '@digdir/brui-client';
+import type { PlannedActionEvent } from '@digdir/brui-client';
 
 function buildConversationHistory(messages: Message[]): ConversationMessage[] {
     return messages.flatMap((message) => {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Textfield } from '@digdir/designsystemet-react';
-import type { PlannedActionEvent } from '../../../../client/eventHandlers';
+import type { PlannedActionEvent } from '@digdir/brui-client';
 
 interface ConfirmActionCardProps {
     actions: PlannedActionEvent[];

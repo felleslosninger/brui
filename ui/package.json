@@ -1,6 +1,6 @@
 {
-  "name": "@brui/ui",
-  "version": "0.1.0",
+  "name": "@digdir/brui-ui",
+  "version": "0.1.1",
   "description": "React sidebar component for LLM-driven chat interaction",
   "type": "module",
   "main": "./dist/index.js",
@@ -32,7 +32,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/digdir/brui",
+    "url": "git+https://github.com/digdir/brui.git",
     "directory": "ui"
   },
   "peerDependencies": {
@@ -40,6 +40,7 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
+    "@digdir/brui-client": "file:../client",
     "@digdir/designsystemet-css": "^1.15.0",
     "@digdir/designsystemet-react": "^1.15.0",
     "@navikt/aksel-icons": "^8.11.1",

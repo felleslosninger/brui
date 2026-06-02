@@ -8,8 +8,8 @@ import ChatOutput from './output/ChatOutput';
 import ChatInput from './input/ChatInput';
 import { useToolRunner } from './hooks/useToolRunner';
 import { useMicSession } from './hooks/useMicSession';
-import * as Brui from '../../../client/index';
-import type { FunctionRegistry } from '../../../client/index';
+import * as BruiClient from '@digdir/brui-client';
+import type { FunctionRegistry } from '@digdir/brui-client';
 
 function getPageTextContent(excludeElement: HTMLElement): string {
     const walker = document.createTreeWalker(
@@ -35,9 +35,9 @@ function getPageTextContent(excludeElement: HTMLElement): string {
 interface BruiProps {
     children?: React.ReactNode;
     className?: string;
-    config: Brui.Configuration;
+    config: BruiClient.Configuration;
     functions: FunctionRegistry;
-    context?: Brui.ContextValue;
+    context?: BruiClient.ContextValue;
     includePageContext?: boolean;
 }
 

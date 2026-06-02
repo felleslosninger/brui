@@ -1,7 +1,7 @@
 import { createContext, useContext, type FormEvent, type RefObject } from 'react';
 import type { Message } from '../types/message';
 import type { PendingConfirmation } from './hooks/useToolRunner';
-import type { PlannedActionEvent } from '../../../client/eventHandlers';
+import type { PlannedActionEvent } from '@digdir/brui-client';
 import type { MicSession } from './hooks/useMicSession';
 
 export interface ChatContextValue {
