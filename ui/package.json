@@ -1,6 +1,6 @@
 {
   "name": "@digdir/brui-ui",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "React sidebar component for LLM-driven chat interaction",
   "type": "module",
   "main": "./dist/index.js",
