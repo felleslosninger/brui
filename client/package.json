@@ -1,5 +1,5 @@
 {
-  "name": "@brui/client",
+  "name": "@digdir/brui-client",
   "version": "0.1.0",
   "description": "TypeScript client that lets an LLM control your web application through tool calls",
   "type": "module",
@@ -19,11 +19,17 @@
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["llm", "ai", "tool-calling", "openai", "agent"],
+  "keywords": [
+    "llm",
+    "ai",
+    "tool-calling",
+    "openai",
+    "agent"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/digdir/brui",
+    "url": "git+https://github.com/digdir/brui.git",
     "directory": "client"
   },
   "dependencies": {
