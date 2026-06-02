@@ -14,7 +14,7 @@ import {
   Alert,
 } from '@digdir/designsystemet-react';
 import searchIndex from '@ksvedal/docs/search-index';
-import { Brui } from '@digdir/brui-ui';
+import { Brui } from '@brui/ui';
 import {
   clampSidebarWidth,
   createPlaygroundConfig,

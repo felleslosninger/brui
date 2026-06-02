@@ -5,25 +5,25 @@ import { CogIcon, XMarkIcon } from '@navikt/aksel-icons';
 import InputField from './InputField';
 import InputSubmitButton from './InputSubmitButton';
 import InputMicrophoneButton from './InputMicrophoneButton';
-import { useChatContext } from '../ChatContext';
+import { useSidebarContext } from '../SidebarContext';
 import type { Mode } from '../../types/message';
 
-type ChatMode = 'Info' | 'Handling';
+type SidebarMode = 'Info' | 'Handling';
 
-const CHAT_MODES: readonly ChatMode[] = ['Info', 'Handling'];
+const SIDEBAR_MODES: readonly SidebarMode[] = ['Info', 'Handling'];
 
-export interface ChatInputProps {
+interface SidebarInputProps {
     children?: React.ReactNode;
     className?: string;
 }
 
-function ChatInputRoot({ children, className }: ChatInputProps) {
-    const { handleSubmit, showThinking, setShowThinking, setAutoConfirm, includePageContext, pageContextActive, setPageContextActive, mic } = useChatContext();
-    const [chatMode, setChatMode] = useState<ChatMode>('Info');
+function SidebarInputRoot({ children, className }: SidebarInputProps) {
+    const { handleSubmit, showThinking, setShowThinking, setAutoConfirm, includePageContext, pageContextActive, setPageContextActive, mic } = useSidebarContext();
+    const [sidebarMode, setSidebarMode] = useState<SidebarMode>('Info');
     const [statusMessage, setStatusMessage] = useState('');
     const isFirstRender = useRef(true);
 
-    const contextChoice: Mode = chatMode === 'Info' ? 'Info' : 'Act';
+    const contextChoice: Mode = sidebarMode === 'Info' ? 'Info' : 'Act';
 
     // Announce mic recording state changes — skip the initial mount
     useEffect(() => {
@@ -33,8 +33,8 @@ function ChatInputRoot({ children, className }: ChatInputProps) {
 
     function handleModeChange(e: React.ChangeEvent<HTMLSelectElement>) {
         const next = e.target.value;
-        if (!CHAT_MODES.includes(next as ChatMode)) return;
-        setChatMode(next as ChatMode);
+        if (!SIDEBAR_MODES.includes(next as SidebarMode)) return;
+        setSidebarMode(next as SidebarMode);
         setAutoConfirm(false);
         setStatusMessage(`Mode: ${next}`);
     }
@@ -50,9 +50,9 @@ function ChatInputRoot({ children, className }: ChatInputProps) {
     }
 
     return (
-        <div className={cl('brui-chat-input', className)}>
+        <div className={cl('brui-sidebar-input', className)}>
             {children ?? (
-                <form onSubmit={handleSubmit} className="brui-chat-input-content">
+                <form onSubmit={handleSubmit} className="brui-sidebar-input-content">
 
                     {/* Single live region for all state-change announcements */}
                     <span role="status" aria-live="polite" className="brui-sr-only">
@@ -76,16 +76,16 @@ function ChatInputRoot({ children, className }: ChatInputProps) {
                         </div>
                     )}
 
-                    <div className='brui-chat-input-row'>
-                        <ChatInput.InputField/>
+                    <div className='brui-sidebar-input-row'>
+                        <SidebarInput.InputField/>
                     </div>
-                    <div className='brui-chat-action-row'>
-                        <div className='brui-chat-toggles'>
+                    <div className='brui-sidebar-action-row'>
+                        <div className='brui-sidebar-toggles'>
                             <Select
                                 aria-label="Mode"
                                 data-size="sm"
                                 className="brui-mode-select"
-                                value={chatMode}
+                                value={sidebarMode}
                                 onChange={handleModeChange}
                             >
                                 <Select.Option value="Info">Info</Select.Option>
@@ -125,8 +125,8 @@ function ChatInputRoot({ children, className }: ChatInputProps) {
                         <input type="hidden" name="contextChoice" value={contextChoice} />
 
                         <div className="brui-action-buttons">
-                            <ChatInput.Microphone/>
-                            <ChatInput.Submit/>
+                            <SidebarInput.Microphone/>
+                            <SidebarInput.Submit/>
                         </div>
                     </div>
                 </form>
@@ -135,10 +135,10 @@ function ChatInputRoot({ children, className }: ChatInputProps) {
     );
 }
 
-const ChatInput = Object.assign(ChatInputRoot, {
+const SidebarInput = Object.assign(SidebarInputRoot, {
     InputField: InputField,
     Microphone: InputMicrophoneButton,
     Submit: InputSubmitButton
 });
 
-export default ChatInput;
+export default SidebarInput;
