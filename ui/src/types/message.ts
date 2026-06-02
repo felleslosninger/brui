@@ -1,4 +1,4 @@
-export type ProcessStatus = 'active' | 'completed' | 'uncompleted';
+export type ProcessStatus = 'active' | 'completed' | 'uncompleted' | 'pending';
 
 export type Mode = 'Info' | 'Act';
 

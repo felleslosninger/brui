@@ -235,7 +235,7 @@ export function useToolRunner(
                         const pending = actions.map((actionEvent) => ({
                             id: actionEvent.id,
                             action: actionEvent.action,
-                            status: 'pending' as ProcessStatus,
+                            status: 'pending',
                             text: `Waiting for ${actionEvent.action}...`,
                             timestamp: Date.now(),
                             messageIndex: lastMessage.userMessage.messageIndex,
