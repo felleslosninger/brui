@@ -229,10 +229,9 @@ export function useToolRunner(
             },
 
             onToolCallsKnown: (actions) => {
-                console.log('Tool calls known:', actions);
                 setMessageHistory(prev => {
                     return updateLastMessage(prev, (lastMessage) => {
-                        const pending = actions.map((actionEvent) => ({
+                        const pending: Message['assistantMessages'] = actions.map((actionEvent) => ({
                             id: actionEvent.id,
                             action: actionEvent.action,
                             status: 'pending',
