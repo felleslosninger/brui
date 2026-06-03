@@ -1,2 +1,2 @@
-export { default as Sidebar } from './Sidebar';
-export { useSidebarContext } from './SidebarContext';
+export { default as Brui } from './Brui';
+export { useChatContext } from './ChatContext';

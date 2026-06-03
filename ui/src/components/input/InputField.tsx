@@ -1,7 +1,7 @@
 import { Textarea } from '@digdir/designsystemet-react';
 import cl from 'clsx/lite';
 import { useCallback, type ChangeEvent, type KeyboardEvent } from 'react';
-import { useSidebarContext } from '../SidebarContext';
+import { useChatContext } from '../ChatContext';
 
 interface InputFieldProps {
     children?: string;
@@ -9,7 +9,7 @@ interface InputFieldProps {
 }
 
 export default function InputField({ children, className }: InputFieldProps) {
-    const { inputValue, setInputValue, textareaRef, mic } = useSidebarContext();
+    const { inputValue, setInputValue, textareaRef, mic } = useChatContext();
 
     const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {

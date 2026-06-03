@@ -1,7 +1,7 @@
 import { Button } from '@digdir/designsystemet-react';
 import { MicrophoneIcon, StopIcon } from '@navikt/aksel-icons';
 import cl from 'clsx/lite';
-import { useSidebarContext } from '../SidebarContext';
+import { useChatContext } from '../ChatContext';
 
 interface InputMicrophoneButtonProps {
     children?: React.ReactNode;
@@ -9,7 +9,7 @@ interface InputMicrophoneButtonProps {
 }
 
 export default function InputMicrophoneButton({ children, className }: InputMicrophoneButtonProps) {
-    const { mic } = useSidebarContext();
+    const { mic } = useChatContext();
 
     if (!mic.available) return null;
 

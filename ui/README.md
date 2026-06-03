@@ -1,25 +1,26 @@
-# @brui/ui
+# @digdir/brui-ui
 
-React sidebar component for chat-based interaction with a brui-powered application.
+React chat component for interaction with a brui-powered application.
 
 ## Install
 
 ```bash
-npm install @brui/ui
+npm install @digdir/brui-ui
 ```
 
 ## Usage
 
 ```tsx
-import { Sidebar } from '@brui/ui';
-import { Configuration, FunctionRegistry } from 'brui-client';
+import { Brui } from '@digdir/brui-ui';
+import '@digdir/brui-ui/style.css';
+import type { Configuration, FunctionRegistry } from '@digdir/brui-client';
 
 const config: Configuration = { /* your config */ };
 const functions: FunctionRegistry = { /* your function registry */ };
 
 function App() {
   return (
-    <Sidebar
+    <Brui
       config={config}
       functions={functions}
       context={{ key: 'value' }}   // optional extra context

@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
-import type { ProcessEventProps } from '@navikt/ds-react/Process';
-import type { Message, Mode } from '../../types/message';
-import { Setup } from '../../../../client';
+import type { Message, Mode, ProcessStatus } from '../../types/message';
+import { Setup } from '@digdir/brui-client';
 import type {
     Configuration,
     ConversationMessage,
@@ -9,8 +8,8 @@ import type {
     ExecutionMetadata,
     FunctionRegistry,
     ReferenceContextUsage,
-} from '../../../../client';
-import type { PlannedActionEvent } from '../../../../client/eventHandlers';
+} from '@digdir/brui-client';
+import type { PlannedActionEvent } from '@digdir/brui-client';
 
 function buildConversationHistory(messages: Message[]): ConversationMessage[] {
     return messages.flatMap((message) => {
@@ -123,7 +122,7 @@ export function useToolRunner(
         action: string,
         text: string,
         mode: Mode,
-        status: ProcessEventProps['status'] = 'uncompleted'
+        status: ProcessStatus = 'uncompleted'
     ) {
         setMessageHistory(prev => {
             return updateLastMessage(prev, (lastMessage) => ({
@@ -193,7 +192,7 @@ export function useToolRunner(
             return [...prev, newMessage];
         });
 
-        function updateAssistantMessage(id: string, patch: { status: ProcessEventProps['status']; text: string }) {
+        function updateAssistantMessage(id: string, patch: { status: ProcessStatus; text: string }) {
             setMessageHistory(prev => {
                 return updateLastMessage(prev, (lastMessage) => ({
                     ...lastMessage,
@@ -230,13 +229,12 @@ export function useToolRunner(
             },
 
             onToolCallsKnown: (actions) => {
-                console.log('Tool calls known:', actions);
                 setMessageHistory(prev => {
                     return updateLastMessage(prev, (lastMessage) => {
-                        const pending = actions.map((actionEvent) => ({
+                        const pending: Message['assistantMessages'] = actions.map((actionEvent) => ({
                             id: actionEvent.id,
                             action: actionEvent.action,
-                            status: 'pending' as ProcessEventProps['status'],
+                            status: 'pending',
                             text: `Waiting for ${actionEvent.action}...`,
                             timestamp: Date.now(),
                             messageIndex: lastMessage.userMessage.messageIndex,
@@ -316,7 +314,7 @@ export function useToolRunner(
                     .map((executionResult) => ({
                         id: executionResult.id || crypto.randomUUID(),
                         action: executionResult.action || 'inference',
-                        status: 'uncompleted' as ProcessEventProps['status'],
+                        status: 'uncompleted' as ProcessStatus,
                         text: executionResult.error || 'Action failed',
                         timestamp: Date.now(),
                         messageIndex: lastMessage.userMessage.messageIndex,

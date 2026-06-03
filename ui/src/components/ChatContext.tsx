@@ -1,10 +1,10 @@
 import { createContext, useContext, type FormEvent, type RefObject } from 'react';
 import type { Message } from '../types/message';
 import type { PendingConfirmation } from './hooks/useToolRunner';
-import type { PlannedActionEvent } from '../../../client/eventHandlers';
+import type { PlannedActionEvent } from '@digdir/brui-client';
 import type { MicSession } from './hooks/useMicSession';
 
-export interface SidebarContextValue {
+export interface ChatContextValue {
     messageHistory: Message[];
     isLoadingResponse: boolean;
     showThinking: boolean;
@@ -23,12 +23,12 @@ export interface SidebarContextValue {
     mic: MicSession;
 }
 
-export const SidebarContext = createContext<SidebarContextValue | null>(null);
+export const ChatContext = createContext<ChatContextValue | null>(null);
 
-export function useSidebarContext() {
-    const ctx = useContext(SidebarContext);
+export function useChatContext() {
+    const ctx = useContext(ChatContext);
     if (!ctx) {
-        throw new Error('Sidebar compound components must be used within <Sidebar>');
+        throw new Error('Chat compound components must be used within <Brui>');
     }
     return ctx;
 }

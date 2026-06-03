@@ -2,7 +2,7 @@ import { Button } from '@digdir/designsystemet-react';
 import cl from 'clsx/lite';
 import { PaperplaneIcon } from '@navikt/aksel-icons';
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { useSidebarContext } from '../SidebarContext';
+import { useChatContext } from '../ChatContext';
 
 interface InputSubmitButtonProps {
     children?: React.ReactNode;
@@ -32,7 +32,7 @@ function usePrefersReducedMotion(): boolean {
 }
 
 export default function InputSubmitButton({ children, className }: InputSubmitButtonProps) {
-    const { mic } = useSidebarContext();
+    const { mic } = useChatContext();
     const rms = useSyncExternalStore(mic.subscribeRms, mic.getRms, () => 0);
     const reducedMotion = usePrefersReducedMotion();
 

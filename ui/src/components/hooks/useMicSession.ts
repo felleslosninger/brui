@@ -7,7 +7,7 @@ import {
     type TranscribeErrorCode,
     type TranscribeSession,
     type TranscribeState,
-} from '../../../../client/index';
+} from '@digdir/brui-client';
 
 interface UseMicSessionParams {
     config: TranscribeEndpoint | undefined;
