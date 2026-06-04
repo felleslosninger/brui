@@ -49,7 +49,7 @@ cp server/config.example.yaml server/config.yaml
   ```yaml
   local:
     endpoint: "http://localhost:11434/v1/chat/completions"
-    model: "qwen3:0.6b"
+    model: "your-model-name"
   ```
 
 - **`remote`** — a hosted OpenAI-compatible endpoint with an API key:
@@ -57,7 +57,7 @@ cp server/config.example.yaml server/config.yaml
   ```yaml
   remote:
     endpoint: "https://api.example.com/v1/chat/completions"
-    model: "gpt-4o"
+    model: "your-model-name"
     headers:
       Authorization: "Bearer ${API_KEY}"
   ```
@@ -305,11 +305,11 @@ Start from [`server/config.example.yaml`](server/config.example.yaml):
 inference:
   local:
     endpoint: "http://localhost:11434/v1/chat/completions"
-    model: "qwen3:0.6b"
+    model: "your-model-name"
 
   remote:
     endpoint: "https://api.example.com/v1/chat/completions"
-    model: "gpt-4o"
+    model: "your-model-name"
     headers:
       Authorization: "Bearer ${API_KEY}"
 ```
