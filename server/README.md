@@ -23,18 +23,17 @@ Then edit `config.yaml` for your environment:
 
 ```yaml
 inference:
-  # Local Ollama instance
+  # Local OpenAI-compatible endpoint (e.g. Ollama)
   local:
     endpoint: "http://localhost:11434/v1/chat/completions"
-    model: "qwen3:0.6b"
+    model: "your-model-name"
 
-  # Remote endpoint with auth
-  envoy-default:
-    endpoint: "https://your-gateway.example.com/v1/chat/completions"
-    model: "gpt-4o"
+  # Remote OpenAI-compatible endpoint with auth
+  remote:
+    endpoint: "https://api.example.com/v1/chat/completions"
+    model: "your-model-name"
     headers:
-      Authorization: "Bearer ${ENVOY_API_KEY}"
-      x-ai-eg-model: "${MODEL}"
+      Authorization: "Bearer ${API_KEY}"
 ```
 
 Each key under `inference` is a **target name** that the client references via `config.inference.spec.name`.
@@ -53,7 +52,7 @@ The server accepts a JSON body with two fields:
 
 ```json
 {
-  "target": "envoy-default",
+  "target": "remote",
   "payload": { /* OpenAI chat completion request body */ }
 }
 ```
@@ -86,7 +85,7 @@ inference: {
   kind: 'inference',
   name: 'proxy',
   spec: {
-    name: 'envoy-default',  // matches config.yaml key
+    name: 'remote',  // matches config.yaml key
     endpoint: 'http://localhost:8091',  // server address
   },
 }
