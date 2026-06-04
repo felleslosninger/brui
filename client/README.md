@@ -57,7 +57,7 @@ const config: Configuration = {
     kind: 'inference',
     name: 'proxy',
     spec: {
-      name: 'envoy-default',
+      name: 'remote',
       endpoint: 'http://localhost:8091',
     },
   },

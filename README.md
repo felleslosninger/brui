@@ -4,11 +4,85 @@ brui lets an LLM control your web application through natural language. It conne
 
 The system has three parts:
 
-| Package | Description |
-|---------|-------------|
-| `client/` | TypeScript client that orchestrates inference, tool-call routing, and action execution |
-| `server/` | Go proxy server that forwards OpenAI-compatible requests to configured LLM endpoints |
-| `ui/` | React sidebar component for chat-based interaction |
+| Package | Description | README |
+| --- | --- | --- |
+| `client/` | TypeScript client that orchestrates inference, tool-call routing, and action execution | [client/README.md](client/README.md) |
+| `server/` | Go proxy server that forwards OpenAI-compatible requests to configured LLM endpoints | [server/README.md](server/README.md) |
+| `ui/` | React sidebar component for chat-based interaction | [ui/README.md](ui/README.md) |
+
+## Contents
+
+- [Quick start](#quick-start)
+- [How it works](#how-it-works)
+- [Using brui in your app](#using-brui-in-your-app)
+- [Concepts](#concepts)
+- [Voice input (optional)](#voice-input-optional)
+- [Event handlers](#event-handlers)
+- [Repo Layout](#repo-layout)
+- [Server Integration](#server-integration)
+- [Client Integration](#client-integration)
+- [Real Working References In This Repo](#real-working-references-in-this-repo)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
+## Quick start
+
+The fastest way to see brui working is the bundled **lab** demo — a small React app the LLM drives through natural language. You need Node for the client, UI, and lab; Go is only needed for the proxy server.
+
+### 1. Install dependencies
+
+```sh
+cd client && npm install
+cd ../ui && npm install
+cd ../lab && npm install
+```
+
+### 2. Configure a model target
+
+```sh
+cp server/config.example.yaml server/config.yaml
+```
+
+`server/config.yaml` ships with two targets — use whichever you have:
+
+- **`local`** — a local [Ollama](https://ollama.com) instance, no API key required:
+
+  ```yaml
+  local:
+    endpoint: "http://localhost:11434/v1/chat/completions"
+    model: "qwen3:0.6b"
+  ```
+
+- **`remote`** — a hosted OpenAI-compatible endpoint with an API key:
+
+  ```yaml
+  remote:
+    endpoint: "https://api.example.com/v1/chat/completions"
+    model: "gpt-4o"
+    headers:
+      Authorization: "Bearer ${API_KEY}"
+  ```
+
+The lab points at the **`remote`** target by default. To run fully locally against Ollama instead, change `inference.spec.name` to `'local'` in [`lab/src/config.ts`](lab/src/config.ts). See [server/README.md](server/README.md) for the full target reference.
+
+### 3. Start the proxy
+
+```sh
+# export API_KEY=... first if your target uses an auth header
+cd server
+go run .
+```
+
+The proxy listens on `http://localhost:8091`.
+
+### 4. Start the lab
+
+```sh
+cd lab
+npm run dev
+```
+
+Open the printed URL and drive the demo app through the sidebar.
 
 ## How it works
 
@@ -18,25 +92,17 @@ The system has three parts:
 4. The **client** maps any returned tool calls to **actions**, then executes the registered **functions**.
 5. The result is summarized and displayed in the UI.
 
-## Quick start
+## Using brui in your app
 
-### 1. Start the proxy server
+To embed brui in your own web app, install the client, declare your tools and actions, register the functions that run them, and point the client at a proxy target.
 
-```bash
-cd server
-# Configure your targets in config.yaml (see server/README.md)
-go run .
-```
-
-The server listens on `:8091` by default.
-
-### 2. Install the client
+### 1. Install the client
 
 ```bash
 npm install brui-client
 ```
 
-### 3. Define your configuration
+### 2. Define your configuration
 
 Create a config that declares which **tools** the LLM can call, which **actions** to execute, and how they map together:
 
@@ -97,7 +163,7 @@ export function createConfig(): Configuration {
       kind: 'inference',
       name: 'proxy',
       spec: {
-        name: 'envoy-default', // must match a key in server/config.yaml
+        name: 'remote', // must match a key in server/config.yaml
         endpoint: 'http://localhost:8091',
       },
     },
@@ -105,7 +171,7 @@ export function createConfig(): Configuration {
 }
 ```
 
-### 4. Register functions and set up the client
+### 3. Register functions and set up the client
 
 ```ts
 // app.ts
@@ -135,30 +201,9 @@ const result = await run('Fill the contact form for Alice at alice@example.com')
 console.log(result);
 ```
 
-### 5. Server configuration
+### 4. Configure the server target
 
-Create `server/config.yaml` from the example template to define your local LLM targets:
-
-```bash
-cp server/config.example.yaml server/config.yaml
-```
-
-Then edit `server/config.yaml` for your environment:
-
-```yaml
-inference:
-  local:
-    endpoint: "http://localhost:11434/v1/chat/completions"
-    model: "qwen3:0.6b"
-
-  envoy-default:
-    endpoint: "https://your-gateway.example.com/v1/chat/completions"
-    model: "gpt-4o"
-    headers:
-      Authorization: "Bearer ${ENVOY_API_KEY}"
-```
-
-Environment variables in header values (e.g. `${ENVOY_API_KEY}`) are expanded at runtime. `server/config.yaml` is intentionally gitignored; commit changes to `server/config.example.yaml` when defaults or documented examples should change for everyone.
+The client's `inference.spec.name` (`'remote'` above) must match a target key in `server/config.yaml`. See [Quick start](#quick-start) for creating that file and [server/README.md](server/README.md) for the full target reference.
 
 ## Concepts
 
@@ -229,10 +274,6 @@ const result = await run('Do something', { interactionMode: 'Act' }, {
 });
 ```
 
-## License
-
-See individual packages for details.
-
 ## Repo Layout
 
 - [`README.md`](README.md): top-level integration guide
@@ -240,47 +281,13 @@ See individual packages for details.
 - [`lab/src/config.ts`](lab/src/config.ts): fuller real app example
 - [`lab/src/App.tsx`](lab/src/App.tsx): demo UI wiring
 
-## Quick Start
-
-### Requirements
-
-- Go `1.25+`
-- Node.js `20.19+`
-
-### Install Dependencies
-
-```sh
-cd client && npm install
-cd ../ui && npm install
-cd ../lab && npm install
-```
-
-### Start The Proxy
-
-If you use a gateway target with auth headers, export the required environment variables first:
-
-```sh
-export ENVOY_API_KEY=your-api-key
-cd server
-go run .
-```
-
-The proxy listens on `http://localhost:8091`.
-
-### Start The Demo App
-
-```sh
-cd lab
-npm run dev
-```
-
 ## Server Integration
 
 The Go server accepts a request shaped like this:
 
 ```json
 {
-  "target": "envoy-default",
+  "target": "remote",
   "payload": {
     "messages": [
       { "role": "user", "content": "Open the contact page" }
@@ -301,21 +308,20 @@ inference:
     endpoint: "http://localhost:11434/v1/chat/completions"
     model: "qwen3:0.6b"
 
-  envoy-default:
-    endpoint: "https://your-gateway.example.com/v1/chat/completions"
-    model: "gpt-5"
+  remote:
+    endpoint: "https://api.example.com/v1/chat/completions"
+    model: "gpt-4o"
     headers:
-      Authorization: "Bearer ${ENVOY_API_KEY}"
-      x-ai-eg-model: "${MODEL}"
+      Authorization: "Bearer ${API_KEY}"
 ```
 
 Each target supports:
 
 - `endpoint`: upstream OpenAI-compatible `/v1/chat/completions` URL
 - `model`: model name injected by the proxy
-- `headers`: optional headers; environment variables like `${ENVOY_API_KEY}` are expanded at runtime
+- `headers`: optional headers; environment variables like `${API_KEY}` are expanded at runtime
 
-`"${MODEL}"` and `"{TARGET_MODEL}"` style substitutions are also supported by the proxy, so you can mirror the configured model into provider-specific headers.
+The proxy also expands `${MODEL}` and `${TARGET_MODEL}` to the target's configured `model`, so you can inject it into a header if an endpoint requires it.
 
 ## Client Integration
 
@@ -330,7 +336,7 @@ The key line is:
 
 ```ts
 spec: {
-  name: 'envoy-default',
+  name: 'remote',
   endpoint: 'http://localhost:8091',
 }
 ```
@@ -368,7 +374,7 @@ export function App() {
   const [submitted, setSubmitted] = useState(false);
 
   const config = useMemo(
-    () => createExampleConfig('envoy-default', 'http://localhost:8091'),
+    () => createExampleConfig('remote', 'http://localhost:8091'),
     [],
   );
 
