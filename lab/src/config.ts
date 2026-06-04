@@ -219,7 +219,7 @@ export function createPlaygroundConfig(): Configuration {
       kind: 'inference',
       name: 'default',
       spec: {
-        name: 'envoy-default',
+        name: 'remote',
         endpoint: 'http://localhost:8091',
       },
     },
