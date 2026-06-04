@@ -23,7 +23,6 @@ The system has three parts:
 - [Client Integration](#client-integration)
 - [Real Working References In This Repo](#real-working-references-in-this-repo)
 - [Troubleshooting](#troubleshooting)
-- [License](#license)
 
 ## Quick start
 
