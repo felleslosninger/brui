@@ -11,8 +11,6 @@ export default defineConfig({
     alias: {
       react: path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
-      '@brui/ui': path.resolve(__dirname, '../ui/src'),
-      '@brui/client': path.resolve(__dirname, '../client'),
       '@ksvedal/docs/search-index': path.resolve(__dirname, './node_modules/@ksvedal/docs/dist/search-index.json'),
     },
   },

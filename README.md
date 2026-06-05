@@ -26,14 +26,14 @@ The system has three parts:
 
 ## Quick start
 
-The fastest way to see brui working is the bundled **lab** demo — a small React app the LLM drives through natural language. You need Node for the client, UI, and lab; Go is only needed for the proxy server.
+The fastest way to see brui working is the bundled **lab** demo — a small React app the LLM drives through natural language. You need Node for the lab; Go is only needed for the proxy server.
 
 ### 1. Install dependencies
 
+The lab consumes the published `@digdir/brui-client` and `@digdir/brui-ui` packages from npm, so you only need to install the lab itself:
+
 ```sh
-cd client && npm install
-cd ../ui && npm install
-cd ../lab && npm install
+cd lab && npm install
 ```
 
 ### 2. Configure a model target
@@ -354,11 +354,11 @@ That example is intentionally small, but it follows the same pattern as the larg
 
 ### React Wiring Example
 
-If you want the ready-made sidebar UI, pass `config` and `functions` into `Sidebar`:
+If you want the ready-made sidebar UI, pass `config` and `functions` into `Brui`:
 
 ```tsx
 import { useMemo, useState } from 'react';
-import { Sidebar } from '@brui/ui';
+import { Brui } from '@digdir/brui-ui';
 import {
   createExampleConfig,
   createExampleFunctions,
@@ -382,7 +382,7 @@ export function App() {
     [],
   );
 
-  return <Sidebar config={config} functions={functions} />;
+  return <Brui config={config} functions={functions} />;
 }
 ```
 
