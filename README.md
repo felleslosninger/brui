@@ -95,10 +95,14 @@ Open the printed URL and drive the demo app through the sidebar.
 
 To embed brui in your own web app, install the client, declare your tools and actions, register the functions that run them, and point the client at a proxy target.
 
-### 1. Install the client
+### 1. Install the packages
+
+Install the client. If you also want the ready-made sidebar UI (see [React Wiring Example](#react-wiring-example)), install the UI package as well — it depends on the client, so the client is pulled in either way:
 
 ```bash
-npm install brui-client
+npm install @digdir/brui-client
+# optional: the ready-made sidebar component
+npm install @digdir/brui-ui
 ```
 
 ### 2. Define your configuration
@@ -107,7 +111,7 @@ Create a config that declares which **tools** the LLM can call, which **actions*
 
 ```ts
 // config.ts
-import type { Configuration, FunctionRegistry } from 'brui-client';
+import type { Configuration, FunctionRegistry } from '@digdir/brui-client';
 
 export function createConfig(): Configuration {
   return {
@@ -174,8 +178,8 @@ export function createConfig(): Configuration {
 
 ```ts
 // app.ts
-import { Setup } from 'brui-client';
-import type { FunctionRegistry } from 'brui-client';
+import { Setup } from '@digdir/brui-client';
+import type { FunctionRegistry } from '@digdir/brui-client';
 import { createConfig } from './config';
 
 const config = createConfig();
@@ -359,6 +363,7 @@ If you want the ready-made sidebar UI, pass `config` and `functions` into `Brui`
 ```tsx
 import { useMemo, useState } from 'react';
 import { Brui } from '@digdir/brui-ui';
+import '@digdir/brui-ui/style.css';
 import {
   createExampleConfig,
   createExampleFunctions,
