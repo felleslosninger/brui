@@ -17,8 +17,6 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@brui/ui": ["../ui/src"],
-      "@brui/client": ["../client"],
       "@ksvedal/docs/search-index": ["./node_modules/@ksvedal/docs/dist/search-index.json"],
       "openai": ["./node_modules/openai"],
       "openai/*": ["./node_modules/openai/*"]

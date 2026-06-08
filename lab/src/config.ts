@@ -1,5 +1,4 @@
-import type { Configuration } from '@brui/client';
-import type { FunctionRegistry } from '@brui/client';
+import type { Configuration, FunctionRegistry } from '@digdir/brui-client';
 
 export const MIN_SIDEBAR_WIDTH = 280;
 export const MAX_SIDEBAR_WIDTH = 700;

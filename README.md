@@ -26,14 +26,14 @@ The system has three parts:
 
 ## Quick start
 
-The fastest way to see brui working is the bundled **lab** demo — a small React app the LLM drives through natural language. You need Node for the client, UI, and lab; Go is only needed for the proxy server.
+The fastest way to see brui working is the bundled **lab** demo — a small React app the LLM drives through natural language. You need Node for the lab; Go is only needed for the proxy server.
 
 ### 1. Install dependencies
 
+The lab consumes the published `@digdir/brui-client` and `@digdir/brui-ui` packages from npm, so you only need to install the lab itself:
+
 ```sh
-cd client && npm install
-cd ../ui && npm install
-cd ../lab && npm install
+cd lab && npm install
 ```
 
 ### 2. Configure a model target
@@ -95,10 +95,14 @@ Open the printed URL and drive the demo app through the sidebar.
 
 To embed brui in your own web app, install the client, declare your tools and actions, register the functions that run them, and point the client at a proxy target.
 
-### 1. Install the client
+### 1. Install the packages
+
+Install the client. If you also want the ready-made sidebar UI (see [React Wiring Example](#react-wiring-example)), install the UI package as well — it depends on the client, so the client is pulled in either way:
 
 ```bash
-npm install brui-client
+npm install @digdir/brui-client
+# optional: the ready-made sidebar component
+npm install @digdir/brui-ui
 ```
 
 ### 2. Define your configuration
@@ -107,7 +111,7 @@ Create a config that declares which **tools** the LLM can call, which **actions*
 
 ```ts
 // config.ts
-import type { Configuration, FunctionRegistry } from 'brui-client';
+import type { Configuration, FunctionRegistry } from '@digdir/brui-client';
 
 export function createConfig(): Configuration {
   return {
@@ -174,8 +178,8 @@ export function createConfig(): Configuration {
 
 ```ts
 // app.ts
-import { Setup } from 'brui-client';
-import type { FunctionRegistry } from 'brui-client';
+import { Setup } from '@digdir/brui-client';
+import type { FunctionRegistry } from '@digdir/brui-client';
 import { createConfig } from './config';
 
 const config = createConfig();
@@ -354,11 +358,12 @@ That example is intentionally small, but it follows the same pattern as the larg
 
 ### React Wiring Example
 
-If you want the ready-made sidebar UI, pass `config` and `functions` into `Sidebar`:
+If you want the ready-made sidebar UI, pass `config` and `functions` into `Brui`:
 
 ```tsx
 import { useMemo, useState } from 'react';
-import { Sidebar } from '@brui/ui';
+import { Brui } from '@digdir/brui-ui';
+import '@digdir/brui-ui/style.css';
 import {
   createExampleConfig,
   createExampleFunctions,
@@ -382,7 +387,7 @@ export function App() {
     [],
   );
 
-  return <Sidebar config={config} functions={functions} />;
+  return <Brui config={config} functions={functions} />;
 }
 ```
 

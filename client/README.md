@@ -1,11 +1,11 @@
-# brui-client
+# @digdir/brui-client
 
 TypeScript client that orchestrates LLM inference, tool-call routing, and action execution. It connects your application logic to an LLM via the brui proxy server.
 
 ## Install
 
 ```bash
-npm install brui-client
+npm install @digdir/brui-client
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ npm install brui-client
 A `Configuration` defines what the LLM can do (tools), what your app executes (actions), and how they connect (decisions).
 
 ```ts
-import type { Configuration } from 'brui-client';
+import type { Configuration } from '@digdir/brui-client';
 
 const config: Configuration = {
   // Tools are OpenAI-compatible function definitions sent to the LLM
@@ -67,8 +67,8 @@ const config: Configuration = {
 ### 2. Register functions and set up
 
 ```ts
-import { Setup } from 'brui-client';
-import type { FunctionRegistry } from 'brui-client';
+import { Setup } from '@digdir/brui-client';
+import type { FunctionRegistry } from '@digdir/brui-client';
 
 const functions: FunctionRegistry = {
   fillFields: (args: Record<string, unknown>) => {
@@ -152,7 +152,7 @@ transcribe: {
 You can also drive transcription directly without the UI:
 
 ```ts
-import { startTranscribe } from 'brui-client';
+import { startTranscribe } from '@digdir/brui-client';
 
 const session = await startTranscribe({
   endpoint: '…',
